@@ -1,6 +1,6 @@
 import "dart:html";
 import "dart:json";
-import "package:dart-google-oauth2-library/oauth2.dart";
+import "package:dart_google_oauth2_library/oauth2.dart";
 
 void main() {
   final loginButton = query("#login");
@@ -29,7 +29,7 @@ void main() {
 
   // use your own Client ID from the API Console here
   final auth = new OAuth2(
-      "YOUR_CLIENT_ID",
+      "796343192238.apps.googleusercontent.com",
       ["https://www.googleapis.com/auth/plus.me"],
       tokenLoaded:oauthReady);
 
