@@ -1,4 +1,7 @@
-name:  dart_google_oauth2_library
-version: 0.0.1
+name:  google_oauth2_client
+version: 0.0.2
 author: Gerwin Sturm (scarygami.net/+)
-description:  Dart library to use for Google OAuth2 authentication / Client-side flow
+description:  Library to use for Google OAuth2 authentication / Client-side flow
+
+dependencies:
+  browser: any
