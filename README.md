@@ -23,7 +23,7 @@ Add this dependency to your pubspec.yaml
 Import the library in your dart application
 
 ```
-  import "package:dart_google_oauth2_library/oauth2.dart";
+  import "package:google_oauth2_client/google_oauth2_client.dart";
 ```
 
 Initialize the library with your parameters
