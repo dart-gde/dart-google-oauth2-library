@@ -1,6 +1,6 @@
 import "dart:html";
 import "dart:json";
-import "package:google_oauth2_client/oauth2.dart";
+import "package:google_oauth2_client/google_oauth2_client.dart";
 
 void main() {
   final loginButton = query("#login");
