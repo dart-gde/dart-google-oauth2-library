@@ -16,7 +16,7 @@ Add this dependency to your pubspec.yaml
 
 ```
   dependencies:
-    dart_google_oauth2_library:
+    google_oauth2_client:
       git: git://github.com/Scarygami/dart-google-oauth2-library.git
 ```
 
