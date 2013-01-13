@@ -1,6 +1,8 @@
 name:  google_oauth2_client
 version: 0.0.2
-author: Gerwin Sturm (scarygami.net/+)
+authors:
+- Gerwin Sturm <scarygami@gmail.com>
+- Adam Singer <financeCoding@gmail.com>
 homepage: https://github.com/Scarygami/dart-google-oauth2-library
 description:  Library to use for Google OAuth2 authentication / Client-side flow
 
