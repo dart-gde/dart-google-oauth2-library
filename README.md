@@ -1,9 +1,4 @@
-<<<<<<< HEAD:README
-Name:  google_oauth2_client
-Description:  Dart library to use for Google OAuth2 authentication / Client-side flow
-=======
 # dart-google-oauth2-library
->>>>>>> 43156001bc8a267e61325836fa54c40f14c23c79:README.md
 
 ### Description
  
@@ -21,19 +16,15 @@ Add this dependency to your pubspec.yaml
 
 ```
   dependencies:
-    google_oauth2_client:
+    dart_google_oauth2_library:
       git: git://github.com/Scarygami/dart-google-oauth2-library.git
 ```
 
 Import the library in your dart application
 
-<<<<<<< HEAD:README
-  import "package:google_oauth2_client/oauth2.dart";
-=======
 ```
   import "package:dart_google_oauth2_library/oauth2.dart";
 ```
->>>>>>> 43156001bc8a267e61325836fa54c40f14c23c79:README.md
 
 Initialize the library with your parameters
 
@@ -56,17 +47,7 @@ Once you have an access token you can use the following to send authenticated re
 
 See [example/oauth_example.dart](example/oauth_example.dart) for example login and request.
 
-<<<<<<< HEAD:README
-Alternatively you can use the OAuth client to set the headers in your request for you.
-This will also refresh the access token if necessary:
-
-auth.authenticate(request).then((request) => request.send(body));
-
-
-See example/oauth_example.dart for example login and request.
-=======
 ### Disclaimer
->>>>>>> 43156001bc8a267e61325836fa54c40f14c23c79:README.md
 
 No guarantees about the security or functionality of this libary
 
