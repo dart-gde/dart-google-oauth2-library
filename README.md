@@ -1,37 +1,62 @@
+<<<<<<< HEAD:README
 Name:  google_oauth2_client
 Description:  Dart library to use for Google OAuth2 authentication / Client-side flow
+=======
+# dart-google-oauth2-library
+>>>>>>> 43156001bc8a267e61325836fa54c40f14c23c79:README.md
 
-Usage/Installation:
+### Description
+ 
+Dart library to use for Google OAuth2 authentication / Client-side flow
 
-Go to https://code.google.com/apis/console/ and create a new Project
-Create a new Client ID for web applications in "API Access"
-Set JavaScript origins to your server or for example http://127.0.0.1:3030/ for local testing in Dartium
+
+### Usage/Installation
+
+
+Go to [google apis console](https://code.google.com/apis/console/) and create a new Project
+Create a new `Client ID` for web applications in "API Access"
+Set JavaScript origins to your server or for example `http://127.0.0.1:3030/` for local testing in Dartium
 
 Add this dependency to your pubspec.yaml
 
+```
   dependencies:
     google_oauth2_client:
       git: git://github.com/Scarygami/dart-google-oauth2-library.git
+```
 
-Import the library in your dart application:
+Import the library in your dart application
 
+<<<<<<< HEAD:README
   import "package:google_oauth2_client/oauth2.dart";
+=======
+```
+  import "package:dart_google_oauth2_library/oauth2.dart";
+```
+>>>>>>> 43156001bc8a267e61325836fa54c40f14c23c79:README.md
 
-Initialize the library with your parameters:
+Initialize the library with your parameters
 
+```
 final auth = new OAuth2(
   "YOUR CLIENT ID HERE",
   ["scope1", "scope2", ...],
   tokenLoaded:oauthReady);
+```
 
-The oauthReady function will be called once your app has a valid OAuth token to call the APIs.
+The `oauthReady` function will be called once your app has a valid OAuth token to call the APIs.
 If the user has authorized the app in the past, this will happen automatically.
-Otherwise, you need to call auth.login() to trigger a confirmation dialog.
+Otherwise, you need to call `auth.login()` to trigger a confirmation dialog.
 
-Once you have an access token you can use
+Once you have an access token you can use the following to send authenticated requests to the API.
+
+```
   request.setRequestHeader("Authorization", "${auth.token.type} ${auth.token.data}");
-to send authenticated requests to the API.
+```
 
+See [example/oauth_example.dart](example/oauth_example.dart) for example login and request.
+
+<<<<<<< HEAD:README
 Alternatively you can use the OAuth client to set the headers in your request for you.
 This will also refresh the access token if necessary:
 
@@ -39,12 +64,15 @@ auth.authenticate(request).then((request) => request.send(body));
 
 
 See example/oauth_example.dart for example login and request.
+=======
+### Disclaimer
+>>>>>>> 43156001bc8a267e61325836fa54c40f14c23c79:README.md
 
-Disclaimer:
 No guarantees about the security or functionality of this libary
 
-------------------------
+### Licenses
 
+```
 Copyright (c) 2013 Gerwin Sturm, FoldedSoft e.U. / www.foldedsoft.at
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not
@@ -74,3 +102,4 @@ distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
 WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 License for the specific language governing permissions and limitations under
 the License
+```
