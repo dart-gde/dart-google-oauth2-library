@@ -10,12 +10,12 @@ Set JavaScript origins to your server or for example http://127.0.0.1:3030/ for 
 Add this dependency to your pubspec.yaml
 
   dependencies:
-    dart-google-oauth2-library:
+    dart_google_oauth2_library:
       git: git://github.com/Scarygami/dart-google-oauth2-library.git
 
 Import the library in your dart application:
 
-  import "package:dart-google-oauth2-library/oauth2.dart";
+  import "package:dart_google_oauth2_library/oauth2.dart";
 
 Initialize the library with your parameters:
 
