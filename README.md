@@ -1,7 +1,7 @@
 # dart-google-oauth2-library
 
 ### Description
- 
+
 Dart library to use for Google OAuth2 authentication / Client-side flow
 
 
@@ -16,7 +16,14 @@ Add this dependency to your pubspec.yaml
 
 ```
   dependencies:
-    google_oauth2_client: any
+    google_oauth2_client: '>=0.1.0'
+```
+
+If you are still on M2 libraries (and don't want to update to M3 yet for whatever reason) make sure to use this dependency instead:
+
+```
+  dependencies:
+    google_oauth2_client: '0.0.2'
 ```
 
 Import the library in your dart application
