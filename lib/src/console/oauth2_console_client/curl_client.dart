@@ -58,11 +58,17 @@ class CurlClient extends http.BaseClient {
     // relative path to the certificate file in the SDK.
     var pathToCertificates = "ca-certificates.crt";
 
-    var arguments = [
-      "--dump-header", headerFile,
-      "--cacert", pathToCertificates // relativeToPub(pathToCertificates)
-      //"--insecure"
-    ];
+    var arguments = ["--dump-header", headerFile];
+
+    var certFile = new File(pathToCertificates);
+    if (certFile.existsSync()) {
+      arguments.add("--cacert");
+      arguments.add(pathToCertificates);
+    } else {
+      log.warning("Calling curl with --insecure, $pathToCertificates not found.");
+      arguments.add("--insecure");
+    }
+
     if (request.method == 'HEAD') {
       arguments.add("--head");
     } else {
