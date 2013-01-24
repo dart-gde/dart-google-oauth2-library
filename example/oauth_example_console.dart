@@ -5,7 +5,6 @@ import "package:google_oauth2_client/google_oauth2_console.dart";
 import "package:http/http.dart" as http;
 
 void main() {
-  showAll();
   String identifier = "299615367852-n0kfup30mfj5emlclfgud9g76itapvk9.apps.googleusercontent.com";
   String secret = "8ini0niNxsDN0y42ye_UNubw";
   List scopes = ["https://www.googleapis.com/auth/plus.me"];
