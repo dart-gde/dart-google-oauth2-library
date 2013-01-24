@@ -8,3 +8,5 @@ description:  Library to use for Google OAuth2 authentication / Client-side flow
 
 dependencies:
   browser: any
+  http: 0.3.1+1
+  logging: 0.3.1+1
