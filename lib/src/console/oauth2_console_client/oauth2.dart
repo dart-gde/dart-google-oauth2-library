@@ -8,7 +8,6 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:uri';
 
-// TODO(nweiz): Make this a "package:" URL, or something nicer than this.
 import '../oauth2_lib/oauth2.dart';
 import 'http.dart';
 import 'io.dart';
@@ -21,11 +20,11 @@ export '../oauth2_lib/oauth2.dart';
 class OAuth2Console {
 
   /// The pub client's OAuth2 identifier.
-  String _identifier = "299615367852-n0kfup30mfj5emlclfgud9g76itapvk9.apps.googleusercontent.com";
+  String _identifier = "<IDENTIFIER>";
 
   /// The pub client's OAuth2 secret. This isn't actually meant to be kept a
   /// secret.
-  String _secret = "8ini0niNxsDN0y42ye_UNubw";
+  String _secret = "<SECRET>";
 
   /// The URL to which the user will be directed to authorize the pub client to
   /// get an OAuth2 access token.
@@ -54,13 +53,20 @@ class OAuth2Console {
   /// Url to redirect when authorization has been called
   String _authorizedRedirect = 'https://github.com/dart-gde/dart-google-oauth2-library';
 
-  OAuth2Console({String identifier: null, String secret: null, Uri authorizationEndpoint: null, Uri tokenEndpoint: null, List scopes: null, String authorizedRedirect: 'https://github.com/dart-gde/dart-google-oauth2-library'}) {
+  String _credentialsFileName = "credentials.json";
+
+  OAuth2Console({String identifier: null, String secret: null,
+    Uri authorizationEndpoint: null, Uri tokenEndpoint: null, List scopes: null,
+    String authorizedRedirect: 'https://github.com/dart-gde/dart-google-oauth2-library',
+    String credentialsFileName: 'credentials.json'}) {
 
     if (identifier != null) this._identifier = identifier;
     if (secret != null) this._secret = secret;
     if (authorizationEndpoint != null) this._authorizationEndpoint = authorizationEndpoint;
     if (tokenEndpoint != null) this._tokenEndpoint = tokenEndpoint;
     if (scopes != null) this._scopes = scopes;
+
+    if (credentialsFileName != null) this._credentialsFileName = credentialsFileName;
 
     this._authorizedRedirect = authorizedRedirect;
   }
@@ -91,7 +97,7 @@ class OAuth2Console {
       });
     }).catchError((asyncError) {
       if (asyncError.error is ExpirationException) {
-        log.error("Pub's authorization to upload packages has expired and "
+        log.error("Client authorization has expired and "
             "can't be automatically refreshed.");
         return withClient(cache, fn);
       } else if (asyncError.error is AuthorizationException) {
@@ -140,7 +146,7 @@ class OAuth2Console {
       return readTextFile(_credentialsFile(cache)).then((credentialsJson) {
         var credentials = new Credentials.fromJson(credentialsJson);
         if (credentials.isExpired && !credentials.canRefresh) {
-          log.error("Pub's authorization to upload packages has expired and "
+          log.error("Client authorization expired and "
               "can't be automatically refreshed.");
           return null; // null means re-authorize
         }
@@ -166,7 +172,7 @@ class OAuth2Console {
 
   /// The path to the file in which the user's OAuth2 credentials are stored.
   String _credentialsFile(SystemCache cache) =>
-    join(cache.rootDir, 'credentials.json');
+    join(cache.rootDir, _credentialsFileName);
 
   /// Gets the user to authorize pub as a client of pub.dartlang.org via oauth2.
   /// Returns a Future that will complete to a fully-authorized [Client].
@@ -213,7 +219,7 @@ class OAuth2Console {
         new Uri.fromString('http://localhost:${server.port}'), scopes: _scopes);
 
     log.message(
-        'Pub needs your authorization to upload packages on your behalf.\n'
+        'Client needs your authorization for scopes ${_scopes}\n'
         'In a web browser, go to $authUrl\n'
         'Then click "Allow access".\n\n'
         'Waiting for your authorization...');
