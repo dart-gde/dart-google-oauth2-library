@@ -51,7 +51,10 @@ class OAuth2Console {
   /// the same as the credentials file stored in the system cache.
   Credentials _credentials;
 
-  OAuth2Console({String identifier: null, String secret: null, Uri authorizationEndpoint: null, Uri tokenEndpoint: null, List scopes: null}) {
+  /// Url to redirect when authorization has been called
+  String _authorizedRedirect = 'https://github.com/dart-gde/dart-google-oauth2-library';
+
+  OAuth2Console({String identifier: null, String secret: null, Uri authorizationEndpoint: null, Uri tokenEndpoint: null, List scopes: null, String authorizedRedirect: 'https://github.com/dart-gde/dart-google-oauth2-library'}) {
 
     if (identifier != null) this._identifier = identifier;
     if (secret != null) this._secret = secret;
@@ -59,6 +62,7 @@ class OAuth2Console {
     if (tokenEndpoint != null) this._tokenEndpoint = tokenEndpoint;
     if (scopes != null) this._scopes = scopes;
 
+    this._authorizedRedirect = authorizedRedirect;
   }
 
   /// Delete the cached credentials, if they exist.
@@ -195,7 +199,7 @@ class OAuth2Console {
         if (queryString == null) queryString = '';
         response.statusCode = 302;
         // TODO(adam): make this user settable
-        response.headers.set('location', 'https://github.com/dart-gde/dart-google-oauth2-library');
+        response.headers.set('location', _authorizedRedirect);
         response.outputStream.close();
         return grant.handleAuthorizationResponse(queryToMap(queryString));
       }).then((client) {
