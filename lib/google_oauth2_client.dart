@@ -23,11 +23,11 @@ import "dart:html";
 import "dart:math";
 import "dart:uri";
 import "dart:async";
+import "src/common/url_pattern.dart";
 
 part "src/oauth2.dart";
 part "src/proxy_callback.dart";
 part "src/token.dart";
-part "src/url_pattern.dart";
 part "src/utils.dart";
 
 
