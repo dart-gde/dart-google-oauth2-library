@@ -8,7 +8,7 @@ Dart library to use for Google OAuth2 authentication / Client-side flow
 ### Usage/Installation
 
 
-Go to [google apis console](https://code.google.com/apis/console/) and create a new Project
+Go to [Google APIs Console](https://code.google.com/apis/console/) and create a new Project
 Create a new `Client ID` for web applications in "API Access"
 Set JavaScript origins to your server or for example `http://127.0.0.1:3030/` for local testing in Dartium
 
@@ -16,20 +16,15 @@ Add this dependency to your pubspec.yaml
 
 ```
   dependencies:
-    google_oauth2_client: '>=0.1.0'
+    google_oauth2_client: '>=0.2.0'
 ```
 
-If you are still on M2 libraries (and don't want to update to M3 yet for whatever reason) make sure to use this dependency instead:
-
-```
-  dependencies:
-    google_oauth2_client: '0.0.2'
-```
+### Web applications
 
 Import the library in your dart application
 
 ```
-  import "package:google_oauth2_client/google_oauth2_client.dart";
+  import "package:google_oauth2_client/google_oauth2_browser.dart";
 ```
 
 Initialize the library with your parameters
@@ -51,7 +46,17 @@ Once you have an access token you can use the following to send authenticated re
   request.setRequestHeader("Authorization", "${auth.token.type} ${auth.token.data}");
 ```
 
-See [example/oauth_example.dart](example/oauth_example.dart) for example login and request.
+See [example/oauth_example.dart](https://github.com/dart-gde/dart-google-oauth2-library/blob/master/example/oauth_example.dart) for example login and request.
+
+### Console applications
+
+Import the library in your dart application
+
+```
+  import "package:google_oauth2_client/google_oauth2_console.dart";
+```
+
+...
 
 ### Disclaimer
 
@@ -60,7 +65,7 @@ No guarantees about the security or functionality of this libary
 ### Licenses
 
 ```
-Copyright (c) 2013 Gerwin Sturm, FoldedSoft e.U. / www.foldedsoft.at
+Copyright (c) 2013 Gerwin Sturm & Adam Singer
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not
 use this file except in compliance with the License. You may obtain a copy of
