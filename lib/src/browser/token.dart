@@ -1,4 +1,4 @@
-part of google_oauth2_client;
+part of google_oauth2_browser;
 
 /// An OAuth2 authentication token.
 class Token {
