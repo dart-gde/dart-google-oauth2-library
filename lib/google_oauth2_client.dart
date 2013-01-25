@@ -24,6 +24,7 @@ import "dart:math";
 import "dart:uri";
 import "dart:async";
 import "src/common/url_pattern.dart";
+export "src/common/url_pattern.dart";
 
 part "src/oauth2.dart";
 part "src/proxy_callback.dart";
