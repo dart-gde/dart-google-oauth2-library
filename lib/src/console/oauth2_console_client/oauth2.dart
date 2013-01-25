@@ -53,12 +53,13 @@ class OAuth2Console {
   /// Url to redirect when authorization has been called
   String _authorizedRedirect = 'https://github.com/dart-gde/dart-google-oauth2-library';
 
+  SystemCache _systemCache;
   String _credentialsFileName = "credentials.json";
 
   OAuth2Console({String identifier: null, String secret: null,
     Uri authorizationEndpoint: null, Uri tokenEndpoint: null, List scopes: null,
     String authorizedRedirect: 'https://github.com/dart-gde/dart-google-oauth2-library',
-    String credentialsFileName: 'credentials.json'}) {
+    String credentialsFileName: 'credentials.json', SystemCache systemCache: null}) {
 
     if (identifier != null) this._identifier = identifier;
     if (secret != null) this._secret = secret;
@@ -67,6 +68,12 @@ class OAuth2Console {
     if (scopes != null) this._scopes = scopes;
 
     if (credentialsFileName != null) this._credentialsFileName = credentialsFileName;
+
+    if (systemCache != null) {
+      _systemCache = systemCache;
+    } else {
+      _systemCache = new SystemCache(".");
+    }
 
     this._authorizedRedirect = authorizedRedirect;
   }
@@ -87,26 +94,26 @@ class OAuth2Console {
   /// This takes care of loading and saving the client's credentials, as well as
   /// prompting the user for their authorization. It will also re-authorize and
   /// re-run [fn] if a recoverable authorization error is detected.
-  Future withClient(SystemCache cache, Future fn(Client client)) {
-    return _getClient(cache).then((client) {
+  Future withClient(Future fn(Client client)) {
+    return _getClient(_systemCache).then((client) {
       var completer = new Completer();
       return fn(client).whenComplete(() {
         client.close();
         // Be sure to save the credentials even when an error happens.
-        return _saveCredentials(cache, client.credentials);
+        return _saveCredentials(_systemCache, client.credentials);
       });
     }).catchError((asyncError) {
       if (asyncError.error is ExpirationException) {
         log.error("Client authorization has expired and "
             "can't be automatically refreshed.");
-        return withClient(cache, fn);
+        return withClient(fn);
       } else if (asyncError.error is AuthorizationException) {
         var message = "OAuth2 authorization failed";
         if (asyncError.error.description != null) {
           message = "$message (${asyncError.error.description})";
         }
         log.error("$message.");
-        return clearCredentials(cache).then((_) => withClient(cache, fn));
+        return clearCredentials(_systemCache).then((_) => withClient(fn));
       } else {
         throw asyncError;
       }

@@ -20,5 +20,5 @@ void main() {
     return completer.future;
   };
 
-  auth.withClient(new SystemCache("."), clientCallback);
+  auth.withClient(clientCallback);
 }
