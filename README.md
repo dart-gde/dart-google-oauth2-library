@@ -55,8 +55,48 @@ Import the library in your dart application
 ```
   import "package:google_oauth2_client/google_oauth2_console.dart";
 ```
+Setup the `identifier` and `secret` by creating a [Google Installed App](https://developers.google.com/accounts/docs/OAuth2InstalledApp) client id in [APIs Console](https://code.google.com/apis/console) 
 
-...
+```
+  String identifier = "YOUR IDENTIFIER HERE";
+  String secret = "YOUR SECRET HERE";
+  List scopes =   ["scope1", "scope2", ...];
+  final auth = new OAuth2Console(identifier: identifier, secret: secret, scopes: scopes);
+```
+
+When making calls the `OAuth2Console` provides a `widthClient` method that will provide you with the `http.Client` which to make requests. This may change in the future, for now it handles if the client has not allowed access to this application. credentials are stored locally by default in a file named `credentials.json`. Also by default the application does not check googles certificates, a certificate is provided [ca-certificates.crt](lib/src/console/oauth2_console_client/ca-certificates.crt). Place the certificate in the same folder as the application curl will check cert before executing. 
+
+```
+  Future clientCallback(http.Client client) {
+    var completer = new Completer();
+    final url = "https://www.googleapis.com/plus/v1/people/me";
+    client.get(url).then((http.Response response) {
+      var data = JSON.parse(response.body);
+      print("Logged in as ${data["displayName"]}");
+    });
+    return completer.future;
+  };
+
+  auth.withClient(clientCallback);
+```
+
+Example below, the user needs to open the link provided to allow for offline support of the application. 
+
+```
+~/dart/dart-google-oauth2-library/example$ dart oauth_example_console.dart 
+
+Client needs your authorization for scopes [https://www.googleapis.com/auth/plus.me]
+In a web browser, go to https://accounts.google.com/o/oauth2/auth?access_type=offline&approval_prompt=force&response_type=code&client_id=299615367852-n0kfup30mfj5emlclfgud9g76itapvk9.apps.googleusercontent.com&redirect_uri=http%3A%2F%2Flocalhost%3A60476&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fplus.me
+Then click "Allow access".
+
+Waiting for your authorization...
+Authorization received, processing...
+Successfully authorized.
+
+Logged in as Adam Singer
+```
+
+Currently console oauth2 does not work on windows yet. Mac and Linux should work if `curl` is in your path. `curl` is being used for passing the auth token from the browser back to the application.  
 
 ### Disclaimer
 
