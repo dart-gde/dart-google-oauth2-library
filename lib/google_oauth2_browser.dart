@@ -16,18 +16,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-library google_oauth2_client;
+library google_oauth2_browser;
 
 import "dart:json" as JSON;
 import "dart:html";
 import "dart:math";
 import "dart:uri";
 import "dart:async";
+import "src/common/url_pattern.dart";
+export "src/common/url_pattern.dart";
 
-part "src/oauth2.dart";
-part "src/proxy_callback.dart";
-part "src/token.dart";
-part "src/url_pattern.dart";
-part "src/utils.dart";
+part "src/browser/oauth2.dart";
+part "src/browser/proxy_callback.dart";
+part "src/browser/token.dart";
+part "src/browser/utils.dart";
 
 

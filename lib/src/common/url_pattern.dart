@@ -1,4 +1,6 @@
-part of google_oauth2_client;
+library url_pattern;
+
+import "dart:uri";
 
 /** Produces part of a URL, when the template parameters are provided. */
 typedef String _UrlPatternToken(Map<String, Object> params);

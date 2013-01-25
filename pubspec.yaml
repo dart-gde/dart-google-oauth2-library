@@ -1,5 +1,5 @@
 name:  google_oauth2_client
-version: 0.1.0
+version: 0.2.0
 authors:
 - Gerwin Sturm <scarygami@gmail.com>
 - Adam Singer <financeCoding@gmail.com>
@@ -8,3 +8,4 @@ description:  Library to use for Google OAuth2 authentication / Client-side flow
 
 dependencies:
   browser: any
+  http: 0.3.1+1
