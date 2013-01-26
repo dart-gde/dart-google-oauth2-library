@@ -200,8 +200,9 @@ class CurlClient extends http.BaseClient {
     // Note: This line of code gets munged by create_sdk.py to be the correct
     // relative path to curl in the SDK.
 
-    throw "Windows is not supported yet";
-    var pathToCurl = "../../third_party/curl/curl.exe";
-    return relativeToPub(pathToCurl);
+    //throw "Windows is not supported yet";
+    //var pathToCurl = "../../third_party/curl/curl.exe";
+    //return relativeToPub(pathToCurl);
+    return "curl.exe";
   }
 }
