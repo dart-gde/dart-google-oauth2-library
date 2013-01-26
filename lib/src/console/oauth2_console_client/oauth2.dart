@@ -49,6 +49,7 @@ class OAuth2Console {
   /// An in-memory cache of the user's OAuth2 credentials. This should always be
   /// the same as the credentials file stored in the system cache.
   Credentials _credentials;
+  Credentials get credentials => _credentials;
 
   /// Url to redirect when authorization has been called
   String _authorizedRedirect = 'https://github.com/dart-gde/dart-google-oauth2-library';
