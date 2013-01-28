@@ -1,0 +1,179 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Dart-google-oauth2-library by dart-gde</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>Dart-google-oauth2-library</h1>
+        <p>Dart library to use for Google OAuth2 authentication / Client-side flow</p>
+
+        <p class="view"><a href="https://github.com/dart-gde/dart-google-oauth2-library">View the Project on GitHub <small>dart-gde/dart-google-oauth2-library</small></a></p>
+
+
+        <ul>
+          <li><a href="https://github.com/dart-gde/dart-google-oauth2-library/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/dart-gde/dart-google-oauth2-library/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/dart-gde/dart-google-oauth2-library">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <h1>dart-google-oauth2-library</h1>
+
+<p><a href="https://github.com/dart-gde/dart-google-oauth2-library/"><img src="https://drone.io/github.com/dart-gde/dart-google-oauth2-library/status.png" alt="Build Status"></a></p>
+
+<h3>Description</h3>
+
+<p>Dart library to use for Google OAuth2 authentication / Client-side flow</p>
+
+<h3>Usage/Installation</h3>
+
+<p>Go to <a href="https://code.google.com/apis/console/">Google APIs Console</a> and create a new Project
+Create a new <code>Client ID</code> for web applications in "API Access"
+Set JavaScript origins to your server or for example <code>http://127.0.0.1:3030/</code> for local testing in Dartium</p>
+
+<p>Add this dependency to your pubspec.yaml</p>
+
+<pre><code>  dependencies:
+    google_oauth2_client: '&gt;=0.2.0'
+</code></pre>
+
+<h3>Web applications</h3>
+
+<p>Import the library in your dart application</p>
+
+<pre><code>  import "package:google_oauth2_client/google_oauth2_browser.dart";
+</code></pre>
+
+<p>Initialize the library with your parameters</p>
+
+<pre><code>final auth = new OAuth2(
+  "YOUR CLIENT ID HERE",
+  ["scope1", "scope2", ...],
+  tokenLoaded:oauthReady);
+</code></pre>
+
+<p>The <code>oauthReady</code> function will be called once your app has a valid OAuth token to call the APIs.
+If the user has authorized the app in the past, this will happen automatically.
+Otherwise, you need to call <code>auth.login()</code> to trigger a confirmation dialog.</p>
+
+<p>Once you have an access token you can use the following to send authenticated requests to the API.</p>
+
+<pre><code>  request.setRequestHeader("Authorization", "${auth.token.type} ${auth.token.data}");
+</code></pre>
+
+<p>See <a href="https://github.com/dart-gde/dart-google-oauth2-library/blob/master/example/oauth_example.dart">example/oauth_example.dart</a> for example login and request.</p>
+
+<h3>Console applications</h3>
+
+<p>Import the library in your dart application</p>
+
+<pre><code>  import "package:google_oauth2_client/google_oauth2_console.dart";
+</code></pre>
+
+<p>Setup the <code>identifier</code> and <code>secret</code> by creating a <a href="https://developers.google.com/accounts/docs/OAuth2InstalledApp">Google Installed App</a> client id in <a href="https://code.google.com/apis/console">APIs Console</a> </p>
+
+<pre><code>  String identifier = "YOUR IDENTIFIER HERE";
+  String secret = "YOUR SECRET HERE";
+  List scopes =   ["scope1", "scope2", ...];
+  final auth = new OAuth2Console(identifier: identifier, secret: secret, scopes: scopes);
+</code></pre>
+
+<p>When making calls the <code>OAuth2Console</code> provides a <code>widthClient</code> method that will provide you with the <code>http.Client</code> which to make requests. This may change in the future, for now it handles if the client has not allowed access to this application. credentials are stored locally by default in a file named <code>credentials.json</code>. Also by default the application does not check googles certificates, a certificate is provided <a href="lib/src/console/oauth2_console_client/ca-certificates.crt">ca-certificates.crt</a>. Place the certificate in the same folder as the application curl will check cert before executing. </p>
+
+<pre><code>  Future clientCallback(http.Client client) {
+    var completer = new Completer();
+    final url = "https://www.googleapis.com/plus/v1/people/me";
+    client.get(url).then((http.Response response) {
+      var data = JSON.parse(response.body);
+      print("Logged in as ${data["displayName"]}");
+    });
+    return completer.future;
+  };
+
+  auth.withClient(clientCallback);
+</code></pre>
+
+<p>Example below, the user needs to open the link provided to allow for offline support of the application. </p>
+
+<pre><code>~/dart/dart-google-oauth2-library/example$ dart oauth_example_console.dart 
+
+Client needs your authorization for scopes [https://www.googleapis.com/auth/plus.me]
+In a web browser, go to https://accounts.google.com/o/oauth2/auth?access_type=offline&amp;approval_prompt=force&amp;response_type=code&amp;client_id=299615367852-n0kfup30mfj5emlclfgud9g76itapvk9.apps.googleusercontent.com&amp;redirect_uri=http%3A%2F%2Flocalhost%3A60476&amp;scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fplus.me
+Then click "Allow access".
+
+Waiting for your authorization...
+Authorization received, processing...
+Successfully authorized.
+
+Logged in as Adam Singer
+</code></pre>
+
+<p>Currently console oauth2 does not work on windows yet. Mac and Linux should work if <code>curl</code> is in your path. <code>curl</code> is being used for passing the auth token from the browser back to the application.  </p>
+
+<h3>Disclaimer</h3>
+
+<p>No guarantees about the security or functionality of this libary</p>
+
+<h3>Licenses</h3>
+
+<pre><code>Copyright (c) 2013 Gerwin Sturm &amp; Adam Singer
+
+Licensed under the Apache License, Version 2.0 (the "License"); you may not
+use this file except in compliance with the License. You may obtain a copy of
+the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+License for the specific language governing permissions and limitations under
+the License
+
+------------------------
+Based on http://code.google.com/p/google-api-dart-client
+
+Copyright 2012 Google Inc.
+Licensed under the Apache License, Version 2.0 (the "License"); you may not
+use this file except in compliance with the License. You may obtain a copy of
+the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+License for the specific language governing permissions and limitations under
+the License
+</code></pre>
+      </section>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/dart-gde">dart-gde</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="javascripts/scale.fix.js"></script>
+              <script type="text/javascript">
+            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+          </script>
+          <script type="text/javascript">
+            try {
+              var pageTracker = _gat._getTracker("UA-38019450-1");
+            pageTracker._trackPageview();
+            } catch(err) {}
+          </script>
+
+  </body>
+</html>
