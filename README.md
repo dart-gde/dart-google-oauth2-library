@@ -1,6 +1,6 @@
 # dart-google-oauth2-library
 
-[![Build Status](https://drone.io/github.com/dart-gde/dart-google-oauth2-library/status.png)](https://github.com/dart-gde/dart-google-oauth2-library/latest)
+[![Build Status](https://drone.io/github.com/dart-gde/dart-google-oauth2-library/status.png)](https://github.com/dart-gde/dart-google-oauth2-library/)
 
 ### Description
 
