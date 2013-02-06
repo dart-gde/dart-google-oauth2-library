@@ -1,5 +1,7 @@
 # dart-google-oauth2-library
 
+[![Build Status](https://drone.io/github.com/dart-gde/dart-google-oauth2-library/status.png)](https://github.com/dart-gde/dart-google-oauth2-library/)
+
 ### Description
 
 Dart library to use for Google OAuth2 authentication / Client-side flow
