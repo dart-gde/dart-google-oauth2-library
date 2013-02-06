@@ -27,6 +27,8 @@ import "src/common/url_pattern.dart";
 export "src/common/url_pattern.dart";
 
 part "src/browser/oauth2.dart";
+part "src/browser/googleoauth2.dart";
+part "src/browser/simpleoauth2.dart";
 part "src/browser/proxy_callback.dart";
 part "src/browser/token.dart";
 part "src/browser/utils.dart";
