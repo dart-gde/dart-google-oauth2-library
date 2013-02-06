@@ -30,21 +30,46 @@ Import the library in your dart application
 Initialize the library with your parameters
 
 ```
-final auth = new OAuth2(
+final auth = new GoogleOAuth2(
   "YOUR CLIENT ID HERE",
   ["scope1", "scope2", ...],
-  tokenLoaded:oauthReady);
+  tokenLoaded:oauthReady,
+  autoLogin: <true/false>);
 ```
 
 The `oauthReady` function will be called once your app has a valid OAuth token to call the APIs.
-If the user has authorized the app in the past, this will happen automatically.
+If you set `autoLogin` to `true` and the user has authorized the app in the past, this will happen automatically.
 Otherwise, you need to call `auth.login()` to trigger a confirmation dialog.
 
 Once you have an access token you can use the following to send authenticated requests to the API.
 
 ```
-  request.setRequestHeader("Authorization", "${auth.token.type} ${auth.token.data}");
+var request = new HttpRequest();
+request.onLoad.listen(...)
+request.open(method, url);
+request.setRequestHeader("Authorization", "${auth.token.type} ${auth.token.data}");
+request.send();
 ```
+
+Or you can use the `authenticate` method of the OAuth2 class that takes a request, refreshes the access token if necessary and returns a request with the headers set correctly.
+
+```
+var request = new HttpRequest();
+request.onLoad.listen(...);
+request.open(method, url);
+auth.authenticate(request).then((request) => request.send());
+```
+
+If you have an access token already (f.e. by using the Chrome Extension Identity API) you can use the SimpleOAuth2 class instead, that also supports the `authenticate` method.
+
+```
+var auth = new SimpleOAuth2(myToken);
+var request new HttpRequest();
+request.onLoad.listen(...);
+request.open(method, url);
+auth.authenticate(request).then((request) => request.send());
+```
+
 
 See [example/oauth_example.dart](https://github.com/dart-gde/dart-google-oauth2-library/blob/master/example/oauth_example.dart) for example login and request.
 
