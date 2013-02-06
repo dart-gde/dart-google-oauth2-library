@@ -8,12 +8,15 @@ void main() {
   final outputDiv = query("#output");
 
   void oauthReady(Token token) {
+
+    var testOAuth = new SimpleOAuth2(token.data);
+    
     loginButton.style.display = "none";
     logoutButton.style.display = "inline-block";
     var request = new HttpRequest();
     final url = "https://www.googleapis.com/plus/v1/people/me";
 
-    request.on.loadEnd.add((Event e) {
+    request.onLoadEnd.listen((Event e) {
       if (request.status == 200) {
         var data = JSON.parse(request.responseText);
         outputDiv.innerHtml = "Logged in as ${data["displayName"]}";
@@ -23,18 +26,20 @@ void main() {
     });
 
     request.open("GET", url);
-    request.setRequestHeader("Authorization", "${token.type} ${token.data}");
-    request.send();
+    testOAuth.authenticate(request).then((request) => request.send());
+    
+    //request.setRequestHeader("Authorization", "${token.type} ${token.data}");
+    //request.send();
   }
 
   // use your own Client ID from the API Console here
-  final auth = new OAuth2(
+  final auth = new GoogleOAuth2(
       "796343192238.apps.googleusercontent.com",
       ["https://www.googleapis.com/auth/plus.me"],
       tokenLoaded:oauthReady);
 
-  loginButton.on.click.add((e) => auth.login());
-  logoutButton.on.click.add((e) {
+  loginButton.onClick.listen((e) => auth.login());
+  logoutButton.onClick.listen((e) {
     auth.logout();
     loginButton.style.display = "inline-block";
     logoutButton.style.display = "none";
