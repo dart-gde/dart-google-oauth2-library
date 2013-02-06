@@ -39,7 +39,7 @@ class Token {
     String url = new UrlPattern(service).generate({}, {"access_token": data});
     var completer = new Completer();
     var request = new HttpRequest();
-    request.on.loadEnd.add((Event e) {
+    request.onLoadEnd.listen((Event e) {
       if (request.status == 200) {
         completer.complete(request.responseText);
       }

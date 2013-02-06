@@ -15,17 +15,18 @@ class _ProxyChannel {
   String _expectedOrigin;
   IFrameElement _element;
   _ProxyCallback _callback;
+  StreamSubscription _streamsub;
 
   _ProxyChannel(String this._provider, _ProxyCallback this._callback) {
     _nonce = (0x7FFFFFFF & random()).toString();
     _expectedOrigin = _origin(_provider);
     _element = _iframe(_getProxyUrl());
-    window.on.message.add(_onMessage);
+    _streamsub = window.onMessage.listen(_onMessage);
   }
 
   void close() {
     _element.remove();
-    window.on.message.remove(_onMessage);
+    _streamsub.cancel();
   }
 
   void _onMessage(MessageEvent event) {
