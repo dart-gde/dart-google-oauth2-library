@@ -3,6 +3,8 @@ part of google_oauth2_browser;
 /// An OAuth2 authentication context.
 abstract class OAuth2 {
 
+  var token;
+  
   OAuth2();
 
   /**

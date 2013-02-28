@@ -7,7 +7,7 @@ class Token {
   /// The raw token data used for authentication
   final String data;
   /// Time at which the token will be expired
-  final Date expiry;
+  final DateTime expiry;
   /// The email address of the user, only set if the scopes include
   /// https://www.googleapis.com/auth/userinfo.email
   String get email => _email;
@@ -17,18 +17,18 @@ class Token {
   String _email;
   String _userId;
 
-  Token(String this.type, String this.data, Date this.expiry);
+  Token(String this.type, String this.data, DateTime this.expiry);
 
   factory Token.fromJson(String json) {
     final map = JSON.parse(json);
     final token = new Token(map['type'], map['data'],
-        new Date.fromMillisecondsSinceEpoch(map['expiry']));
+        new DateTime.fromMillisecondsSinceEpoch(map['expiry']));
     token._email = map['email'];
     token._userId = map['userId'];
     return token;
   }
 
-  bool get expired => new Date.now().compareTo(expiry) > 0;
+  bool get expired => new DateTime.now().compareTo(expiry) > 0;
 
   String toString() => "[Token type=$type, data=$data, expired=$expired, "
       "expiry=$expiry, email=$email, userId=$userId]";
@@ -99,7 +99,7 @@ class Token {
     Duration duration =
         new Duration(seconds: int.parse(params['expires_in']) - 20);
     return new Token(params['token_type'], params['access_token'],
-        new Date.now().add(duration));
+        new DateTime.now().add(duration));
   }
 
   /// Extracts &-separated tokens from the path, query, and fragment of [uri].

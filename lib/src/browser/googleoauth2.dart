@@ -72,7 +72,7 @@ class GoogleOAuth2 extends OAuth2 {
       "client_id": _clientId,
       "origin": window.location.origin,
       "redirect_uri": "postmessage", // Response will post to the proxy iframe
-      "scope": Strings.join(_scopes, " "),
+      "scope": _scopes.join(" "),
       "immediate": immediate,
     };
     return new UrlPattern("${_provider}auth").generate({}, queryParams);
@@ -183,13 +183,14 @@ class GoogleOAuth2 extends OAuth2 {
       print("Failed to cache OAuth2 token: $e");
     }
     __token = value;
-    if (invokeCallbacks && (_tokenLoaded != null)) { window.setTimeout(() {
-      try {
-        _tokenLoaded(value);
-      } catch (e) {
-        print("Failed to invoke tokenLoaded callback: $e");
-      }
-    }, 0);
+    if (invokeCallbacks && (_tokenLoaded != null)) {
+      var timer = new Timer(const Duration(milliseconds: 0), () {
+        try {
+          _tokenLoaded(value);
+        } catch (e) {
+          print("Failed to invoke tokenLoaded callback: $e");
+        }
+      });
     }
   }
 

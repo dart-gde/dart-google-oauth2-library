@@ -22,7 +22,7 @@ class _WindowPoller {
     if (_window.closed) {
       _completer.completeError(new Exception("User closed the window"));
     } else {
-      window.setTimeout(poll, 500);
+      var timer = new Timer(const Duration(milliseconds: 10), poll);
     }
   }
 }

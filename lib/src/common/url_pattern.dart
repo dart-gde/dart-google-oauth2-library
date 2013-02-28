@@ -38,15 +38,15 @@ class UrlPattern {
   /** Generate a URL with the specified list of URL and query parameters. */
   String generate(Map<String, Object> urlParams, Map<String, Object> queryParams) {
     final buffer = new StringBuffer();
-    _tokens.forEach((token) => buffer.add(token(urlParams)));
+    _tokens.forEach((token) => buffer.write(token(urlParams)));
     var first = true;
     queryParams.forEach((key, value) {
       if (value == null) return;
-      buffer.add(first ? '?' : '&');
+      buffer.write(first ? '?' : '&');
       if (first) first = false;
-      buffer.add(encodeUriComponent(key.toString()));
-      buffer.add('=');
-      buffer.add(encodeUriComponent(value.toString()));
+      buffer.write(encodeUriComponent(key.toString()));
+      buffer.write('=');
+      buffer.write(encodeUriComponent(value.toString()));
     });
     return buffer.toString();
   }
