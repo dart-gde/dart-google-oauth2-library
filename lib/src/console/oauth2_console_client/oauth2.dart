@@ -8,14 +8,16 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:uri';
 
-import '../oauth2_lib/oauth2.dart';
+import 'package:oauth2/oauth2.dart';
+import 'package:pathos/path.dart' as path;
+
 import 'http.dart';
 import 'io.dart';
 import 'log.dart' as log;
 import 'system_cache.dart';
 import 'utils.dart';
 
-export '../oauth2_lib/oauth2.dart';
+export 'package:oauth2/oauth2.dart';
 
 class OAuth2Console {
 
@@ -33,13 +35,13 @@ class OAuth2Console {
   /// a refresh token from the server. See the [Google OAuth2 documentation][].
   ///
   /// [Google OAuth2 documentation]: https://developers.google.com/accounts/docs/OAuth2WebServer#offline
-  Uri _authorizationEndpoint = new Uri.fromString(
+  Uri _authorizationEndpoint = Uri.parse(
       'https://accounts.google.com/o/oauth2/auth?access_type=offline'
       '&approval_prompt=force');
 
   /// The URL from which the pub client will request an access token once it's
   /// been authorized by the user.
-  Uri _tokenEndpoint = new Uri.fromString(
+  Uri _tokenEndpoint = Uri.parse(
       'https://accounts.google.com/o/oauth2/token');
 
   /// The OAuth2 scopes that the pub client needs. Currently the client only needs
@@ -80,13 +82,12 @@ class OAuth2Console {
   }
 
   /// Delete the cached credentials, if they exist.
-  Future clearCredentials(SystemCache cache) {
+  void clearCredentials(SystemCache cache) {
     _credentials = null;
     var credentialsFile = _credentialsFile(cache);
-    return fileExists(credentialsFile).then((exists) {
-      if (exists) return deleteFile(credentialsFile);
-      return new Future.immediate(null);
-    });
+    if (!fileExists(credentialsFile)) return;
+
+    deleteFile(credentialsFile);
   }
 
   /// Asynchronously passes an OAuth2 [Client] to [fn], and closes the client when
@@ -96,25 +97,27 @@ class OAuth2Console {
   /// prompting the user for their authorization. It will also re-authorize and
   /// re-run [fn] if a recoverable authorization error is detected.
   Future withClient(Future fn(Client client)) {
+
     return _getClient(_systemCache).then((client) {
       var completer = new Completer();
       return fn(client).whenComplete(() {
         client.close();
         // Be sure to save the credentials even when an error happens.
-        return _saveCredentials(_systemCache, client.credentials);
+        _saveCredentials(_systemCache, client.credentials);
       });
     }).catchError((asyncError) {
       if (asyncError.error is ExpirationException) {
-        log.error("Client authorization has expired and "
-            "can't be automatically refreshed.");
-        return withClient(fn);
+        log.error("Pub's authorization to upload packages has expired and "
+        "can't be automatically refreshed.");
+        return withClient(_systemCache, fn);
       } else if (asyncError.error is AuthorizationException) {
         var message = "OAuth2 authorization failed";
         if (asyncError.error.description != null) {
           message = "$message (${asyncError.error.description})";
         }
         log.error("$message.");
-        return clearCredentials(_systemCache).then((_) => withClient(fn));
+        clearCredentials(_systemCache);
+        return withClient(_systemCache, fn);
       } else {
         throw asyncError;
       }
@@ -124,63 +127,57 @@ class OAuth2Console {
   /// Gets a new OAuth2 client. If saved credentials are available, those are
   /// used; otherwise, the user is prompted to authorize the pub client.
   Future<Client> _getClient(SystemCache cache) {
-    return _loadCredentials(cache).then((credentials) {
+    return defer(() {
+      var credentials = _loadCredentials(cache);
       if (credentials == null) return _authorize();
-      return new Future.immediate(new Client(
-          _identifier, _secret, credentials, httpClient: curlClient));
-    }).then((client) {
-      return _saveCredentials(cache, client.credentials).then((_) => client);
+
+      var client = new Client(_identifier, _secret, credentials,
+          httpClient: httpClient);
+      _saveCredentials(cache, client.credentials);
+      return client;
     });
   }
 
   /// Loads the user's OAuth2 credentials from the in-memory cache or the
   /// filesystem if possible. If the credentials can't be loaded for any reason,
   /// the returned [Future] will complete to null.
-  Future<Credentials> _loadCredentials(SystemCache cache) {
+  Credentials _loadCredentials(SystemCache cache) {
     log.fine('Loading OAuth2 credentials.');
 
-    if (_credentials != null) {
-      log.fine('Using already-loaded credentials.');
-      return new Future.immediate(_credentials);
-    }
+    try {
+      if (_credentials != null) return _credentials;
 
-    var path = _credentialsFile(cache);
-    return fileExists(path).then((credentialsExist) {
-      if (!credentialsExist) {
-        log.fine('No credentials found at $path.');
-        return new Future.immediate(null);
+      var path = _credentialsFile(cache);
+      if (!fileExists(path)) return null;
+
+      var credentials = new Credentials.fromJson(readTextFile(path));
+      if (credentials.isExpired && !credentials.canRefresh) {
+        log.error("Pub's authorization to upload packages has expired and "
+        "can't be automatically refreshed.");
+        return null; // null means re-authorize.
       }
 
-      return readTextFile(_credentialsFile(cache)).then((credentialsJson) {
-        var credentials = new Credentials.fromJson(credentialsJson);
-        if (credentials.isExpired && !credentials.canRefresh) {
-          log.error("Client authorization expired and "
-              "can't be automatically refreshed.");
-          return null; // null means re-authorize
-        }
-
-        return credentials;
-      });
-    }).catchError((e) {
+      return credentials;
+    } catch (e) {
       log.error('Warning: could not load the saved OAuth2 credentials: $e\n'
-          'Obtaining new credentials...');
-      return null; // null means re-authorize
-    });
+      'Obtaining new credentials...');
+      return null; // null means re-authorize.
+    }
   }
 
   /// Save the user's OAuth2 credentials to the in-memory cache and the
   /// filesystem.
-  Future _saveCredentials(SystemCache cache, Credentials credentials) {
+  void _saveCredentials(SystemCache cache, Credentials credentials) {
     log.fine('Saving OAuth2 credentials.');
     _credentials = credentials;
-    var path = _credentialsFile(cache);
-    return ensureDir(dirname(path)).then((_) =>
-        writeTextFile(path, credentials.toJson(), dontLogContents: true));
+    var credentialsPath = _credentialsFile(cache);
+    ensureDir(path.dirname(credentialsPath));
+    writeTextFile(credentialsPath, credentials.toJson(), dontLogContents: true);
   }
 
   /// The path to the file in which the user's OAuth2 credentials are stored.
   String _credentialsFile(SystemCache cache) =>
-    join(cache.rootDir, _credentialsFileName);
+      path.join(cache.rootDir, 'credentials.json');
 
   /// Gets the user to authorize pub as a client of pub.dartlang.org via oauth2.
   /// Returns a Future that will complete to a fully-authorized [Client].
@@ -188,7 +185,7 @@ class OAuth2Console {
     // Allow the tests to inject their own token endpoint URL.
     var tokenEndpoint = Platform.environment['_PUB_TEST_TOKEN_ENDPOINT'];
     if (tokenEndpoint != null) {
-      tokenEndpoint = new Uri.fromString(tokenEndpoint);
+      tokenEndpoint = Uri.parse(tokenEndpoint);
     } else {
       tokenEndpoint = _tokenEndpoint;
     }
@@ -198,41 +195,42 @@ class OAuth2Console {
         _secret,
         _authorizationEndpoint,
         tokenEndpoint,
-        httpClient: curlClient);
+        httpClient: httpClient);
 
     // Spin up a one-shot HTTP server to receive the authorization code from the
     // Google OAuth2 server via redirect. This server will close itself as soon as
     // the code is received.
-    var completer = new Completer();
-    var server = new HttpServer();
-    server.addRequestHandler((request) => request.path == "/",
-        (request, response) {
-      chainToCompleter(new Future.immediate(null).then((_) {
-        log.message('Authorization received, processing...');
-        var queryString = request.queryString;
-        if (queryString == null) queryString = '';
-        response.statusCode = 302;
-        // TODO(adam): make this user settable
-        response.headers.set('location', _authorizedRedirect);
-        response.outputStream.close();
-        return grant.handleAuthorizationResponse(queryToMap(queryString));
-      }).then((client) {
-        server.close();
-        return client;
-      }), completer);
-    });
-    server.listen('127.0.0.1', 0);
+    return HttpServer.bind('127.0.0.1', 0).then((server) {
+      var authUrl = grant.getAuthorizationUrl(
+          Uri.parse('http://localhost:${server.port}'), scopes: _scopes);
 
-    var authUrl = grant.getAuthorizationUrl(
-        new Uri.fromString('http://localhost:${server.port}'), scopes: _scopes);
-
-    log.message(
-        'Client needs your authorization for scopes ${_scopes}\n'
-        'In a web browser, go to $authUrl\n'
-        'Then click "Allow access".\n\n'
-        'Waiting for your authorization...');
-
-    return completer.future.then((client) {
+      log.message(
+          'Pub needs your authorization to upload packages on your behalf.\n'
+          'In a web browser, go to $authUrl\n'
+          'Then click "Allow access".\n\n'
+      'Waiting for your authorization...');
+      return server.first.then((request) {
+        var response = request.response;
+        if (request.uri.path == "/") {
+          log.message('Authorization received, processing...');
+          var queryString = request.uri.query;
+          if (queryString == null) queryString = '';
+          response.statusCode = 302;
+          response.headers.set('location',
+          'http://pub.dartlang.org/authorized');
+          response.close();
+          return grant.handleAuthorizationResponse(queryToMap(queryString))
+              .then((client) {
+                server.close();
+                return client;
+              });
+        } else {
+          response.statusCode = 404;
+          response.close();
+        }
+      });
+    })
+    .then((client) {
       log.message('Successfully authorized.\n');
       return client;
     });

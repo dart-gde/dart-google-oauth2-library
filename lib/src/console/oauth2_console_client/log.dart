@@ -111,29 +111,29 @@ Future ioAsync(String startMessage, Future operation,
 /// Logs the spawning of an [executable] process with [arguments] at [IO]
 /// level.
 void process(String executable, List<String> arguments) {
-  io("Spawning $executable ${Strings.join(arguments, ' ')}");
+  io("Spawning $executable ${arguments.join(' ')}");
 }
 
 /// Logs the results of running [executable].
 void processResult(String executable, PubProcessResult result) {
   // Log it all as one message so that it shows up as a single unit in the logs.
   var buffer = new StringBuffer();
-  buffer.add("Finished $executable. Exit code ${result.exitCode}.");
+  buffer.write("Finished $executable. Exit code ${result.exitCode}.");
 
   dumpOutput(String name, List<String> output) {
     if (output.length == 0) {
-      buffer.add("Nothing output on $name.");
+      buffer.write("Nothing output on $name.");
     } else {
-      buffer.add("$name:");
+      buffer.write("$name:");
       var numLines = 0;
       for (var line in output) {
         if (++numLines > 1000) {
-          buffer.add('[${output.length - 1000}] more lines of output '
-                     'truncated...]');
+          buffer.write('[${output.length - 1000}] more lines of output '
+              'truncated...]');
           break;
         }
 
-        buffer.add(line);
+        buffer.write(line);
       }
     }
   }
@@ -154,11 +154,11 @@ void recordTranscript() {
 void dumpTranscript() {
   if (_transcript == null) return;
 
-  stderr.writeString('---- Log transcript ----\n');
+  stderrSink.add('---- Log transcript ----\n'.codeUnits);
   for (var entry in _transcript) {
     _logToStderrWithLabel(entry);
   }
-  stderr.writeString('---- End log transcript ----\n');
+  stderrSink.add('---- End log transcript ----\n'.codeUnits);
 }
 
 /// Sets the verbosity to "normal", which shows errors, warnings, and messages.
@@ -191,38 +191,38 @@ void showAll() {
 
 /// Log function that prints the message to stdout.
 void _logToStdout(Entry entry) {
-  _logToStream(stdout, entry, showLabel: false);
+  _logToStream(stdoutSink, entry, showLabel: false);
 }
 
 /// Log function that prints the message to stdout with the level name.
 void _logToStdoutWithLabel(Entry entry) {
-  _logToStream(stdout, entry, showLabel: true);
+  _logToStream(stdoutSink, entry, showLabel: true);
 }
 
 /// Log function that prints the message to stderr.
 void _logToStderr(Entry entry) {
-  _logToStream(stderr, entry, showLabel: false);
+  _logToStream(stderrSink, entry, showLabel: false);
 }
 
 /// Log function that prints the message to stderr with the level name.
 void _logToStderrWithLabel(Entry entry) {
-  _logToStream(stderr, entry, showLabel: true);
+  _logToStream(stderrSink, entry, showLabel: true);
 }
 
-void _logToStream(OutputStream stream, Entry entry, {bool showLabel}) {
+void _logToStream(StreamSink<List<int>> sink, Entry entry, {bool showLabel}) {
   bool firstLine = true;
   for (var line in entry.lines) {
     if (showLabel) {
       if (firstLine) {
-        stream.writeString(entry.level.name);
-        stream.writeString(': ');
+        sink.add(entry.level.name.codeUnits);
+        sink.add(': '.codeUnits);
       } else {
-        stream.writeString('    | ');
+        sink.add('    | '.codeUnits);
       }
     }
 
-    stream.writeString(line);
-    stream.writeString('\n');
+    sink.add(line.codeUnits);
+    sink.add('\n'.codeUnits);
 
     firstLine = false;
   }
