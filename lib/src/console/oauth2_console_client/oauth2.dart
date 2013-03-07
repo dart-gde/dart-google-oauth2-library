@@ -8,7 +8,8 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:uri';
 
-import 'package:oauth2/oauth2.dart';
+//import 'package:oauth2/oauth2.dart';
+import '../oauth2_lib/oauth2.dart';
 import 'package:pathos/path.dart' as path;
 
 import 'http.dart';
@@ -17,7 +18,8 @@ import 'log.dart' as log;
 import 'system_cache.dart';
 import 'utils.dart';
 
-export 'package:oauth2/oauth2.dart';
+//export 'package:oauth2/oauth2.dart';
+export '../oauth2_lib/oauth2.dart';
 
 class OAuth2Console {
 
@@ -57,7 +59,10 @@ class OAuth2Console {
   String _authorizedRedirect = 'https://github.com/dart-gde/dart-google-oauth2-library';
 
   SystemCache _systemCache;
+  SystemCache get systemCache => _systemCache;
   String _credentialsFileName = "credentials.json";
+
+  PubHttpClient _httpClient;
 
   OAuth2Console({String identifier: null, String secret: null,
     Uri authorizationEndpoint: null, Uri tokenEndpoint: null, List scopes: null,
@@ -79,6 +84,8 @@ class OAuth2Console {
     }
 
     this._authorizedRedirect = authorizedRedirect;
+
+    _httpClient = new PubHttpClient();
   }
 
   /// Delete the cached credentials, if they exist.
@@ -88,6 +95,11 @@ class OAuth2Console {
     if (!fileExists(credentialsFile)) return;
 
     deleteFile(credentialsFile);
+  }
+
+  /// Close the httpClient when were done.
+  void close() {
+    _httpClient.inner.close();
   }
 
   /// Asynchronously passes an OAuth2 [Client] to [fn], and closes the client when
@@ -107,9 +119,9 @@ class OAuth2Console {
       });
     }).catchError((asyncError) {
       if (asyncError.error is ExpirationException) {
-        log.error("Pub's authorization to upload packages has expired and "
+        log.error("Authorization to upload packages has expired and "
         "can't be automatically refreshed.");
-        return withClient(_systemCache, fn);
+        return withClient(fn);
       } else if (asyncError.error is AuthorizationException) {
         var message = "OAuth2 authorization failed";
         if (asyncError.error.description != null) {
@@ -117,7 +129,7 @@ class OAuth2Console {
         }
         log.error("$message.");
         clearCredentials(_systemCache);
-        return withClient(_systemCache, fn);
+        return withClient(fn);
       } else {
         throw asyncError;
       }
@@ -132,7 +144,7 @@ class OAuth2Console {
       if (credentials == null) return _authorize();
 
       var client = new Client(_identifier, _secret, credentials,
-          httpClient: httpClient);
+          httpClient: _httpClient);
       _saveCredentials(cache, client.credentials);
       return client;
     });
@@ -152,7 +164,7 @@ class OAuth2Console {
 
       var credentials = new Credentials.fromJson(readTextFile(path));
       if (credentials.isExpired && !credentials.canRefresh) {
-        log.error("Pub's authorization to upload packages has expired and "
+        log.error("Authorization has expired and "
         "can't be automatically refreshed.");
         return null; // null means re-authorize.
       }
@@ -195,7 +207,7 @@ class OAuth2Console {
         _secret,
         _authorizationEndpoint,
         tokenEndpoint,
-        httpClient: httpClient);
+        httpClient: _httpClient);
 
     // Spin up a one-shot HTTP server to receive the authorization code from the
     // Google OAuth2 server via redirect. This server will close itself as soon as
@@ -205,7 +217,7 @@ class OAuth2Console {
           Uri.parse('http://localhost:${server.port}'), scopes: _scopes);
 
       log.message(
-          'Pub needs your authorization to upload packages on your behalf.\n'
+          'Need your authorization to access scopes ${_scopes} on your behalf.\n'
           'In a web browser, go to $authUrl\n'
           'Then click "Allow access".\n\n'
       'Waiting for your authorization...');
@@ -216,8 +228,7 @@ class OAuth2Console {
           var queryString = request.uri.query;
           if (queryString == null) queryString = '';
           response.statusCode = 302;
-          response.headers.set('location',
-          'http://pub.dartlang.org/authorized');
+          response.headers.set('location', _authorizedRedirect);
           response.close();
           return grant.handleAuthorizationResponse(queryToMap(queryString))
               .then((client) {
