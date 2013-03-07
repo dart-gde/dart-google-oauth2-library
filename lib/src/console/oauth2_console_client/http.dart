@@ -74,7 +74,7 @@ class PubHttpClient extends http.BaseClient {
 }
 
 /// The HTTP client to use for all HTTP requests.
-final httpClient = new PubHttpClient();
+//PubHttpClient httpClient = new PubHttpClient();
 
 /// Handles a successful JSON-formatted response from pub.dartlang.org.
 ///
