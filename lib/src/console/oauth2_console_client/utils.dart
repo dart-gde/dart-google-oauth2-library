@@ -27,14 +27,55 @@ class Pair<E, F> {
   int get hashCode => first.hashCode ^ last.hashCode;
 }
 
+/// A completer that waits until all added [Future]s complete.
+// TODO(rnystrom): Copied from web_components. Remove from here when it gets
+// added to dart:core. (See #6626.)
+class FutureGroup<T> {
+  int _pending = 0;
+  Completer<List<T>> _completer = new Completer<List<T>>();
+  final List<Future<T>> futures = <Future<T>>[];
+  bool completed = false;
+
+  final List<T> _values = <T>[];
+
+  /// Wait for [task] to complete.
+  Future<T> add(Future<T> task) {
+    if (completed) {
+      throw new StateError("The FutureGroup has already completed.");
+    }
+
+    _pending++;
+    futures.add(task.then((value) {
+      if (completed) return;
+
+      _pending--;
+      _values.add(value);
+
+      if (_pending <= 0) {
+        completed = true;
+        _completer.complete(_values);
+      }
+    }).catchError((e) {
+      if (completed) return;
+
+      completed = true;
+      _completer.completeError(e.error, e.stackTrace);
+    }));
+
+    return task;
+  }
+
+  Future<List> get future => _completer.future;
+}
+
 // TODO(rnystrom): Move into String?
 /// Pads [source] to [length] by adding spaces at the end.
 String padRight(String source, int length) {
   final result = new StringBuffer();
-  result.add(source);
+  result.write(source);
 
   while (result.length < length) {
-    result.add(' ');
+    result.write(' ');
   }
 
   return result.toString();
@@ -81,11 +122,11 @@ String replace(String source, Pattern matcher, String fn(Match)) {
   var buffer = new StringBuffer();
   var start = 0;
   for (var match in matcher.allMatches(source)) {
-    buffer.add(source.substring(start, match.start));
+    buffer.write(source.substring(start, match.start));
     start = match.end;
-    buffer.add(fn(match));
+    buffer.write(fn(match));
   }
-  buffer.add(source.substring(start));
+  buffer.write(source.substring(start));
   return buffer.toString();
 }
 
@@ -100,14 +141,24 @@ bool endsWithPattern(String str, Pattern matcher) {
 /// Returns the hex-encoded sha1 hash of [source].
 String sha1(String source) {
   var sha = new SHA1();
-  sha.add(source.charCodes);
+  sha.add(source.codeUnits);
   return CryptoUtils.bytesToHex(sha.close());
+}
+
+/// Invokes the given callback asynchronously. Returns a [Future] that completes
+/// to the result of [callback].
+///
+/// This is also used to wrap synchronous code that may thrown an exception to
+/// ensure that methods that have both sync and async code only report errors
+/// asynchronously.
+Future defer(callback()) {
+  return new Future.immediate(null).then((_) => callback());
 }
 
 /// Returns a [Future] that completes in [milliseconds].
 Future sleep(int milliseconds) {
   var completer = new Completer();
-  new Timer(milliseconds, (_) => completer.complete());
+  new Timer(new Duration(milliseconds: milliseconds), completer.complete);
   return completer.future;
 }
 
@@ -116,6 +167,106 @@ Future sleep(int milliseconds) {
 void chainToCompleter(Future future, Completer completer) {
   future.then((value) => completer.complete(value),
       onError: (e) => completer.completeError(e.error, e.stackTrace));
+}
+
+// TODO(nweiz): remove this when issue 7964 is fixed.
+/// Returns a [Future] that will complete to the first element of [stream].
+/// Unlike [Stream.first], this is safe to use with single-subscription streams.
+Future streamFirst(Stream stream) {
+  // TODO(nweiz): remove this when issue 8512 is fixed.
+  var cancelled = false;
+  var completer = new Completer();
+  var subscription;
+  subscription = stream.listen((value) {
+    if (!cancelled) {
+      cancelled = true;
+      subscription.cancel();
+      completer.complete(value);
+    }
+  }, onError: (e) {
+    if (!cancelled) {
+      completer.completeError(e.error, e.stackTrace);
+    }
+  }, onDone: () {
+    if (!cancelled) {
+      completer.completeError(new StateError("No elements"));
+    }
+  }, unsubscribeOnError: true);
+  return completer.future;
+}
+
+/// Returns a wrapped version of [stream] along with a [StreamSubscription] that
+/// can be used to control the wrapped stream.
+Pair<Stream, StreamSubscription> streamWithSubscription(Stream stream) {
+  var controller = stream.isBroadcast ?
+      new StreamController.broadcast() :
+      new StreamController();
+  var subscription = stream.listen(controller.add,
+      onError: controller.signalError,
+      onDone: controller.close);
+  return new Pair<Stream, StreamSubscription>(controller.stream, subscription);
+}
+
+// TODO(nweiz): remove this when issue 7787 is fixed.
+/// Creates two single-subscription [Stream]s that each emit all values and
+/// errors from [stream]. This is useful if [stream] is single-subscription but
+/// multiple subscribers are necessary.
+Pair<Stream, Stream> tee(Stream stream) {
+  var controller1 = new StreamController();
+  var controller2 = new StreamController();
+  stream.listen((value) {
+    controller1.add(value);
+    controller2.add(value);
+  }, onError: (error) {
+    controller1.signalError(error);
+    controller2.signalError(error);
+  }, onDone: () {
+    controller1.close();
+    controller2.close();
+  });
+  return new Pair<Stream, Stream>(controller1.stream, controller2.stream);
+}
+
+/// A regular expression matching a line termination character or character
+/// sequence.
+final RegExp _lineRegexp = new RegExp(r"\r\n|\r|\n");
+
+/// Converts a stream of arbitrarily chunked strings into a line-by-line stream.
+/// The lines don't include line termination characters. A single trailing
+/// newline is ignored.
+Stream<String> streamToLines(Stream<String> stream) {
+  var buffer = new StringBuffer();
+  return stream.transform(new StreamTransformer(
+      handleData: (chunk, sink) {
+        var lines = chunk.split(_lineRegexp);
+        var leftover = lines.removeLast();
+        for (var line in lines) {
+          if (!buffer.isEmpty) {
+            buffer.write(line);
+            line = buffer.toString();
+            buffer = new StringBuffer();
+          }
+
+          sink.add(line);
+        }
+        buffer.write(leftover);
+      },
+      handleDone: (sink) {
+        if (!buffer.isEmpty) sink.add(buffer.toString());
+        sink.close();
+      }));
+}
+
+/// Like [Iterable.where], but allows [test] to return [Future]s and uses the
+/// results of those [Future]s as the test.
+Future<Iterable> futureWhere(Iterable iter, test(value)) {
+  return Future.wait(iter.map((e) {
+    var result = test(e);
+    if (result is! Future) result = new Future.immediate(result);
+    return result.then((result) => new Pair(e, result));
+  }))
+      .then((pairs) => pairs.where((pair) => pair.last))
+      .then((pairs) => pairs.map((pair) => pair.first));
 }
 
 // TODO(nweiz): unify the following functions with the utility functions in
@@ -162,10 +313,10 @@ String mapToQuery(Map<String, String> map) {
     value = (value == null || value.isEmpty) ? null : encodeUriComponent(value);
     pairs.add([key, value]);
   });
-  return Strings.join(pairs.mappedBy((pair) {
+  return pairs.map((pair) {
     if (pair[1] == null) return pair[0];
     return "${pair[0]}=${pair[1]}";
-  }), "&");
+  }).join("&");
 }
 
 /// Add all key/value pairs from [source] to [destination], overwriting any

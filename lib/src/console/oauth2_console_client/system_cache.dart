@@ -7,6 +7,7 @@ library system_cache;
 import 'dart:io';
 import 'dart:async';
 
+import 'package:pathos/path.dart' as path;
 
 import 'io.dart';
 import 'io.dart' as io show createTempDir;
@@ -24,8 +25,7 @@ class SystemCache {
   /// The root directory where this package cache is located.
   final String rootDir;
 
-  String get tempDir => join(rootDir, '_temp');
-
+  String get tempDir => path.join(rootDir, '_temp');
 
   /// Creates a new package cache which is backed by the given directory on the
   /// user's file system.
@@ -38,25 +38,21 @@ class SystemCache {
     return cache;
   }
 
-
-
-
   /// Create a new temporary directory within the system cache. The system
   /// cache maintains its own temporary directory that it uses to stage
   /// packages into while installing. It uses this instead of the OS's system
   /// temp directory to ensure that it's on the same volume as the pub system
   /// cache so that it can move the directory from it.
-  Future<Directory> createTempDir() {
-    return ensureDir(tempDir).then((temp) {
-      return io.createTempDir(join(temp, 'dir'));
-    });
+  String createTempDir() {
+    var temp = ensureDir(tempDir);
+    return io.createTempDir(path.join(temp, 'dir'));
   }
 
   /// Delete's the system cache's internal temp directory.
   Future deleteTempDir() {
     log.fine('Clean up system cache temp directory $tempDir.');
-    return dirExists(tempDir).then((exists) {
-      if (!exists) return new Future.immediate(null);
+    return defer(() {
+      if (!dirExists(tempDir)) return;
       return deleteDir(tempDir);
     });
   }

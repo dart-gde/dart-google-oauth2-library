@@ -28,10 +28,10 @@
 ///     // server. They're usually included in the server's documentation of its
 ///     // OAuth2 API.
 ///     final authorizationEndpoint =
-///         new Uri.fromString("http://example.com/oauth2/authorization");
+///         Uri.parse("http://example.com/oauth2/authorization");
 ///     final tokenEndpoint =
-///         new Uri.fromString("http://example.com/oauth2/token");
-///
+///         Uri.parse("http://example.com/oauth2/token");
+///     
 ///     // The authorization server will issue each client a separate client
 ///     // identifier and secret, which allows the server to tell which client
 ///     // is accessing it. Some servers may also have an anonymous
@@ -48,9 +48,9 @@
 ///     // will redirect the resource owner here once they've authorized the
 ///     // client. The redirection will include the authorization code in the
 ///     // query parameters.
-///     final redirectUrl = new Uri.fromString(
+///     final redirectUrl = Uri.parse(
 ///         "http://my-site.com/oauth2-redirect");
-///
+///     
 ///     var credentialsFile = new File("~/.myapp/credentials.json");
 ///     return credentialsFile.exists().then((exists) {
 ///       // If the OAuth2 credentials have already been saved from a previous
@@ -61,13 +61,13 @@
 ///           return new oauth2.Client(identifier, secret, credentials);
 ///         });
 ///       }
-///
+///     
 ///       // If we don't have OAuth2 credentials yet, we need to get the
 ///       // resource owner to authorize us. We're assuming here that we're a
 ///       // command-line application.
 ///       var grant = new oauth2.AuthorizationCodeGrant(
 ///           identifier, secret, authorizationEndpoint, tokenEndpoint);
-///
+///     
 ///       // Redirect the resource owner to the authorization URL. This will be
 ///       // a URL on the authorization server (authorizationEndpoint with some
 ///       // additional query parameters). Once the resource owner has
@@ -102,8 +102,8 @@
 ///     }).then(print);
 library oauth2;
 
-export 'authorization_code_grant.dart';
-export 'client.dart';
-export 'credentials.dart';
-export 'authorization_exception.dart';
-export 'expiration_exception.dart';
+export 'src/authorization_code_grant.dart';
+export 'src/client.dart';
+export 'src/credentials.dart';
+export 'src/authorization_exception.dart';
+export 'src/expiration_exception.dart';

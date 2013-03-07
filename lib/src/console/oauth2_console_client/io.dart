@@ -11,277 +11,184 @@ import 'dart:isolate';
 import 'dart:json';
 import 'dart:uri';
 
-import 'path.dart' as path;
+import 'package:pathos/path.dart' as path;
+import 'package:http/http.dart' show ByteStream;
+import 'error_group.dart';
+import 'exit_codes.dart' as exit_codes;
 import 'log.dart' as log;
 import 'utils.dart';
 
-bool _isGitInstalledCache;
-
-/// The cached Git command.
-String _gitCommandCache;
+export 'package:http/http.dart' show ByteStream;
 
 final NEWLINE_PATTERN = new RegExp("\r\n?|\n\r?");
 
-/// Joins a number of path string parts into a single path. Handles
-/// platform-specific path separators. Parts can be [String], [Directory], or
-/// [File] objects.
-String join(part1, [part2, part3, part4, part5, part6, part7, part8]) {
-  var parts = [part1, part2, part3, part4, part5, part6, part7, part8]
-      .mappedBy((part) => part == null ? null : _getPath(part)).toList();
-
-  return path.join(parts[0], parts[1], parts[2], parts[3], parts[4], parts[5],
-      parts[6], parts[7]);
-}
-
-/// Gets the basename, the file name without any leading directory path, for
-/// [file], which can either be a [String], [File], or [Directory].
-String basename(file) => path.basename(_getPath(file));
-
-/// Gets the the leading directory path for [file], which can either be a
-/// [String], [File], or [Directory].
-String dirname(file) => path.dirname(_getPath(file));
-
-/// Splits [entry] into its individual components.
-List<String> splitPath(entry) => path.split(_getPath(entry));
-
 /// Returns whether or not [entry] is nested somewhere within [dir]. This just
 /// performs a path comparison; it doesn't look at the actual filesystem.
-bool isBeneath(entry, dir) {
-  var relative = relativeTo(entry, dir);
-  return !path.isAbsolute(relative) && splitPath(relative)[0] != '..';
+bool isBeneath(String entry, String dir) {
+  var relative = path.relative(entry, from: dir);
+  return !path.isAbsolute(relative) && path.split(relative)[0] != '..';
 }
 
-/// Returns the path to [target] from [base].
-String relativeTo(target, base) => path.relative(target, from: base);
+/// Determines if a file or directory at [path] exists.
+bool entryExists(String path) => fileExists(path) || dirExists(path);
 
-/// Asynchronously determines if [path], which can be a [String] file path, a
-/// [File], or a [Directory] exists on the file system. Returns a [Future] that
-/// completes with the result.
-Future<bool> exists(path) {
-  path = _getPath(path);
-  return Future.wait([fileExists(path), dirExists(path)]).then((results) {
-    return results[0] || results[1];
-  });
+/// Determines if [file] exists on the file system.
+bool fileExists(String file) => new File(file).existsSync();
+
+/// Reads the contents of the text file [file].
+String readTextFile(String file) =>
+    new File(file).readAsStringSync(Encoding.UTF_8);
+
+/// Reads the contents of the binary file [file].
+List<int> readBinaryFile(String file) {
+  log.io("Reading binary file $file.");
+  var contents = new File(file).readAsBytesSync();
+  log.io("Read ${contents.length} bytes from $file.");
+  return contents;
 }
 
-/// Asynchronously determines if [file], which can be a [String] file path or a
-/// [File], exists on the file system. Returns a [Future] that completes with
-/// the result.
-Future<bool> fileExists(file) {
-  var path = _getPath(file);
-  return log.ioAsync("Seeing if file $path exists.",
-      new File(path).exists(),
-      (exists) => "File $path ${exists ? 'exists' : 'does not exist'}.");
-}
-
-/// Reads the contents of the text file [file], which can either be a [String]
-/// or a [File].
-Future<String> readTextFile(file) {
-  var path = _getPath(file);
-  return log.ioAsync("Reading text file $path.",
-      new File(path).readAsString(Encoding.UTF_8),
-      (contents) {
-        // Sanity check: don't spew a huge file.
-        if (contents.length < 1024 * 1024) {
-          return "Read $path. Contents:\n$contents";
-        } else {
-          return "Read ${contents.length} characters from $path.";
-        }
-      });
-}
-
-/// Creates [file] (which can either be a [String] or a [File]), and writes
-/// [contents] to it. Completes when the file is written and closed.
+/// Creates [file] and writes [contents] to it.
 ///
 /// If [dontLogContents] is true, the contents of the file will never be logged.
-Future<File> writeTextFile(file, String contents, {dontLogContents: false}) {
-  var path = _getPath(file);
-  file = new File(path);
-
+String writeTextFile(String file, String contents, {dontLogContents: false}) {
   // Sanity check: don't spew a huge file.
-  log.io("Writing ${contents.length} characters to text file $path.");
+  log.io("Writing ${contents.length} characters to text file $file.");
   if (!dontLogContents && contents.length < 1024 * 1024) {
     log.fine("Contents:\n$contents");
   }
 
-  return file.open(FileMode.WRITE).then((opened) {
-    return opened.writeString(contents).then((ignore) {
-        return opened.close().then((_) {
-          log.fine("Wrote text file $path.");
-          return file;
-        });
-    });
+  new File(file).writeAsStringSync(contents);
+  return file;
+}
+
+/// Deletes [file].
+void deleteFile(String file) {
+  new File(file).deleteSync();
+}
+
+/// Creates [file] and writes [contents] to it.
+String writeBinaryFile(String file, List<int> contents) {
+  log.io("Writing ${contents.length} bytes to binary file $file.");
+  new File(file).openSync(FileMode.WRITE)
+      ..writeListSync(contents, 0, contents.length)
+      ..closeSync();
+  log.fine("Wrote text file $file.");
+  return file;
+}
+
+/// Writes [stream] to a new file at path [file]. Will replace any file already
+/// at that path. Completes when the file is done being written.
+Future<String> createFileFromStream(Stream<List<int>> stream, String file) {
+  log.io("Creating $file from stream.");
+
+  return stream.pipe(new File(file).openWrite()).then((_) {
+    log.fine("Created $file from stream.");
+    return file;
   });
 }
 
-/// Asynchronously deletes [file], which can be a [String] or a [File]. Returns
-/// a [Future] that completes when the deletion is done.
-Future<File> deleteFile(file) {
-  var path = _getPath(file);
-  return log.ioAsync("delete file $path",
-      new File(path).delete());
+/// Creates a directory [dir].
+String createDir(String dir) {
+  new Directory(dir).createSync();
+  return dir;
 }
 
-/// Writes [stream] to a new file at [path], which may be a [String] or a
-/// [File]. Will replace any file already at that path. Completes when the file
-/// is done being written.
-Future<File> createFileFromStream(InputStream stream, path) {
-  path = _getPath(path);
+/// Ensures that [dirPath] and all its parent directories exist. If they don't
+/// exist, creates them.
+String ensureDir(String dirPath) {
+  log.fine("Ensuring directory $dirPath exists.");
+  var dir = new Directory(dirPath);
+  if (dirPath == '.' || dirExists(dirPath)) return dirPath;
 
-  log.io("Creating $path from stream.");
+  ensureDir(path.dirname(dirPath));
 
-  var completer = new Completer<File>();
-  var completed = false;
-  var file = new File(path);
-  var outputStream = file.openOutputStream();
-  stream.pipe(outputStream);
-
-  outputStream.onClosed = () {
-    log.fine("Created $path from stream.");
-    completed = true;
-    completer.complete(file);
-  };
-
-  // TODO(nweiz): remove this when issue 4061 is fixed.
-  var stackTrace;
   try {
-    throw "";
-  } catch (_, localStackTrace) {
-    stackTrace = localStackTrace;
-  }
-
-  completeError(error) {
-    if (!completed) {
-      completed = true;
-      completer.completeError(error, stackTrace);
+    createDir(dirPath);
+  } on DirectoryIOException catch (ex) {
+    // Error 17 means the directory already exists (or 183 on Windows).
+    if (ex.osError.errorCode == 17 || ex.osError.errorCode == 183) {
+      log.fine("Got 'already exists' error when creating directory.");
     } else {
-      log.fine("Got error after stream was closed: $error");
+      throw ex;
     }
   }
 
-  stream.onError = completeError;
-  outputStream.onError = completeError;
-
-  return completer.future;
-}
-
-/// Creates a directory [dir]. Returns a [Future] that completes when the
-/// directory is created.
-Future<Directory> createDir(dir) {
-  dir = _getDirectory(dir);
-  return log.ioAsync("create directory ${dir.path}",
-      dir.create());
-}
-
-/// Ensures that [path] and all its parent directories exist. If they don't
-/// exist, creates them. Returns a [Future] that completes once all the
-/// directories are created.
-Future<Directory> ensureDir(path) {
-  path = _getPath(path);
-  log.fine("Ensuring directory $path exists.");
-  if (path == '.') return new Future.immediate(new Directory('.'));
-
-  return dirExists(path).then((exists) {
-    if (exists) {
-      log.fine("Directory $path already exists.");
-      return new Future.immediate(new Directory(path));
-    }
-
-    return ensureDir(dirname(path)).then((_) {
-      return createDir(path).catchError((asyncError) {
-        if (asyncError.error is! DirectoryIOException) throw asyncError;
-        // Error 17 means the directory already exists (or 183 on Windows).
-        if (asyncError.error.osError.errorCode == 17 ||
-            asyncError.error.osError.errorCode == 183) {
-          log.fine("Got 'already exists' error when creating directory.");
-          return _getDirectory(path);
-        }
-
-        throw asyncError;
-      });
-    });
-  });
+  return dirPath;
 }
 
 /// Creates a temp directory whose name will be based on [dir] with a unique
 /// suffix appended to it. If [dir] is not provided, a temp directory will be
-/// created in a platform-dependent temporary location. Returns a [Future] that
-/// completes when the directory is created.
-Future<Directory> createTempDir([dir = '']) {
-  dir = _getDirectory(dir);
-  return log.ioAsync("create temp directory ${dir.path}",
-      dir.createTemp());
+/// created in a platform-dependent temporary location. Returns the path of the
+/// created directory.
+String createTempDir([dir = '']) {
+  var tempDir = new Directory(dir).createTempSync();
+  log.io("Created temp directory ${tempDir.path}");
+  return tempDir.path;
 }
 
-/// Asynchronously recursively deletes [dir], which can be a [String] or a
-/// [Directory]. Returns a [Future] that completes when the deletion is done.
-Future<Directory> deleteDir(dir) {
-  dir = _getDirectory(dir);
-
-  return _attemptRetryable(() => log.ioAsync("delete directory ${dir.path}",
-      dir.delete(recursive: true)));
+/// Asynchronously recursively deletes [dir]. Returns a [Future] that completes
+/// when the deletion is done.
+Future<String> deleteDir(String dir) {
+  return _attemptRetryable(() => log.ioAsync("delete directory $dir",
+      new Directory(dir).delete(recursive: true).then((_) => dir)));
 }
 
-/// Asynchronously lists the contents of [dir], which can be a [String]
-/// directory path or a [Directory]. If [recursive] is `true`, lists
+/// Asynchronously lists the contents of [dir]. If [recursive] is `true`, lists
 /// subdirectory contents (defaults to `false`). If [includeHiddenFiles] is
 /// `true`, includes files and directories beginning with `.` (defaults to
 /// `false`).
 ///
 /// If [dir] is a string, the returned paths are guaranteed to begin with it.
-Future<List<String>> listDir(dir,
+Future<List<String>> listDir(String dir,
     {bool recursive: false, bool includeHiddenFiles: false}) {
-  Future<List<String>> doList(Directory dir, Set<String> listedDirectories) {
+  Future<List<String>> doList(String dir, Set<String> listedDirectories) {
     var contents = <String>[];
     var completer = new Completer<List<String>>();
 
     // Avoid recursive symlinks.
-    var resolvedPath = new File(dir.path).fullPathSync();
+    var resolvedPath = new File(dir).fullPathSync();
     if (listedDirectories.contains(resolvedPath)) {
       return new Future.immediate([]);
     }
+
     listedDirectories = new Set<String>.from(listedDirectories);
     listedDirectories.add(resolvedPath);
 
-    log.io("Listing directory ${dir.path}.");
-    var lister = dir.list();
-
-    lister.onDone = (done) {
-      // TODO(rnystrom): May need to sort here if it turns out onDir and onFile
-      // aren't guaranteed to be called in a certain order. So far, they seem to.
-      if (done) {
-        log.fine("Listed directory ${dir.path}:\n"
-                  "${Strings.join(contents, '\n')}");
-        completer.complete(contents);
-      }
-    };
-
-    // TODO(nweiz): remove this when issue 4061 is fixed.
-    var stackTrace;
-    try {
-      throw "";
-    } catch (_, localStackTrace) {
-      stackTrace = localStackTrace;
-    }
+    log.io("Listing directory $dir.");
+    var lister = new Directory(dir).list();
 
     var children = [];
-    lister.onError = (error) => completer.completeError(error, stackTrace);
-    lister.onDir = (file) {
-      if (!includeHiddenFiles && basename(file).startsWith('.')) return;
-      file = join(dir, basename(file));
-      contents.add(file);
-
-      // TODO(nweiz): don't manually recurse once issue 7358 is fixed. Note that
-      // once we remove the manual recursion, we'll need to explicitly filter
-      // out files in hidden directories.
-      if (recursive) {
-        children.add(doList(new Directory(file), listedDirectories));
-      }
-    };
-    lister.onFile = (file) {
-      if (!includeHiddenFiles && basename(file).startsWith('.')) return;
-      contents.add(join(dir, basename(file)));
-    };
+    lister.listen(
+        (entity) {
+          if (entity is File) {
+            var file = entity.path;
+            if (!includeHiddenFiles && path.basename(file).startsWith('.')) {
+              return;
+            }
+            contents.add(path.join(dir, path.basename(file)));
+          } else if (entity is Directory) {
+            var file = entity.path;
+            if (!includeHiddenFiles && path.basename(file).startsWith('.')) {
+              return;
+            }
+            file = path.join(dir, path.basename(file));
+            contents.add(file);
+            // TODO(nweiz): don't manually recurse once issue 7358 is fixed.
+            // Note that once we remove the manual recursion, we'll need to
+            // explicitly filter out files in hidden directories.
+            if (recursive) {
+              children.add(doList(file, listedDirectories));
+            }
+          }
+        },
+        onDone: () {
+          // TODO(rnystrom): May need to sort here if it turns out
+          // onDir and onFile aren't guaranteed to be called in a
+          // certain order. So far, they seem to.
+          log.fine("Listed directory $dir:\n${contents.join('\n')}");
+          completer.complete(contents);
+        },
+        onError: (error) => completer.completeError(error));
 
     return completer.future.then((contents) {
       return Future.wait(children).then((childContents) {
@@ -291,26 +198,18 @@ Future<List<String>> listDir(dir,
     });
   }
 
-  return doList(_getDirectory(dir), new Set<String>());
+  return doList(dir, new Set<String>());
 }
 
-/// Asynchronously determines if [dir], which can be a [String] directory path
-/// or a [Directory], exists on the file system. Returns a [Future] that
-/// completes with the result.
-Future<bool> dirExists(dir) {
-  dir = _getDirectory(dir);
-  return log.ioAsync("Seeing if directory ${dir.path} exists.",
-      dir.exists(),
-      (exists) => "Directory ${dir.path} "
-                  "${exists ? 'exists' : 'does not exist'}.");
-}
+/// Determines if [dir] exists on the file system.
+bool dirExists(String dir) => new Directory(dir).existsSync();
 
 /// "Cleans" [dir]. If that directory already exists, it will be deleted. Then a
 /// new empty directory will be created. Returns a [Future] that completes when
 /// the new clean directory is created.
-Future<Directory> cleanDir(dir) {
-  return dirExists(dir).then((exists) {
-    if (exists) {
+Future<String> cleanDir(String dir) {
+  return defer(() {
+    if (dirExists(dir)) {
       // Delete it first.
       return deleteDir(dir).then((_) => createDir(dir));
     } else {
@@ -322,13 +221,12 @@ Future<Directory> cleanDir(dir) {
 
 /// Renames (i.e. moves) the directory [from] to [to]. Returns a [Future] with
 /// the destination directory.
-Future<Directory> renameDir(from, String to) {
-  from = _getDirectory(from);
-  log.io("Renaming directory ${from.path} to $to.");
+Future<String> renameDir(String from, String to) {
+  log.io("Renaming directory $from to $to.");
 
-  return _attemptRetryable(() => from.rename(to)).then((dir) {
-    log.fine("Renamed directory ${from.path} to $to.");
-    return dir;
+  return _attemptRetryable(() => new Directory(from).rename(to)).then((dir) {
+    log.fine("Renamed directory $from to $to.");
+    return to;
   });
 }
 
@@ -362,17 +260,32 @@ Future _attemptRetryable(Future callback()) {
   return makeAttempt(null);
 }
 
-/// Creates a new symlink that creates an alias from [from] to [to], both of
-/// which can be a [String], [File], or [Directory]. Returns a [Future] which
-/// completes to the symlink file (i.e. [to]).
-Future<File> createSymlink(from, to) {
-  from = _getPath(from);
-  to = _getPath(to);
+/// Creates a new symlink at path [symlink] that points to [target]. Returns a
+/// [Future] which completes to the path to the symlink file.
+///
+/// If [relative] is true, creates a symlink with a relative path from the
+/// symlink to the target. Otherwise, uses the [target] path unmodified.
+///
+/// Note that on Windows, only directories may be symlinked to.
+Future<String> createSymlink(String target, String symlink,
+    {bool relative: false}) {
+  if (relative) {
+    // Relative junction points are not supported on Windows. Instead, just
+    // make sure we have a clean absolute path because it will interpret a
+    // relative path to be relative to the cwd, not the symlink, and will be
+    // confused by forward slashes.
+    if (Platform.operatingSystem == 'windows') {
+      target = path.normalize(path.absolute(target));
+    } else {
+      target = path.normalize(
+          path.relative(target, from: path.dirname(symlink)));
+    }
+  }
 
-  log.fine("Create symlink $from -> $to.");
+  log.fine("Creating $symlink pointing to $target");
 
   var command = 'ln';
-  var args = ['-s', from, to];
+  var args = ['-s', target, symlink];
 
   if (Platform.operatingSystem == 'windows') {
     // Call mklink on Windows to create an NTFS junction point. Only works on
@@ -381,27 +294,29 @@ Future<File> createSymlink(from, to) {
     // link (/d) because the latter requires some privilege shenanigans that
     // I'm not sure how to specify from the command line.
     command = 'mklink';
-    args = ['/j', to, from];
+    args = ['/j', symlink, target];
   }
 
-  return runProcess(command, args).then((result) {
-    // TODO(rnystrom): Check exit code and output?
-    return new File(to);
-  });
+  // TODO(rnystrom): Check exit code and output?
+  return runProcess(command, args).then((result) => symlink);
 }
 
-/// Creates a new symlink that creates an alias from the `lib` directory of
-/// package [from] to [to], both of which can be a [String], [File], or
-/// [Directory]. Returns a [Future] which completes to the symlink file (i.e.
-/// [to]). If [from] does not have a `lib` directory, this shows a warning if
-/// appropriate and then does nothing.
-Future<File> createPackageSymlink(String name, from, to,
-    {bool isSelfLink: false}) {
-  // See if the package has a "lib" directory.
-  from = join(from, 'lib');
-  return dirExists(from).then((exists) {
+/// Creates a new symlink that creates an alias at [symlink] that points to the
+/// `lib` directory of package [target]. Returns a [Future] which completes to
+/// the path to the symlink file. If [target] does not have a `lib` directory,
+/// this shows a warning if appropriate and then does nothing.
+///
+/// If [relative] is true, creates a symlink with a relative path from the
+/// symlink to the target. Otherwise, uses the [target] path unmodified.
+Future<String> createPackageSymlink(String name, String target, String symlink,
+    {bool isSelfLink: false, bool relative: false}) {
+  return defer(() {
+    // See if the package has a "lib" directory.
+    target = path.join(target, 'lib');
     log.fine("Creating ${isSelfLink ? "self" : ""}link for package '$name'.");
-    if (exists) return createSymlink(from, to);
+    if (dirExists(target)) {
+      return createSymlink(target, symlink, relative: relative);
+    }
 
     // It's OK for the self link (i.e. the root package) to not have a lib
     // directory since it may just be a leaf application that only has
@@ -411,16 +326,9 @@ Future<File> createPackageSymlink(String name, from, to,
                   'you will not be able to import any libraries from it.');
     }
 
-    return new Future.immediate(to);
+    return symlink;
   });
 }
-
-/// Given [entry] which may be a [String], [File], or [Directory] relative to
-/// the current working directory, returns its full canonicalized path.
-String getFullPath(entry) => path.absolute(_getPath(entry));
-
-/// Returns whether or not [entry] is an absolute path.
-bool isAbsolute(entry) => path.isAbsolute(_getPath(entry));
 
 /// Resolves [target] relative to the location of pub.dart.
 String relativeToPub(String target) {
@@ -429,17 +337,43 @@ String relativeToPub(String target) {
   // Walk up until we hit the "util(s)" directory. This lets us figure out where
   // we are if this function is called from pub.dart, or one of the tests,
   // which also live under "utils", or from the SDK where pub is in "util".
-  var utilDir = dirname(scriptPath);
-  while (basename(utilDir) != 'utils' && basename(utilDir) != 'util') {
-    if (basename(utilDir) == '') throw 'Could not find path to pub.';
-    utilDir = dirname(utilDir);
+  var utilDir = path.dirname(scriptPath);
+  while (path.basename(utilDir) != 'utils' &&
+         path.basename(utilDir) != 'util') {
+    if (path.basename(utilDir) == '') throw 'Could not find path to pub.';
+    utilDir = path.dirname(utilDir);
   }
 
-  return path.normalize(join(utilDir, 'pub', target));
+  return path.normalize(path.join(utilDir, 'pub', target));
 }
 
-/// A StringInputStream reading from stdin.
-final _stringStdin = new StringInputStream(stdin);
+// TODO(nweiz): add a ByteSink wrapper to make writing strings to stdout/stderr
+// nicer.
+
+/// A sink that writes to standard output. Errors piped to this stream will be
+/// surfaced to the top-level error handler.
+final StreamSink<List<int>> stdoutSink = _wrapStdio(stdout, "stdout");
+
+/// A sink that writes to standard error. Errors piped to this stream will be
+/// surfaced to the top-level error handler.
+final StreamSink<List<int>> stderrSink = _wrapStdio(stderr, "stderr");
+
+/// Wrap the standard output or error [stream] in a [StreamSink]. Any errors are
+/// logged, and then the program is terminated. [name] is used for debugging.
+StreamSink<List<int>> _wrapStdio(IOSink sink, String name) {
+  var pair = consumerToSink(sink);
+  pair.last.catchError((e) {
+    // This log may or may not work, depending on how the stream failed. Not
+    // much we can do about that.
+    log.error("Error writing to $name: $e");
+    exit(exit_codes.IO);
+  });
+  return pair.first;
+}
+
+/// A line-by-line stream of standard input.
+final Stream<String> stdinLines = streamToLines(
+    new ByteStream(stdin).toStringStream());
 
 /// Displays a message and reads a yes/no confirmation from the user. Returns
 /// a [Future] that completes to `true` if the user confirms or `false` if they
@@ -449,184 +383,52 @@ final _stringStdin = new StringInputStream(stdin);
 /// should just be a fragment like, "Are you sure you want to proceed".
 Future<bool> confirm(String message) {
   log.fine('Showing confirm message: $message');
-  stdout.writeString("$message (y/n)? ");
-  return readLine().then((line) => new RegExp(r"^[yY]").hasMatch(line));
+  stdoutSink.add("$message (y/n)? ".codeUnits);
+  return streamFirst(stdinLines)
+      .then((line) => new RegExp(r"^[yY]").hasMatch(line));
 }
 
-/// Returns a single line read from a [StringInputStream]. By default, reads
-/// from stdin.
-///
-/// A [StringInputStream] passed to this should have no callbacks registered.
-Future<String> readLine([StringInputStream stream]) {
-  if (stream == null) stream = _stringStdin;
-  if (stream.closed) return new Future.immediate('');
-  void removeCallbacks() {
-    stream.onClosed = null;
-    stream.onLine = null;
-    stream.onError = null;
-  }
-
-  // TODO(nweiz): remove this when issue 4061 is fixed.
-  var stackTrace;
-  try {
-    throw "";
-  } catch (_, localStackTrace) {
-    stackTrace = localStackTrace;
-  }
-
-  var completer = new Completer();
-  stream.onClosed = () {
-    removeCallbacks();
-    completer.complete('');
-  };
-
-  stream.onLine = () {
-    removeCallbacks();
-    var line = stream.readLine();
-    log.io('Read line: $line');
-    completer.complete(line);
-  };
-
-  stream.onError = (e) {
-    removeCallbacks();
-    completer.completeError(e, stackTrace);
-  };
-
-  return completer.future;
+/// Reads and discards all output from [stream]. Returns a [Future] that
+/// completes when the stream is closed.
+Future drainStream(Stream stream) {
+  return stream.reduce(null, (x, y) {});
 }
 
-/// Takes all input from [source] and writes it to [sink].
-///
-/// Returns a future that completes when [source] is closed.
-Future pipeInputToInput(InputStream source, ListInputStream sink) {
-  var completer = new Completer();
-  source.onClosed = () {
-    sink.markEndOfStream();
-    completer.complete(null);
-  };
-  source.onData = () {
-    // Even if the sink is closed and we aren't going to do anything with more
-    // data, we still need to drain it from source to work around issue 7218.
-    var data = source.read();
-    try {
-      if (!sink.closed) sink.write(data);
-    } on StreamException catch (e, stackTrace) {
-      // Ignore an exception to work around issue 4222.
-      log.io("Writing to an unclosed ListInputStream caused exception $e\n"
-          "$stackTrace");
-    }
-  };
-  // TODO(nweiz): propagate this error to the sink. See issue 3657.
-  source.onError = (e) { throw e; };
-  return completer.future;
-}
-
-/// Buffers all input from an InputStream and returns it as a future.
-Future<List<int>> consumeInputStream(InputStream stream) {
-  if (stream.closed) return new Future.immediate(<int>[]);
-
-  // TODO(nweiz): remove this when issue 4061 is fixed.
-  var stackTrace;
-  try {
-    throw "";
-  } catch (_, localStackTrace) {
-    stackTrace = localStackTrace;
-  }
-
-  var completer = new Completer<List<int>>();
-  var buffer = <int>[];
-  stream.onClosed = () => completer.complete(buffer);
-  stream.onData = () => buffer.addAll(stream.read());
-  stream.onError = (e) => completer.completeError(e, stackTrace);
-  return completer.future;
-}
-
-/// Buffers all input from a StringInputStream and returns it as a future.
-Future<String> consumeStringInputStream(StringInputStream stream) {
-  if (stream.closed) return new Future.immediate('');
-
-  // TODO(nweiz): remove this when issue 4061 is fixed.
-  var stackTrace;
-  try {
-    throw "";
-  } catch (_, localStackTrace) {
-    stackTrace = localStackTrace;
-  }
-
-  var completer = new Completer<String>();
-  var buffer = new StringBuffer();
-  stream.onClosed = () => completer.complete(buffer.toString());
-  stream.onData = () => buffer.add(stream.read());
-  stream.onError = (e) => completer.completeError(e, stackTrace);
-  return completer.future;
-}
-
-/// Wraps [stream] in a single-subscription [Stream] that emits the same data.
-Stream<List<int>> wrapInputStream(InputStream stream) {
+/// Returns a [StreamSink] that pipes all data to [consumer] and a [Future] that
+/// will succeed when [StreamSink] is closed or fail with any errors that occur
+/// while writing.
+Pair<StreamSink, Future> consumerToSink(StreamConsumer consumer) {
   var controller = new StreamController();
-  if (stream.closed) {
-    controller.close();
-    return controller.stream;
-  }
-
-  stream.onClosed = controller.close;
-  stream.onData = () => controller.add(stream.read());
-  stream.onError = (e) => controller.signalError(new AsyncError(e));
-  return controller.stream;
+  var done = controller.stream.pipe(consumer);
+  return new Pair<StreamSink, Future>(controller.sink, done);
 }
 
-// TODO(nweiz): remove this ASAP (issue 7807).
-/// Wraps [stream] in an [InputStream].
-InputStream streamToInputStream(Stream<List<int>> stream) {
-  var inputStream = new ListInputStream();
-  stream.listen((chunk) => inputStream.write(chunk),
-      onDone: inputStream.markEndOfStream);
-  return inputStream;
-}
-
-/// Wraps [stream] in a [StreamConsumer] so that [Stream]s can by piped into it
-/// using [Stream.pipe].
-StreamConsumer<List<int>, dynamic> wrapOutputStream(OutputStream stream) =>
-  new _OutputStreamConsumer(stream);
-
-/// A [StreamConsumer] that pipes data into an [OutputStream].
-class _OutputStreamConsumer implements StreamConsumer<List<int>, dynamic> {
-  final OutputStream _outputStream;
-
-  _OutputStreamConsumer(this._outputStream);
-
-  Future consume(Stream<List<int>> stream) {
-    // TODO(nweiz): we have to manually keep track of whether or not the
-    // completer has completed since the output stream could signal an error
-    // after close() has been called but before it has shut down internally. See
-    // the following TODO.
-    var completed = false;
-    var completer = new Completer();
-    stream.listen((data) {
-      // Writing empty data to a closed stream can cause errors.
-      if (data.isEmpty) return;
-
-      // TODO(nweiz): remove this try/catch when issue 7836 is fixed.
-      try {
-        _outputStream.write(data);
-      } catch (e, stack) {
-        if (!completed) completer.completeError(e, stack);
-        completed = true;
-      }
-    }, onDone: () => _outputStream.close());
-
-    _outputStream.onError = (e) {
-      if (!completed) completer.completeError(e);
-      completed = true;
-    };
-
-    _outputStream.onClosed = () {
-      if (!completed) completer.complete();
-      completed = true;
-    };
-
-    return completer.future;
-  }
+// TODO(nweiz): remove this when issue 7786 is fixed.
+/// Pipes all data and errors from [stream] into [sink]. When [stream] is done,
+/// the returned [Future] is completed and [sink] is closed if [closeSink] is
+/// true.
+///
+/// When an error occurs on [stream], that error is passed to [sink]. If
+/// [unsubscribeOnError] is true, [Future] will be completed successfully and no
+/// more data or errors will be piped from [stream] to [sink]. If
+/// [unsubscribeOnError] and [closeSink] are both true, [sink] will then be
+/// closed.
+Future store(Stream stream, StreamSink sink,
+    {bool unsubscribeOnError: true, closeSink: true}) {
+  var completer = new Completer();
+  stream.listen(sink.add,
+      onError: (e) {
+        sink.signalError(e);
+        if (unsubscribeOnError) {
+          completer.complete();
+          if (closeSink) sink.close();
+        }
+      },
+      onDone: () {
+        if (closeSink) sink.close();
+        completer.complete();
+      }, unsubscribeOnError: unsubscribeOnError);
+  return completer.future;
 }
 
 /// Spawns and runs the process located at [executable], passing in [args].
@@ -662,48 +464,99 @@ Future<PubProcessResult> runProcess(String executable, List<String> args,
 /// The spawned process will inherit its parent's environment variables. If
 /// [environment] is provided, that will be used to augment (not replace) the
 /// the inherited variables.
-Future<Process> startProcess(String executable, List<String> args,
+Future<PubProcess> startProcess(String executable, List<String> args,
     {workingDir, Map<String, String> environment}) =>
   _doProcess(Process.start, executable, args, workingDir, environment)
-    .then((process) => new _WrappedProcess(process));
+      .then((process) => new PubProcess(process));
 
-/// A wrapper around [Process] that buffers the stdout and stderr to avoid
-/// running into issue 7218.
-class _WrappedProcess implements Process {
+/// A wrapper around [Process] that exposes `dart:async`-style APIs.
+class PubProcess {
+  /// The underlying `dart:io` [Process].
   final Process _process;
-  final InputStream stderr;
-  final InputStream stdout;
 
-  OutputStream get stdin => _process.stdin;
+  /// The mutable field for [stdin].
+  StreamSink<List<int>> _stdin;
 
-  void set onExit(void callback(int exitCode)) {
-    _process.onExit = callback;
+  /// The mutable field for [stdinClosed].
+  Future _stdinClosed;
+
+  /// The mutable field for [stdout].
+  ByteStream _stdout;
+
+  /// The mutable field for [stderr].
+  ByteStream _stderr;
+
+  /// The mutable field for [exitCode].
+  Future<int> _exitCode;
+
+  /// The sink used for passing data to the process's standard input stream.
+  /// Errors on this stream are surfaced through [stdinClosed], [stdout],
+  /// [stderr], and [exitCode], which are all members of an [ErrorGroup].
+  StreamSink<List<int>> get stdin => _stdin;
+
+  // TODO(nweiz): write some more sophisticated Future machinery so that this
+  // doesn't surface errors from the other streams/futures, but still passes its
+  // unhandled errors to them. Right now it's impossible to recover from a stdin
+  // error and continue interacting with the process.
+  /// A [Future] that completes when [stdin] is closed, either by the user or by
+  /// the process itself.
+  ///
+  /// This is in an [ErrorGroup] with [stdout], [stderr], and [exitCode], so any
+  /// error in process will be passed to it, but won't reach the top-level error
+  /// handler unless nothing has handled it.
+  Future get stdinClosed => _stdinClosed;
+
+  /// The process's standard output stream.
+  ///
+  /// This is in an [ErrorGroup] with [stdinClosed], [stderr], and [exitCode],
+  /// so any error in process will be passed to it, but won't reach the
+  /// top-level error handler unless nothing has handled it.
+  ByteStream get stdout => _stdout;
+
+  /// The process's standard error stream.
+  ///
+  /// This is in an [ErrorGroup] with [stdinClosed], [stdout], and [exitCode],
+  /// so any error in process will be passed to it, but won't reach the
+  /// top-level error handler unless nothing has handled it.
+  ByteStream get stderr => _stderr;
+
+  /// A [Future] that will complete to the process's exit code once the process
+  /// has finished running.
+  ///
+  /// This is in an [ErrorGroup] with [stdinClosed], [stdout], and [stderr], so
+  /// any error in process will be passed to it, but won't reach the top-level
+  /// error handler unless nothing has handled it.
+  Future<int> get exitCode => _exitCode;
+
+  /// Creates a new [PubProcess] wrapping [process].
+  PubProcess(Process process)
+    : _process = process {
+    var errorGroup = new ErrorGroup();
+
+    var pair = consumerToSink(process.stdin);
+    _stdin = pair.first;
+    _stdinClosed = errorGroup.registerFuture(pair.last);
+
+    _stdout = new ByteStream(
+        errorGroup.registerStream(process.stdout));
+    _stderr = new ByteStream(
+        errorGroup.registerStream(process.stderr));
+
+    var exitCodeCompleter = new Completer();
+    _exitCode = errorGroup.registerFuture(exitCodeCompleter.future);
+    _process.exitCode.then((code) => exitCodeCompleter.complete(code));
   }
 
-  _WrappedProcess(Process process)
-    : _process = process,
-      stderr = _wrapInputStream(process.stderr),
-      stdout = _wrapInputStream(process.stdout);
-
+  /// Sends [signal] to the underlying process.
   bool kill([ProcessSignal signal = ProcessSignal.SIGTERM]) =>
     _process.kill(signal);
-
-  /// Wrap an InputStream in a ListInputStream. This eagerly drains the [source]
-  /// input stream. This is useful for spawned processes which will not exit
-  /// until their output streams have been drained. TODO(rnystrom): We should
-  /// use this logic anywhere we spawn a process.
-  static InputStream _wrapInputStream(InputStream source) {
-    var sink = new ListInputStream();
-    pipeInputToInput(source, sink);
-    return sink;
-  }
 }
 
 /// Calls [fn] with appropriately modified arguments. [fn] should have the same
 /// signature as [Process.start], except that the returned [Future] may have a
 /// type other than [Process].
-Future _doProcess(Function fn, String executable, List<String> args, workingDir,
-    Map<String, String> environment) {
+Future _doProcess(Function fn, String executable, List<String> args,
+    String workingDir, Map<String, String> environment) {
   // TODO(rnystrom): Should dart:io just handle this?
   // Spawning a process on Windows will not look for the executable in the
   // system path. So, if executable looks like it needs that (i.e. it doesn't
@@ -716,7 +569,7 @@ Future _doProcess(Function fn, String executable, List<String> args, workingDir,
 
   final options = new ProcessOptions();
   if (workingDir != null) {
-    options.workingDirectory = _getDirectory(workingDir).path;
+    options.workingDirectory = workingDir;
   }
 
   if (environment != null) {
@@ -738,21 +591,19 @@ Future _doProcess(Function fn, String executable, List<String> args, workingDir,
 /// Note that timing out will not cancel the asynchronous operation behind
 /// [input].
 Future timeout(Future input, int milliseconds, String description) {
-  bool completed = false;
   var completer = new Completer();
-  var timer = new Timer(milliseconds, (_) {
-    completed = true;
+  var timer = new Timer(new Duration(milliseconds: milliseconds), () {
     completer.completeError(new TimeoutException(
         'Timed out while $description.'));
   });
   input.then((value) {
-    if (completed) return;
+    if (completer.isCompleted) return;
     timer.cancel();
     completer.complete(value);
   }).catchError((e) {
-    if (completed) return;
+    if (completer.isCompleted) return;
     timer.cancel();
-    completer.completeError(e.error, e.stackTrace);
+    completer.completeError(e);
   });
   return completer.future;
 }
@@ -760,108 +611,50 @@ Future timeout(Future input, int milliseconds, String description) {
 /// Creates a temporary directory and passes its path to [fn]. Once the [Future]
 /// returned by [fn] completes, the temporary directory and all its contents
 /// will be deleted.
+///
+/// Returns a future that completes to the value that the future returned from
+/// [fn] completes to.
 Future withTempDir(Future fn(String path)) {
-  var tempDir;
-  return createTempDir().then((dir) {
-    tempDir = dir;
-    return fn(tempDir.path);
-  }).whenComplete(() {
-    log.fine('Cleaning up temp directory ${tempDir.path}.');
-    return deleteDir(tempDir);
-  });
-}
-
-/// Tests whether or not the git command-line app is available for use.
-Future<bool> get isGitInstalled {
-  if (_isGitInstalledCache != null) {
-    // TODO(rnystrom): The sleep is to pump the message queue. Can use
-    // Future.immediate() when #3356 is fixed.
-    return sleep(0).then((_) => _isGitInstalledCache);
-  }
-
-  return _gitCommand.then((git) => git != null);
-}
-
-/// Run a git process with [args] from [workingDir].
-Future<PubProcessResult> runGit(List<String> args,
-    {String workingDir, Map<String, String> environment}) {
-  return _gitCommand.then((git) => runProcess(git, args,
-        workingDir: workingDir, environment: environment));
-}
-
-/// Returns the name of the git command-line app, or null if Git could not be
-/// found on the user's PATH.
-Future<String> get _gitCommand {
-  // TODO(nweiz): Just use Future.immediate once issue 3356 is fixed.
-  if (_gitCommandCache != null) {
-    return sleep(0).then((_) => _gitCommandCache);
-  }
-
-  return _tryGitCommand("git").then((success) {
-    if (success) return new Future.immediate("git");
-
-    // Git is sometimes installed on Windows as `git.cmd`
-    return _tryGitCommand("git.cmd").then((success) {
-      if (success) return "git.cmd";
-      return null;
+  return defer(() {
+    var tempDir = createTempDir();
+    return fn(tempDir).whenComplete(() {
+      return deleteDir(tempDir);
     });
-  }).then((command) {
-    _gitCommandCache = command;
-    return command;
   });
 }
 
-/// Checks whether [command] is the Git command for this computer.
-Future<bool> _tryGitCommand(String command) {
-  var completer = new Completer<bool>();
-
-  // If "git --version" prints something familiar, git is working.
-  var future = runProcess(command, ["--version"]);
-
-  future.then((results) {
-    var regex = new RegExp("^git version");
-    completer.complete(results.stdout.length == 1 &&
-                       regex.hasMatch(results.stdout[0]));
-  }).catchError((err) {
-    // If the process failed, they probably don't have it.
-    completer.complete(false);
-  });
-
-  return completer.future;
-}
-
-/// Extracts a `.tar.gz` file from [stream] to [destination], which can be a
-/// directory or a path. Returns whether or not the extraction was successful.
-Future<bool> extractTarGz(InputStream stream, destination) {
-  destination = _getPath(destination);
-
+/// Extracts a `.tar.gz` file from [stream] to [destination]. Returns whether
+/// or not the extraction was successful.
+Future<bool> extractTarGz(Stream<List<int>> stream, String destination) {
   log.fine("Extracting .tar.gz stream to $destination.");
 
   if (Platform.operatingSystem == "windows") {
     return _extractTarGzWindows(stream, destination);
   }
 
-  var completer = new Completer<int>();
-  var processFuture = startProcess("tar",
-      ["--extract", "--gunzip", "--directory", destination]);
-  processFuture.then((process) {
-    process.onExit = (exitCode) => completer.complete(exitCode);
-    stream.pipe(process.stdin);
-    process.stdout.pipe(stdout, close: false);
-    process.stderr.pipe(stderr, close: false);
-  }).catchError((e) {
-    completer.completeError(e.error, e.stackTrace);
-  });
-
-  return completer.future.then((exitCode) {
+  return startProcess("tar",
+      ["--extract", "--gunzip", "--directory", destination]).then((process) {
+    // Ignore errors on process.std{out,err}. They'll be passed to
+    // process.exitCode, and we don't want them being top-levelled by
+    // std{out,err}Sink.
+    store(process.stdout.handleError((_) {}), stdoutSink, closeSink: false);
+    store(process.stderr.handleError((_) {}), stderrSink, closeSink: false);
+    return Future.wait([
+      store(stream, process.stdin),
+      process.exitCode
+    ]);
+  }).then((results) {
+    var exitCode = results[1];
+    if (exitCode != 0) {
+      throw "Failed to extract .tar.gz stream to $destination (exit code "
+        "$exitCode).";
+    }
     log.fine("Extracted .tar.gz stream to $destination. Exit code $exitCode.");
-    // TODO(rnystrom): Does anything check this result value? If not, it should
-    // throw on a bad exit code.
-    return exitCode == 0;
   });
 }
 
-Future<bool> _extractTarGzWindows(InputStream stream, String destination) {
+Future<bool> _extractTarGzWindows(Stream<List<int>> stream,
+    String destination) {
   // TODO(rnystrom): In the repo's history, there is an older implementation of
   // this that does everything in memory by piping streams directly together
   // instead of writing out temp files. The code is simpler, but unfortunately,
@@ -874,100 +667,91 @@ Future<bool> _extractTarGzWindows(InputStream stream, String destination) {
   var pathTo7zip = '../../third_party/7zip/7za.exe';
   var command = relativeToPub(pathTo7zip);
 
-  var tempDir;
-
-  // TODO(rnystrom): Use withTempDir().
-  return createTempDir().then((temp) {
+  return withTempDir((tempDir) {
     // Write the archive to a temp file.
-    tempDir = temp;
-    return createFileFromStream(stream, join(tempDir, 'data.tar.gz'));
-  }).then((_) {
-    // 7zip can't unarchive from gzip -> tar -> destination all in one step
-    // first we un-gzip it to a tar file.
-    // Note: Setting the working directory instead of passing in a full file
-    // path because 7zip says "A full path is not allowed here."
-    return runProcess(command, ['e', 'data.tar.gz'], workingDir: tempDir);
-  }).then((result) {
-    if (result.exitCode != 0) {
-      throw 'Could not un-gzip (exit code ${result.exitCode}). Error:\n'
-          '${Strings.join(result.stdout, "\n")}\n'
-          '${Strings.join(result.stderr, "\n")}';
-    }
-    // Find the tar file we just created since we don't know its name.
-    return listDir(tempDir);
-  }).then((files) {
-    var tarFile;
-    for (var file in files) {
-      if (path.extension(file) == '.tar') {
-        tarFile = file;
-        break;
+    var dataFile = path.join(tempDir, 'data.tar.gz');
+    return createFileFromStream(stream, dataFile).then((_) {
+      // 7zip can't unarchive from gzip -> tar -> destination all in one step
+      // first we un-gzip it to a tar file.
+      // Note: Setting the working directory instead of passing in a full file
+      // path because 7zip says "A full path is not allowed here."
+      return runProcess(command, ['e', 'data.tar.gz'], workingDir: tempDir);
+    }).then((result) {
+      if (result.exitCode != 0) {
+        throw 'Could not un-gzip (exit code ${result.exitCode}). Error:\n'
+            '${result.stdout.join("\n")}\n'
+            '${result.stderr.join("\n")}';
       }
-    }
+      // Find the tar file we just created since we don't know its name.
+      return listDir(tempDir);
+    }).then((files) {
+      var tarFile;
+      for (var file in files) {
+        if (path.extension(file) == '.tar') {
+          tarFile = file;
+          break;
+        }
+      }
 
-    if (tarFile == null) throw 'The gzip file did not contain a tar file.';
+      if (tarFile == null) throw 'The gzip file did not contain a tar file.';
 
-    // Untar the archive into the destination directory.
-    return runProcess(command, ['x', tarFile], workingDir: destination);
-  }).then((result) {
-    if (result.exitCode != 0) {
-      throw 'Could not un-tar (exit code ${result.exitCode}). Error:\n'
-          '${Strings.join(result.stdout, "\n")}\n'
-          '${Strings.join(result.stderr, "\n")}';
-    }
-
-    log.fine('Clean up 7zip temp directory ${tempDir.path}.');
-    // TODO(rnystrom): Should also delete this if anything fails.
-    return deleteDir(tempDir);
-  }).then((_) => true);
+      // Untar the archive into the destination directory.
+      return runProcess(command, ['x', tarFile], workingDir: destination);
+    }).then((result) {
+      if (result.exitCode != 0) {
+        throw 'Could not un-tar (exit code ${result.exitCode}). Error:\n'
+            '${result.stdout.join("\n")}\n'
+            '${result.stderr.join("\n")}';
+      }
+      return true;
+    });
+  });
 }
 
 /// Create a .tar.gz archive from a list of entries. Each entry can be a
 /// [String], [Directory], or [File] object. The root of the archive is
 /// considered to be [baseDir], which defaults to the current working directory.
-/// Returns an [InputStream] that will emit the contents of the archive.
-InputStream createTarGz(List contents, {baseDir}) {
+/// Returns a [ByteStream] that will emit the contents of the archive.
+ByteStream createTarGz(List contents, {baseDir}) {
   var buffer = new StringBuffer();
-  buffer.add('Creating .tag.gz stream containing:\n');
-  contents.forEach((file) => buffer.add('$file\n'));
+  buffer.write('Creating .tag.gz stream containing:\n');
+  contents.forEach((file) => buffer.write('$file\n'));
   log.fine(buffer.toString());
 
-  // TODO(nweiz): Propagate errors to the returned stream (including non-zero
-  // exit codes). See issue 3657.
-  var stream = new ListInputStream();
+  var controller = new StreamController<List<int>>();
 
   if (baseDir == null) baseDir = path.current;
-  baseDir = getFullPath(baseDir);
-  contents = contents.mappedBy((entry) {
-    entry = getFullPath(entry);
+  baseDir = path.absolute(baseDir);
+  contents = contents.map((entry) {
+    entry = path.absolute(entry);
     if (!isBeneath(entry, baseDir)) {
       throw 'Entry $entry is not inside $baseDir.';
     }
-    return relativeTo(entry, baseDir);
+    return path.relative(entry, from: baseDir);
   }).toList();
 
   if (Platform.operatingSystem != "windows") {
     var args = ["--create", "--gzip", "--directory", baseDir];
-    args.addAll(contents.mappedBy(_getPath));
+    args.addAll(contents);
     // TODO(nweiz): It's possible that enough command-line arguments will make
     // the process choke, so at some point we should save the arguments to a
     // file and pass them in via --files-from for tar and -i@filename for 7zip.
     startProcess("tar", args).then((process) {
-      pipeInputToInput(process.stdout, stream);
-
-      // Drain and discard 7zip's stderr. 7zip writes its normal output to
-      // stderr. We don't want to show that since it's meaningless.
-      // TODO(rnystrom): Should log this and display it if an actual error
-      // occurs.
-      consumeInputStream(process.stderr);
+      store(process.stdout, controller);
+    }).catchError((e) {
+      // We don't have to worry about double-signaling here, since the store()
+      // above will only be reached if startProcess succeeds.
+      controller.signalError(e.error, e.stackTrace);
+      controller.close();
     });
-    return stream;
+    return new ByteStream(controller.stream);
   }
 
   withTempDir((tempDir) {
     // Create the tar file.
-    var tarFile = join(tempDir, "intermediate.tar");
+    var tarFile = path.join(tempDir, "intermediate.tar");
     var args = ["a", "-w$baseDir", tarFile];
-    args.addAll(contents.mappedBy((entry) => '-i!"$entry"'));
+    args.addAll(contents.map((entry) => '-i!"$entry"'));
 
     // Note: This line of code gets munged by create_sdk.py to be the correct
     // relative path to 7zip in the SDK.
@@ -984,15 +768,20 @@ InputStream createTarGz(List contents, {baseDir}) {
       args = ["a", "unused", "-tgzip", "-so", tarFile];
       return startProcess(command, args);
     }).then((process) {
-      // Drain and discard 7zip's stderr. 7zip writes its normal output to
-      // stderr. We don't want to show that since it's meaningless.
-      // TODO(rnystrom): Should log this and display it if an actual error
+      // Ignore 7zip's stderr. 7zip writes its normal output to stderr. We don't
+      // want to show that since it's meaningless.
+      //
+      // TODO(rnystrom): Should log the stderr and display it if an actual error
       // occurs.
-      consumeInputStream(process.stderr);
-      return pipeInputToInput(process.stdout, stream);
+      return store(process.stdout, controller);
     });
+  }).catchError((e) {
+    // We don't have to worry about double-signaling here, since the store()
+    // above will only be reached if everything succeeds.
+    controller.signalError(e.error, e.stackTrace);
+    controller.close();
   });
-  return stream;
+  return new ByteStream(controller.stream);
 }
 
 /// Exception thrown when an operation times out.
@@ -1015,25 +804,8 @@ class PubProcessResult {
   bool get success => exitCode == 0;
 }
 
-/// Gets the path string for [entry], which can either already be a path string,
-/// or be a [File] or [Directory]. Allows working generically with "file-like"
-/// objects.
-String _getPath(entry) {
-  if (entry is String) return entry;
-  if (entry is File) return entry.name;
-  if (entry is Directory) return entry.path;
-  throw 'Entry $entry is not a supported type.';
-}
-
-/// Gets a [Directory] for [entry], which can either already be one, or be a
-/// [String].
-Directory _getDirectory(entry) {
-  if (entry is Directory) return entry;
-  return new Directory(entry);
-}
-
 /// Gets a [Uri] for [uri], which can either already be one, or be a [String].
 Uri _getUri(uri) {
   if (uri is Uri) return uri;
-  return new Uri.fromString(uri);
+  return Uri.parse(uri);
 }

@@ -11,7 +11,6 @@ import 'dart:json' as json;
 
 // TODO(nweiz): Make this import better.
 import 'package:http/http.dart' as http;
-import 'curl_client.dart';
 import 'io.dart';
 import 'log.dart' as log;
 import 'utils.dart';
@@ -50,21 +49,24 @@ class PubHttpClient extends http.BaseClient {
       var status = streamedResponse.statusCode;
       // 401 responses should be handled by the OAuth2 client. It's very
       // unlikely that they'll be returned by non-OAuth2 requests.
-      if (status < 400 || status == 401) {
-        return new Future.immediate(streamedResponse);
-      }
+      if (status < 400 || status == 401) return streamedResponse;
 
       return http.Response.fromStream(streamedResponse).then((response) {
         throw new PubHttpException(response);
       });
     }).catchError((asyncError) {
       if (asyncError.error is SocketIOException &&
-          asyncError.error.osError != null &&
-          (asyncError.error.osError.errorCode == 8 ||
-           asyncError.error.osError.errorCode == -2 ||
-           asyncError.error.osError.errorCode == -5 ||
-           asyncError.error.osError.errorCode == 11004)) {
-        throw 'Could not resolve URL "${request.url.origin}".';
+          asyncError.error.osError != null) {
+        if (asyncError.error.osError.errorCode == 8 ||
+            asyncError.error.osError.errorCode == -2 ||
+            asyncError.error.osError.errorCode == -5 ||
+            asyncError.error.osError.errorCode == 11001 ||
+            asyncError.error.osError.errorCode == 11004) {
+          throw 'Could not resolve URL "${request.url.origin}".';
+        } else if (asyncError.error.osError.errorCode == -12276) {
+          throw 'Unable to validate SSL certificate for '
+              '"${request.url.origin}".';
+        }
       }
       throw asyncError;
     }), HTTP_TIMEOUT, 'fetching URL "${request.url}"');
@@ -72,9 +74,7 @@ class PubHttpClient extends http.BaseClient {
 }
 
 /// The HTTP client to use for all HTTP requests.
-final httpClient = new PubHttpClient();
-
-final curlClient = new PubHttpClient(new CurlClient());
+//PubHttpClient httpClient = new PubHttpClient();
 
 /// Handles a successful JSON-formatted response from pub.dartlang.org.
 ///

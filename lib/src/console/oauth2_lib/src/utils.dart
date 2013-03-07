@@ -39,10 +39,10 @@ String mapToQuery(Map<String, String> map) {
     value = (value == null || value.isEmpty) ? null : encodeUriComponent(value);
     pairs.add([key, value]);
   });
-  return Strings.join(pairs.mappedBy((pair) {
+  return pairs.map((pair) {
     if (pair[1] == null) return pair[0];
     return "${pair[0]}=${pair[1]}";
-  }), "&");
+  }).join("&");
 }
 
 /// Add all key/value pairs from [source] to [destination], overwriting any
@@ -113,4 +113,5 @@ class AuthenticateHeader {
 }
 
 /// Returns a [Future] that asynchronously completes to `null`.
-Future get async => new Future.delayed(0, () => null);
+Future get async => new Future.delayed(const Duration(milliseconds: 0),
+                                       () => null);
