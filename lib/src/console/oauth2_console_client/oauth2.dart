@@ -138,7 +138,7 @@ class OAuth2Console {
 
   /// Gets a new OAuth2 client. If saved credentials are available, those are
   /// used; otherwise, the user is prompted to authorize the pub client.
-  Future<Client> _getClient(SystemCache cache) {
+  Future _getClient(SystemCache cache) {
     return defer(() {
       var credentials = _loadCredentials(cache);
       if (credentials == null) return _authorize();
@@ -193,7 +193,7 @@ class OAuth2Console {
 
   /// Gets the user to authorize pub as a client of pub.dartlang.org via oauth2.
   /// Returns a Future that will complete to a fully-authorized [Client].
-  Future<Client> _authorize() {
+  Future _authorize() {
     // Allow the tests to inject their own token endpoint URL.
     var tokenEndpoint = Platform.environment['_PUB_TEST_TOKEN_ENDPOINT'];
     if (tokenEndpoint != null) {
