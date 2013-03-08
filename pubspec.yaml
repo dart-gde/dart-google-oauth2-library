@@ -11,4 +11,4 @@ dependencies:
   pathos: 0.4.1
 #  oauth2: 0.4.1
   http: 0.4.1
-  browser: any
+  browser: '>=0.4.1'
