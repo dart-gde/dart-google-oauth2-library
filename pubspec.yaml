@@ -6,5 +6,7 @@ authors:
 description: Library to use for Google OAuth2 authentication / Client-side flow
 homepage: https://github.com/dart-gde/dart-google-oauth2-library
 dependencies:
-  http: 0.3.4
+  pathos: 0.4.1
+#  oauth2: 0.4.1
+  http: 0.4.1
   browser: any
