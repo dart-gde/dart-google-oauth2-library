@@ -741,7 +741,7 @@ ByteStream createTarGz(List contents, {baseDir}) {
     }).catchError((e) {
       // We don't have to worry about double-signaling here, since the store()
       // above will only be reached if startProcess succeeds.
-      controller.signalError(e.error, e.stackTrace);
+      controller.signalError(e.error);
       controller.close();
     });
     return new ByteStream(controller.stream);
@@ -778,7 +778,7 @@ ByteStream createTarGz(List contents, {baseDir}) {
   }).catchError((e) {
     // We don't have to worry about double-signaling here, since the store()
     // above will only be reached if everything succeeds.
-    controller.signalError(e.error, e.stackTrace);
+    controller.signalError(e.error);
     controller.close();
   });
   return new ByteStream(controller.stream);
