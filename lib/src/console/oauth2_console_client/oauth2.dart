@@ -112,6 +112,7 @@ class OAuth2Console {
 
     return _getClient(_systemCache).then((client) {
       var completer = new Completer();
+      _credentials = client.credentials;
       return fn(client).whenComplete(() {
         client.close();
         // Be sure to save the credentials even when an error happens.
