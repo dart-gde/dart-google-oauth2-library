@@ -37,7 +37,7 @@ bool fileExists(String file) => new File(file).existsSync();
 
 /// Reads the contents of the text file [file].
 String readTextFile(String file) =>
-    new File(file).readAsStringSync(Encoding.UTF_8);
+    new File(file).readAsStringSync(encoding: Encoding.UTF_8);
 
 /// Reads the contents of the binary file [file].
 List<int> readBinaryFile(String file) {
@@ -69,7 +69,7 @@ void deleteFile(String file) {
 /// Creates [file] and writes [contents] to it.
 String writeBinaryFile(String file, List<int> contents) {
   log.io("Writing ${contents.length} bytes to binary file $file.");
-  new File(file).openSync(FileMode.WRITE)
+  new File(file).openSync(mode: FileMode.WRITE)
       ..writeListSync(contents, 0, contents.length)
       ..closeSync();
   log.fine("Wrote text file $file.");
