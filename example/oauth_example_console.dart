@@ -7,8 +7,9 @@ import "package:http/http.dart" as http;
 void main() {
   String identifier = "299615367852-n0kfup30mfj5emlclfgud9g76itapvk9.apps.googleusercontent.com";
   String secret = "azeFTOjszzL57dvMd-JS2Zda";
-  List scopes = ["https://www.googleapis.com/auth/plus.me"];
-  var auth = new OAuth2Console(identifier: identifier, secret: secret, scopes: scopes);
+  List scopes = ["https://www.googleapis.com/auth/plus.login"];
+  List request_visible_actions = ["http://schemas.google.com/AddActivity", "http://schemas.google.com/CreateActivity"];
+  var auth = new OAuth2Console(identifier: identifier, secret: secret, scopes: scopes, request_visible_actions: request_visible_actions);
 
   Future clientCallback(http.Client client) {
     var completer = new Completer();

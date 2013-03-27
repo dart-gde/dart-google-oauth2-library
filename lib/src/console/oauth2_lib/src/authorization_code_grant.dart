@@ -123,7 +123,8 @@ class AuthorizationCodeGrant {
   ///
   /// It is a [StateError] to call this more than once.
   Uri getAuthorizationUrl(Uri redirect,
-      {List<String> scopes: const <String>[], String state}) {
+      {List<String> scopes: const <String>[],
+       List<String> request_visible_actions: null, String state}) {
     if (_state != _INITIAL_STATE) {
       throw new StateError('The authorization URL has already been generated.');
     }
@@ -140,6 +141,9 @@ class AuthorizationCodeGrant {
 
     if (state != null) parameters['state'] = state;
     if (!scopes.isEmpty) parameters['scope'] = scopes.join(' ');
+    if (request_visible_actions != null && !request_visible_actions.isEmpty) {
+      parameters['request_visible_actions'] = request_visible_actions.join(' ');
+    }
 
     return addQueryParameters(this.authorizationEndpoint, parameters);
   }

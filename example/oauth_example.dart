@@ -35,8 +35,9 @@ void main() {
   // use your own Client ID from the API Console here
   final auth = new GoogleOAuth2(
       "796343192238.apps.googleusercontent.com",
-      ["https://www.googleapis.com/auth/plus.me"],
-      tokenLoaded:oauthReady);
+      ["https://www.googleapis.com/auth/plus.login"],
+      request_visible_actions: ["http://schemas.google.com/AddActivity", "http://schemas.google.com/CreateActivity"],
+      tokenLoaded: oauthReady);
 
   loginButton.onClick.listen((e) => auth.login());
   logoutButton.onClick.listen((e) {

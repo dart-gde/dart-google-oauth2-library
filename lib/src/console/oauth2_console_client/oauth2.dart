@@ -49,6 +49,7 @@ class OAuth2Console {
   /// The OAuth2 scopes that the pub client needs. Currently the client only needs
   /// the user's email so that the server can verify their identity.
   List _scopes = ['https://www.googleapis.com/auth/userinfo.email'];
+  List<String> _request_visible_actions;
 
   /// An in-memory cache of the user's OAuth2 credentials. This should always be
   /// the same as the credentials file stored in the system cache.
@@ -66,6 +67,7 @@ class OAuth2Console {
 
   OAuth2Console({String identifier: null, String secret: null,
     Uri authorizationEndpoint: null, Uri tokenEndpoint: null, List scopes: null,
+    List<String> request_visible_actions: null,
     String authorizedRedirect: 'https://github.com/dart-gde/dart-google-oauth2-library',
     String credentialsFileName: 'credentials.json', SystemCache systemCache: null}) {
 
@@ -74,6 +76,7 @@ class OAuth2Console {
     if (authorizationEndpoint != null) this._authorizationEndpoint = authorizationEndpoint;
     if (tokenEndpoint != null) this._tokenEndpoint = tokenEndpoint;
     if (scopes != null) this._scopes = scopes;
+    if (request_visible_actions != null) this._request_visible_actions = request_visible_actions;
 
     if (credentialsFileName != null) this._credentialsFileName = credentialsFileName;
 
@@ -215,7 +218,8 @@ class OAuth2Console {
     // the code is received.
     return HttpServer.bind('127.0.0.1', 0).then((server) {
       var authUrl = grant.getAuthorizationUrl(
-          Uri.parse('http://localhost:${server.port}'), scopes: _scopes);
+          Uri.parse('http://localhost:${server.port}'),
+          scopes: _scopes, request_visible_actions: _request_visible_actions);
 
       log.message(
           'Need your authorization to access scopes ${_scopes} on your behalf.\n'

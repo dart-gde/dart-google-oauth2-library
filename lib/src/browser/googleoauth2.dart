@@ -4,6 +4,7 @@ part of google_oauth2_browser;
 class GoogleOAuth2 extends OAuth2 {
   String _clientId;
   List<String> _scopes;
+  List<String> _request_visible_actions;
   String _provider;
   Function _tokenLoaded;
 
@@ -25,11 +26,12 @@ class GoogleOAuth2 extends OAuth2 {
     String this._clientId,
     List<String> this._scopes,
     {
+      List<String> request_visible_actions: null,
       String provider: "https://accounts.google.com/o/oauth2/",
       tokenLoaded(Token token),
       bool autoLogin: false
     }
-  ) : _provider = provider, _tokenLoaded = tokenLoaded, super()
+  ) : _provider = provider, _tokenLoaded = tokenLoaded, _request_visible_actions = request_visible_actions, super()
   {
     _channel = _createFutureChannel();
     // Attempt an immediate login, we may already be authorized.
@@ -75,6 +77,9 @@ class GoogleOAuth2 extends OAuth2 {
       "scope": _scopes.join(" "),
       "immediate": immediate,
     };
+    if (_request_visible_actions != null && _request_visible_actions.length > 0) {
+      queryParams["request_visible_actions"] = _request_visible_actions.join(" ");
+    }
     return new UrlPattern("${_provider}auth").generate({}, queryParams);
   }
 
