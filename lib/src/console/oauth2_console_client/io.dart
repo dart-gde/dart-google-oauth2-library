@@ -253,7 +253,7 @@ Future _attemptRetryable(Future callback()) {
 
       // Wait a bit and try again.
       log.fine("Operation failed, retrying (attempt $attempts).");
-      return sleep(500).then(makeAttempt);
+      return msleep(500).then(makeAttempt);
     });
   }
 
