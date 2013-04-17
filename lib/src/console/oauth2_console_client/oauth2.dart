@@ -17,8 +17,7 @@ import 'log.dart' as log;
 import 'system_cache.dart';
 import 'utils.dart';
 
-//export 'package:oauth2/oauth2.dart';
-export '../oauth2_lib/oauth2.dart';
+export 'package:oauth2/oauth2.dart';
 
 class OAuth2Console {
 
