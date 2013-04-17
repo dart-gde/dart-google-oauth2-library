@@ -59,7 +59,7 @@ class FutureGroup<T> {
       if (completed) return;
 
       completed = true;
-      _completer.completeError(e.error, e.stackTrace);
+      _completer.completeError(e);
     }));
 
     return task;
@@ -110,7 +110,7 @@ only(Iterable iter) {
 
 /// Returns a set containing all elements in [minuend] that are not in
 /// [subtrahend].
-Set setMinus(Collection minuend, Collection subtrahend) {
+Set setMinus(Iterable minuend, Iterable subtrahend) {
   var minuendSet = new Set.from(minuend);
   minuendSet.removeAll(subtrahend);
   return minuendSet;
@@ -145,18 +145,8 @@ String sha1(String source) {
   return CryptoUtils.bytesToHex(sha.close());
 }
 
-/// Invokes the given callback asynchronously. Returns a [Future] that completes
-/// to the result of [callback].
-///
-/// This is also used to wrap synchronous code that may thrown an exception to
-/// ensure that methods that have both sync and async code only report errors
-/// asynchronously.
-Future defer(callback()) {
-  return new Future.immediate(null).then((_) => callback());
-}
-
 /// Returns a [Future] that completes in [milliseconds].
-Future msleep(int milliseconds) {
+Future sleep(int milliseconds) {
   var completer = new Completer();
   new Timer(new Duration(milliseconds: milliseconds), completer.complete);
   return completer.future;
@@ -166,45 +156,37 @@ Future msleep(int milliseconds) {
 /// to [completer].
 void chainToCompleter(Future future, Completer completer) {
   future.then((value) => completer.complete(value),
-      onError: (e) => completer.completeError(e.error, e.stackTrace));
+      onError: (e) => completer.completeError(e));
 }
 
 // TODO(nweiz): remove this when issue 7964 is fixed.
 /// Returns a [Future] that will complete to the first element of [stream].
 /// Unlike [Stream.first], this is safe to use with single-subscription streams.
 Future streamFirst(Stream stream) {
-  // TODO(nweiz): remove this when issue 8512 is fixed.
-  var cancelled = false;
   var completer = new Completer();
   var subscription;
   subscription = stream.listen((value) {
-    if (!cancelled) {
-      cancelled = true;
-      subscription.cancel();
-      completer.complete(value);
-    }
+    subscription.cancel();
+    completer.complete(value);
   }, onError: (e) {
-    if (!cancelled) {
-      completer.completeError(e.error, e.stackTrace);
-    }
+    completer.completeError(e);
   }, onDone: () {
-    if (!cancelled) {
-      completer.completeError(new StateError("No elements"));
-    }
-  }, unsubscribeOnError: true);
+    completer.completeError(new StateError("No elements"));
+  }, cancelOnError: true);
   return completer.future;
 }
 
 /// Returns a wrapped version of [stream] along with a [StreamSubscription] that
 /// can be used to control the wrapped stream.
 Pair<Stream, StreamSubscription> streamWithSubscription(Stream stream) {
-  var controller = stream.isBroadcast ?
-      new StreamController.broadcast() :
-      new StreamController();
+  var controller = new StreamController();
+  var controllerStream = stream.isBroadcast ?
+      controller.stream.asBroadcastStream() :
+      controller.stream;
   var subscription = stream.listen(controller.add,
-      onError: controller.signalError,
+      onError: controller.addError,
       onDone: controller.close);
-  return new Pair<Stream, StreamSubscription>(controller.stream, subscription);
+  return new Pair<Stream, StreamSubscription>(controllerStream, subscription);
 }
 
 // TODO(nweiz): remove this when issue 7787 is fixed.
@@ -218,8 +200,8 @@ Pair<Stream, Stream> tee(Stream stream) {
     controller1.add(value);
     controller2.add(value);
   }, onError: (error) {
-    controller1.signalError(error);
-    controller2.signalError(error);
+    controller1.addError(error);
+    controller2.addError(error);
   }, onDone: () {
     controller1.close();
     controller2.close();
@@ -227,9 +209,14 @@ Pair<Stream, Stream> tee(Stream stream) {
   return new Pair<Stream, Stream>(controller1.stream, controller2.stream);
 }
 
-/// A regular expression matching a line termination character or character
-/// sequence.
-final RegExp _lineRegexp = new RegExp(r"\r\n|\r|\n");
+/// A regular expression matching a trailing CR character.
+final _trailingCR = new RegExp(r"\r$");
+
+// TODO(nweiz): Use `text.split(new RegExp("\r\n?|\n\r?"))` when issue 9360 is
+// fixed.
+/// Splits [text] on its line breaks in a Windows-line-break-friendly way.
+List<String> splitLines(String text) =>
+  text.split("\n").map((line) => line.replaceFirst(_trailingCR, "")).toList();
 
 /// Converts a stream of arbitrarily chunked strings into a line-by-line stream.
 /// The lines don't include line termination characters. A single trailing
@@ -238,7 +225,7 @@ Stream<String> streamToLines(Stream<String> stream) {
   var buffer = new StringBuffer();
   return stream.transform(new StreamTransformer(
       handleData: (chunk, sink) {
-        var lines = chunk.split(_lineRegexp);
+        var lines = splitLines(chunk);
         var leftover = lines.removeLast();
         for (var line in lines) {
           if (!buffer.isEmpty) {
@@ -262,7 +249,7 @@ Stream<String> streamToLines(Stream<String> stream) {
 Future<Iterable> futureWhere(Iterable iter, test(value)) {
   return Future.wait(iter.map((e) {
     var result = test(e);
-    if (result is! Future) result = new Future.immediate(result);
+    if (result is! Future) result = new Future.value(result);
     return result.then((result) => new Pair(e, result));
   }))
       .then((pairs) => pairs.where((pair) => pair.last))
@@ -319,6 +306,24 @@ String mapToQuery(Map<String, String> map) {
   }).join("&");
 }
 
+// TODO(nweiz): remove this when issue 9068 has been fixed.
+/// Whether [uri1] and [uri2] are equal. This consider HTTP URIs to default to
+/// port 80, and HTTPs URIs to default to port 443.
+bool urisEqual(Uri uri1, Uri uri2) =>
+  canonicalizeUri(uri1) == canonicalizeUri(uri2);
+
+/// Return [uri] with redundant port information removed.
+Uri canonicalizeUri(Uri uri) {
+  if (uri == null) return null;
+
+  var sansPort = new Uri.fromComponents(
+      scheme: uri.scheme, userInfo: uri.userInfo, domain: uri.domain,
+      path: uri.path, query: uri.query, fragment: uri.fragment);
+  if (uri.scheme == 'http' && uri.port == 80) return sansPort;
+  if (uri.scheme == 'https' && uri.port == 443) return sansPort;
+  return uri;
+}
+
 /// Add all key/value pairs from [source] to [destination], overwriting any
 /// pre-existing values.
 void mapAddAll(Map destination, Map source) =>
@@ -328,3 +333,28 @@ void mapAddAll(Map destination, Map source) =>
 /// replacing `+` with ` `.
 String urlDecode(String encoded) =>
   decodeUriComponent(encoded.replaceAll("+", " "));
+
+/// Takes a simple data structure (composed of [Map]s, [Iterable]s, scalar
+/// objects, and [Future]s) and recursively resolves all the [Future]s contained
+/// within. Completes with the fully resolved structure.
+Future awaitObject(object) {
+  // Unroll nested futures.
+  if (object is Future) return object.then(awaitObject);
+  if (object is Iterable) {
+    return Future.wait(object.map(awaitObject).toList());
+  }
+  if (object is! Map) return new Future.value(object);
+
+  var pairs = <Future<Pair>>[];
+  object.forEach((key, value) {
+    pairs.add(awaitObject(value)
+        .then((resolved) => new Pair(key, resolved)));
+  });
+  return Future.wait(pairs).then((resolvedPairs) {
+    var map = {};
+    for (var pair in resolvedPairs) {
+      map[pair.first] = pair.last;
+    }
+    return map;
+  });
+}
