@@ -13,6 +13,6 @@ class SimpleOAuth2 extends OAuth2 {
 
   Future<HttpRequest> authenticate(HttpRequest request) {
     request.setRequestHeader("Authorization", "${tokenType} ${token}");
-    return new Future.immediate(request); 
+    return new Future.value(request);
   }
 }

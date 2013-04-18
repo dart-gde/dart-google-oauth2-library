@@ -102,7 +102,7 @@ class GoogleOAuth2 extends OAuth2 {
           immediate = true; // We should be able to simply renew
         }
       } else { // We already have a good token
-        return new Future<Token>.immediate(token);
+        return new Future<Token>.value(token);
       }
     }
     if (immediate == null) {
@@ -142,7 +142,7 @@ class GoogleOAuth2 extends OAuth2 {
         _tokenCompleter = _wrapValidation(tokenCompleter);
 
         // Synchronous if the channel is already open -> avoids popup blocker
-        
+
         _channel
           .then((value) {
             String uri = _getAuthorizeUri(immediate);
@@ -152,7 +152,7 @@ class GoogleOAuth2 extends OAuth2 {
             } else {
               WindowBase popup = _popup(uri);
               new _WindowPoller(_tokenCompleter, popup).poll();
-            }          
+            }
           })
           .catchError((e) {
             return _tokenCompleter.completeError(e);
@@ -226,7 +226,7 @@ class GoogleOAuth2 extends OAuth2 {
               validTokenCompleter.complete(value);
             } else {
               validTokenCompleter.completeError(new Exception("Server returned token is invalid"));
-            }          
+            }
           })
           .catchError((e) => validTokenCompleter.completeError(e));
       })
