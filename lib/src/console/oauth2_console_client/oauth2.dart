@@ -14,6 +14,7 @@ import 'package:pathos/path.dart' as path;
 import 'http.dart';
 import 'io.dart';
 import 'log.dart' as log;
+import 'safe_http_server.dart';
 import 'system_cache.dart';
 import 'utils.dart';
 
@@ -43,6 +44,7 @@ class OAuth2Console {
   /// been authorized by the user.
   Uri _tokenEndpoint = Uri.parse(
       'https://accounts.google.com/o/oauth2/token');
+  Uri get tokenEndpoint => _tokenEndpoint;
 
   /// The OAuth2 scopes that the pub client needs. Currently the client only needs
   /// the user's email so that the server can verify their identity.
@@ -87,21 +89,14 @@ class OAuth2Console {
     this._authorizedRedirect = authorizedRedirect;
 
     _httpClient = new PubHttpClient();
+    _httpClient.tokenEndpoint = tokenEndpoint;
   }
 
   /// Delete the cached credentials, if they exist.
   void clearCredentials(SystemCache cache) {
     _credentials = null;
-    String credentialsFilePath = _credentialsFile(cache);
-    var credentialsFile = new File(credentialsFilePath);    
-    credentialsFile.exists().then((exists){
-      if(!exists){
-        return;
-      } else {
-        credentialsFile.delete(); 
-      }
-    });
-    
+    var credentialsFile = _credentialsFile(cache);
+    if (entryExists(credentialsFile)) deleteEntry(credentialsFile);
   }
 
   /// Close the httpClient when were done.
@@ -125,29 +120,41 @@ class OAuth2Console {
         // Be sure to save the credentials even when an error happens.
         _saveCredentials(_systemCache, client.credentials);
       });
-    }).catchError((asyncError) {
-      if (asyncError.error is ExpirationException) {
+    }).catchError((error) {
+      if (error is ExpirationException) {
         log.error("Authorization to upload packages has expired and "
         "can't be automatically refreshed.");
         return withClient(fn);
-      } else if (asyncError.error is AuthorizationException) {
+      } else if (error is AuthorizationException) {
         var message = "OAuth2 authorization failed";
-        if (asyncError.error.description != null) {
-          message = "$message (${asyncError.error.description})";
+        if (error.description != null) {
+          message = "$message (${error.description})";
         }
         log.error("$message.");
         clearCredentials(_systemCache);
         return withClient(fn);
       } else {
-        throw asyncError;
+        throw error;
       }
     });
   }
 
   /// Gets a new OAuth2 client. If saved credentials are available, those are
   /// used; otherwise, the user is prompted to authorize the pub client.
-  Future _getClient(SystemCache cache) {
-    return defer(() {
+//  Future _getClient(SystemCache cache) {
+//    return defer(() {
+//      var credentials = _loadCredentials(cache);
+//      if (credentials == null) return _authorize();
+//
+//      var client = new Client(_identifier, _secret, credentials,
+//          httpClient: _httpClient);
+//      _saveCredentials(cache, client.credentials);
+//      return client;
+//    });
+//  }
+
+  Future<Client> _getClient(SystemCache cache) {
+    return new Future.sync(() {
       var credentials = _loadCredentials(cache);
       if (credentials == null) return _authorize();
 
@@ -157,7 +164,7 @@ class OAuth2Console {
       return client;
     });
   }
-  
+
   /// Loads the user's OAuth2 credentials from the in-memory cache or the
   /// filesystem if possible. If the credentials can't be loaded for any reason,
   /// the returned [Future] will complete to null.
@@ -202,14 +209,6 @@ class OAuth2Console {
   /// Gets the user to authorize pub as a client of pub.dartlang.org via oauth2.
   /// Returns a Future that will complete to a fully-authorized [Client].
   Future _authorize() {
-    // Allow the tests to inject their own token endpoint URL.
-    var tokenEndpoint = Platform.environment['_PUB_TEST_TOKEN_ENDPOINT'];
-    if (tokenEndpoint != null) {
-      tokenEndpoint = Uri.parse(tokenEndpoint);
-    } else {
-      tokenEndpoint = _tokenEndpoint;
-    }
-
     var grant = new AuthorizationCodeGrant(
         _identifier,
         _secret,
@@ -220,10 +219,9 @@ class OAuth2Console {
     // Spin up a one-shot HTTP server to receive the authorization code from the
     // Google OAuth2 server via redirect. This server will close itself as soon as
     // the code is received.
-    return HttpServer.bind('127.0.0.1', 0).then((server) {
+    return SafeHttpServer.bind('127.0.0.1', 0).then((server) {
       var authUrl = grant.getAuthorizationUrl(
-          Uri.parse('http://localhost:${server.port}'),
-          scopes: _scopes, request_visible_actions: _request_visible_actions);
+          Uri.parse('http://localhost:${server.port}'), scopes: _scopes);
 
       log.message(
           'Need your authorization to access scopes ${_scopes} on your behalf.\n'
