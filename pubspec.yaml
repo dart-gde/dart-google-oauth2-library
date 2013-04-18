@@ -11,6 +11,6 @@ dependencies:
   oauth2: '>=0.4.7+1'
   http: '>=0.4.7+1'
   pathos: '>=0.4.7+1'
-  hop: any
+  hop: '>=0.21.0'
 dev_dependencies:
   browser: '>=0.4.3+1'
