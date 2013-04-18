@@ -92,10 +92,16 @@ class OAuth2Console {
   /// Delete the cached credentials, if they exist.
   void clearCredentials(SystemCache cache) {
     _credentials = null;
-    var credentialsFile = _credentialsFile(cache);
-    if (!fileExists(credentialsFile)) return;
-
-    deleteFile(credentialsFile);
+    String credentialsFilePath = _credentialsFile(cache);
+    var credentialsFile = new File(credentialsFilePath);    
+    credentialsFile.exists().then((exists){
+      if(!exists){
+        return;
+      } else {
+        credentialsFile.delete(); 
+      }
+    });
+    
   }
 
   /// Close the httpClient when were done.
@@ -151,7 +157,7 @@ class OAuth2Console {
       return client;
     });
   }
-
+  
   /// Loads the user's OAuth2 credentials from the in-memory cache or the
   /// filesystem if possible. If the credentials can't be loaded for any reason,
   /// the returned [Future] will complete to null.
