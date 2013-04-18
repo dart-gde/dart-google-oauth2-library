@@ -8,6 +8,7 @@ library pub.http;
 import 'dart:async';
 import 'dart:io';
 import 'dart:json' as json;
+import 'dart:uri';
 
 import 'package:http/http.dart' as http;
 
@@ -28,6 +29,7 @@ final _CENSORED_FIELDS = const ['refresh_token', 'authorization'];
 /// user-friendly error messages.
 class PubHttpClient extends http.BaseClient {
   http.Client inner;
+  Uri tokenEndpoint;
 
   PubHttpClient([http.Client inner])
     : this.inner = inner == null ? new http.Client() : inner;
@@ -53,7 +55,7 @@ class PubHttpClient extends http.BaseClient {
       // unlikely that they'll be returned by non-OAuth2 requests. We also want
       // to pass along 400 responses from the token endpoint.
       var tokenRequest = urisEqual(
-          streamedResponse.request.url, oauth2.tokenEndpoint);
+          streamedResponse.request.url, tokenEndpoint);
       if (status < 400 || status == 401 || (status == 400 && tokenRequest)) {
         return streamedResponse;
       }
