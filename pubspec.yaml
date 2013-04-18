@@ -8,8 +8,9 @@ homepage: https://github.com/dart-gde/dart-google-oauth2-library
 environment:
   sdk: '>=0.4.7+1.r21548'
 dependencies:
+  oauth2: '>=0.4.7+1'
   http: '>=0.4.7+1'
   pathos: '>=0.4.7+1'
-  oauth2: '>=0.4.7+1'
+  hop: any
 dev_dependencies:
   browser: '>=0.4.3+1'
