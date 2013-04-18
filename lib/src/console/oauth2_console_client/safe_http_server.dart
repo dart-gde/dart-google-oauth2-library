@@ -138,4 +138,5 @@ class _HttpResponseWrapper implements HttpResponse {
   void writeAll(Iterable objects, [String separator = ""]) => _inner.writeAll(objects, separator);
   void writeCharCode(int charCode) => _inner.writeCharCode(charCode);
   void writeln([Object obj = ""]) => _inner.writeln(obj);
+  void addError(dynamic error) => _inner.addError(error);
 }
