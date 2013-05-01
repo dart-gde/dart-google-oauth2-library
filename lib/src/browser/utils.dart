@@ -52,7 +52,7 @@ IFrameElement _iframe(String url) {
 
 /// Returns a random unsigned 32-bit integer.
 int random() {
-  final ary = new Uint32Array(1);
+  final ary = new Uint32List(1);
   window.crypto.getRandomValues(ary);
   return ary[0];
 }
