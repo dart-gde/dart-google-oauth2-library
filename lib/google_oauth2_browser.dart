@@ -20,6 +20,7 @@ library google_oauth2_browser;
 
 import "dart:json" as JSON;
 import "dart:html";
+import "dart:typed_data";
 import "dart:math";
 import "dart:uri";
 import "dart:async";
