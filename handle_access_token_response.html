@@ -1,0 +1,114 @@
+        <!DOCTYPE html>
+        <html>
+        <head>
+                <meta charset="utf-8">
+        <title>handle_access_token_response Library / Dart Documentation</title>
+        <link rel="stylesheet" type="text/css"
+            href="styles.css">
+        <link href="//fonts.googleapis.com/css?family=Open+Sans:400,600,700,800" rel="stylesheet" type="text/css">
+        <link rel="shortcut icon" href="favicon.ico">
+        
+        </head>
+        <body data-library="handle_access_token_response">
+        <div class="page">
+        <div class="header">
+          <a href="index.html"><div class="logo"></div></a>
+          <a href="index.html">Dart Documentation</a>
+         &rsaquo; <a href="handle_access_token_response.html">handle_access_token_response</a>        <div id="search-box">
+          <input type="search" name="q" id="q" autocomplete="off"
+              class="search-input" placeholder="Search API">
+        </div>
+        
+      </div>
+      <div class="drop-down" id="drop-down"></div>
+      
+        <div class="nav">
+        
+</div>
+<div class="content">
+<h2><strong>handle_access_token_response</strong> library</h2>
+<div>
+<h3>Functions</h3>
+<div class="method"><h4 id="handleAccessTokenResponse">
+<button class="show-code">Code</button>
+<a href="credentials/Credentials.html">Credentials</a> <strong>handleAccessTokenResponse</strong>(<a href="response/Response.html">Response</a> response, <a href="http://api.dartlang.org/dart_uri/Uri.html">Uri</a> tokenEndpoint, <a href="http://api.dartlang.org/dart_core/DateTime.html">DateTime</a> startTime, <a href="http://api.dartlang.org/dart_core/List.html">List</a>&lt;<a href="http://api.dartlang.org/dart_core/String.html">String</a>&gt; scopes) <a class="anchor-link" href="#handleAccessTokenResponse"
+              title="Permalink to handleAccessTokenResponse">#</a></h4>
+<div class="doc">
+<p>Handles a response from the authorization server that contains an access
+token. This response format is common across several different components of
+the OAuth2 flow.</p>
+<pre class="source">
+Credentials handleAccessTokenResponse(
+   http.Response response,
+   Uri tokenEndpoint,
+   DateTime startTime,
+   List&lt;String&gt; scopes) {
+ if (response.statusCode != 200) _handleErrorResponse(response, tokenEndpoint);
+
+ void validate(bool condition, String message) =&gt;
+   _validate(response, tokenEndpoint, condition, message);
+
+ var contentType = response.headers['content-type'];
+ if (contentType != null) {
+   contentType = new ContentType.fromString(contentType);
+ }
+ validate(contentType != null &amp;&amp; contentType.value == "application/json",
+     'content-type was "$contentType", expected "application/json"');
+
+ var parameters;
+ try {
+   parameters = JSON.parse(response.body);
+ } catch (e) {
+   // TODO(nweiz): narrow this catch clause once issue 6775 is fixed.
+   validate(false, 'invalid JSON');
+ }
+
+ for (var requiredParameter in ['access_token', 'token_type']) {
+   validate(parameters.containsKey(requiredParameter),
+       'did not contain required parameter "$requiredParameter"');
+   validate(parameters[requiredParameter] is String,
+       'required parameter "$requiredParameter" was not a string, was '
+       '"${parameters[requiredParameter]}"');
+ }
+
+ // TODO(nweiz): support the "mac" token type
+ // (http://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-01)
+ validate(parameters['token_type'].toLowerCase() == 'bearer',
+     '"$tokenEndpoint": unknown token type "${parameters['token_type']}"');
+
+ var expiresIn = parameters['expires_in'];
+ validate(expiresIn == null || expiresIn is int,
+     'parameter "expires_in" was not an int, was "$expiresIn"');
+
+ for (var name in ['refresh_token', 'scope']) {
+   var value = parameters[name];
+   validate(value == null || value is String,
+       'parameter "$name" was not a string, was "$value"');
+ }
+
+ var scope = parameters['scope'];
+ if (scope != null) scopes = scope.split(" ");
+
+ var expiration = expiresIn == null ? null :
+     startTime.add(new Duration(seconds: expiresIn - _EXPIRATION_GRACE));
+
+ return new Credentials(
+     parameters['access_token'],
+     parameters['refresh_token'],
+     tokenEndpoint,
+     scopes,
+     expiration);
+}
+</pre>
+</div>
+</div>
+</div>
+        </div>
+        <div class="clear"></div>
+        </div>
+        <div class="footer">
+          
+        </div>
+        <script async src="client-live-nav.js"></script>
+        </body></html>
+        

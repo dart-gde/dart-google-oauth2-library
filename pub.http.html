@@ -1,0 +1,157 @@
+        <!DOCTYPE html>
+        <html>
+        <head>
+                <meta charset="utf-8">
+        <title>pub.http Library / Dart Documentation</title>
+        <link rel="stylesheet" type="text/css"
+            href="styles.css">
+        <link href="//fonts.googleapis.com/css?family=Open+Sans:400,600,700,800" rel="stylesheet" type="text/css">
+        <link rel="shortcut icon" href="favicon.ico">
+        
+        </head>
+        <body data-library="pub.http">
+        <div class="page">
+        <div class="header">
+          <a href="index.html"><div class="logo"></div></a>
+          <a href="index.html">Dart Documentation</a>
+         &rsaquo; <a href="pub.http.html">pub.http</a>        <div id="search-box">
+          <input type="search" name="q" id="q" autocomplete="off"
+              class="search-input" placeholder="Search API">
+        </div>
+        
+      </div>
+      <div class="drop-down" id="drop-down"></div>
+      
+        <div class="nav">
+        
+</div>
+<div class="content">
+<h2><strong>pub.http</strong> library</h2>
+<div class="doc"><p>Helpers for dealing with HTTP.</p></div>
+<div>
+<h3>Properties</h3>
+<div class="field"><h4 id="HTTP_TIMEOUT">
+<button class="show-code">Code</button>
+final         <strong>HTTP_TIMEOUT</strong> <a class="anchor-link"
+            href="#HTTP_TIMEOUT"
+            title="Permalink to HTTP_TIMEOUT">#</a>
+        </h4>
+        <div class="doc">
+<p>The amount of time in milliseconds to allow HTTP requests before assuming
+they've failed.</p>
+<pre class="source">
+final HTTP_TIMEOUT = 30 * 1000
+</pre>
+</div>
+</div>
+</div>
+<div>
+<h3>Functions</h3>
+<div class="method"><h4 id="invalidServerResponse">
+<button class="show-code">Code</button>
+void <strong>invalidServerResponse</strong>(<a href="response/Response.html">Response</a> response) <a class="anchor-link" href="#invalidServerResponse"
+              title="Permalink to invalidServerResponse">#</a></h4>
+<div class="doc">
+<p>Throws an error describing an invalid response from the server.</p>
+<pre class="source">
+void invalidServerResponse(http.Response response) {
+ throw 'Invalid server response:\n${response.body}';
+}
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="parseJsonResponse">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_core/Map.html">Map</a> <strong>parseJsonResponse</strong>(<a href="response/Response.html">Response</a> response) <a class="anchor-link" href="#parseJsonResponse"
+              title="Permalink to parseJsonResponse">#</a></h4>
+<div class="doc">
+<p>Parses a response body, assuming it's JSON-formatted. Throws a user-friendly
+error if the response body is invalid JSON, or if it's not a map.</p>
+<pre class="source">
+Map parseJsonResponse(http.Response response) {
+ var value;
+ try {
+   value = json.parse(response.body);
+ } catch (e) {
+   // TODO(nweiz): narrow this catch clause once issue 6775 is fixed.
+   invalidServerResponse(response);
+ }
+ if (value is! Map) invalidServerResponse(response);
+ return value;
+}
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="handleJsonError">
+<button class="show-code">Code</button>
+void <strong>handleJsonError</strong>(<a href="response/Response.html">Response</a> response) <a class="anchor-link" href="#handleJsonError"
+              title="Permalink to handleJsonError">#</a></h4>
+<div class="doc">
+<p>Handles an unsuccessful JSON-formatted response from pub.dartlang.org.</p>
+<p>These responses are expected to be of the form <code>{"error": {"message": "some
+message"}}</code>. If the format is correct, the message will be raised as an
+error; otherwise an <a class="crossref" href="pub.http.html#invalidServerResponse">invalidServerResponse</a> error will be raised.</p>
+<pre class="source">
+void handleJsonError(http.Response response) {
+ var errorMap = parseJsonResponse(response);
+ if (errorMap['error'] is! Map ||
+     !errorMap['error'].containsKey('message') ||
+     errorMap['error']['message'] is! String) {
+   invalidServerResponse(response);
+ }
+ throw errorMap['error']['message'];
+}
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="handleJsonSuccess">
+<button class="show-code">Code</button>
+void <strong>handleJsonSuccess</strong>(<a href="response/Response.html">Response</a> response) <a class="anchor-link" href="#handleJsonSuccess"
+              title="Permalink to handleJsonSuccess">#</a></h4>
+<div class="doc">
+<p>The HTTP client to use for all HTTP requests.
+Handles a successful JSON-formatted response from pub.dartlang.org.</p>
+<p>These responses are expected to be of the form <code>{"success": {"message":
+"some message"}}</code>. If the format is correct, the message will be printed;
+otherwise an error will be raised.</p>
+<pre class="source">
+void handleJsonSuccess(http.Response response) {
+ var parsed = parseJsonResponse(response);
+ if (parsed['success'] is! Map ||
+     !parsed['success'].containsKey('message') ||
+     parsed['success']['message'] is! String) {
+   invalidServerResponse(response);
+ }
+ log.message(parsed['success']['message']);
+}
+</pre>
+</div>
+</div>
+</div>
+<div>
+<h3>Classes</h3>
+          <div class="type">
+          <h4>
+            <a href="pub.http/PubHttpClient.html"><strong>PubHttpClient</strong></a>
+          </h4>
+          </div>
+          
+</div>
+<div>
+<h3>Exceptions</h3>
+          <div class="type">
+          <h4>
+            <a href="pub.http/PubHttpException.html"><strong>PubHttpException</strong></a>
+          </h4>
+          </div>
+          
+</div>
+        </div>
+        <div class="clear"></div>
+        </div>
+        <div class="footer">
+          
+        </div>
+        <script async src="client-live-nav.js"></script>
+        </body></html>
+        

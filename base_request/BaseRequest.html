@@ -1,0 +1,391 @@
+        <!DOCTYPE html>
+        <html>
+        <head>
+                <meta charset="utf-8">
+        <title>BaseRequest abstract class / base_request Library / Dart Documentation</title>
+        <link rel="stylesheet" type="text/css"
+            href="../styles.css">
+        <link href="//fonts.googleapis.com/css?family=Open+Sans:400,600,700,800" rel="stylesheet" type="text/css">
+        <link rel="shortcut icon" href="../favicon.ico">
+        
+        </head>
+        <body data-library="base_request" data-type="BaseRequest">
+        <div class="page">
+        <div class="header">
+          <a href="../index.html"><div class="logo"></div></a>
+          <a href="../index.html">Dart Documentation</a>
+         &rsaquo; <a href="../base_request.html">base_request</a> &rsaquo; <a href="../base_request/BaseRequest.html">BaseRequest</a>        <div id="search-box">
+          <input type="search" name="q" id="q" autocomplete="off"
+              class="search-input" placeholder="Search API">
+        </div>
+        
+      </div>
+      <div class="drop-down" id="drop-down"></div>
+      
+        <div class="nav">
+        
+</div>
+<div class="content">
+        <h2><strong>BaseRequest</strong>
+          abstract class
+        </h2>
+        
+<button id="show-inherited" class="show-inherited">Hide inherited</button>
+<div class="doc">
+<p>The base class for HTTP requests.</p>
+<p>Subclasses of <a class="crossref" href="../base_request/BaseRequest.html#BaseRequest">BaseRequest</a> can be constructed manually and passed to
+<code>BaseClient.send</code>, which allows the user to provide fine-grained control
+over the request properties. However, usually it's easier to use convenience
+methods like <code>get</code> or <code>BaseClient.get</code>.</p>
+<pre class="source">
+abstract class BaseRequest {
+ /// The HTTP method of the request. Most commonly "GET" or "POST", less
+ /// commonly "HEAD", "PUT", or "DELETE". Non-standard method names are also
+ /// supported.
+ final String method;
+
+ /// The URL to which the request will be sent.
+ final Uri url;
+
+ /// The size of the request body, in bytes. This defaults to -1, which
+ /// indicates that the size of the request is not known in advance.
+ int get contentLength =&gt; _contentLength;
+ int _contentLength = -1;
+
+ set contentLength(int value) {
+   _checkFinalized();
+   _contentLength = value;
+ }
+
+ /// Whether a persistent connection should be maintained with the server.
+ /// Defaults to true.
+ bool get persistentConnection =&gt; _persistentConnection;
+ bool _persistentConnection = true;
+
+ set persistentConnection(bool value) {
+   _checkFinalized();
+   _persistentConnection = value;
+ }
+
+ /// Whether the client should follow redirects while resolving this request.
+ /// Defaults to true.
+ bool get followRedirects =&gt; _followRedirects;
+ bool _followRedirects = true;
+
+ set followRedirects(bool value) {
+   _checkFinalized();
+   _followRedirects = value;
+ }
+
+ /// The maximum number of redirects to follow when [followRedirects] is true.
+ /// If this number is exceeded the [BaseResponse] future will signal a
+ /// [RedirectLimitExceeded] exception. Defaults to 5.
+ int get maxRedirects =&gt; _maxRedirects;
+ int _maxRedirects = 5;
+
+ set maxRedirects(int value) {
+   _checkFinalized();
+   _maxRedirects = value;
+ }
+
+ // TODO(nweiz): automatically parse cookies from headers
+
+ // TODO(nweiz): make this a HttpHeaders object
+ /// The headers for this request.
+ final Map&lt;String, String&gt; headers;
+
+ /// Whether the request has been finalized.
+ bool get finalized =&gt; _finalized;
+ bool _finalized = false;
+
+ /// Creates a new HTTP request.
+ BaseRequest(this.method, this.url)
+   : headers = &lt;String, String&gt;{};
+
+ /// Finalizes the HTTP request in preparation for it being sent. This freezes
+ /// all mutable fields and returns a single-subscription [ByteStream] that
+ /// emits the body of the request.
+ ///
+ /// The base implementation of this returns null rather than a [ByteStream];
+ /// subclasses are responsible for creating the return value, which should be
+ /// single-subscription to ensure that no data is dropped. They should also
+ /// freeze any additional mutable fields they add that don't make sense to
+ /// change after the request headers are sent.
+ ByteStream finalize() {
+   // TODO(nweiz): freeze headers
+   if (finalized) throw new StateError("Can't finalize a finalized Request.");
+   _finalized = true;
+   return null;
+ }
+
+ /// Sends this request.
+ ///
+ /// This automatically initializes a new [Client] and closes that client once
+ /// the request is complete. If you're planning on making multiple requests to
+ /// the same server, you should use a single [Client] for all of those
+ /// requests.
+ Future&lt;StreamedResponse&gt; send() {
+   var client = new Client();
+   return client.send(this).then((response) {
+     var stream = onDone(response.stream, client.close);
+     return new StreamedResponse(
+         new ByteStream(stream),
+         response.statusCode,
+         response.contentLength,
+         request: response.request,
+         headers: response.headers,
+         isRedirect: response.isRedirect,
+         persistentConnection: response.persistentConnection,
+         reasonPhrase: response.reasonPhrase);
+   }).catchError((e) {
+     client.close();
+     throw e;
+   });
+ }
+
+ /// Throws an error if this request has been finalized.
+ void _checkFinalized() {
+   if (!finalized) return;
+   throw new StateError("Can't modify a finalized Request.");
+ }
+
+ String toString() =&gt; "$method $url";
+}
+</pre>
+</div>
+<h3>Subclasses</h3>
+<p>
+<span class="type-box"><span class="icon-class"></span><a href="../multipart_request/MultipartRequest.html">MultipartRequest</a></span>, <span class="type-box"><span class="icon-class"></span><a href="../request/Request.html">Request</a></span>, <span class="type-box"><span class="icon-class"></span><a href="../streamed_request/StreamedRequest.html">StreamedRequest</a></span></p>
+<div>
+<h3>Constructors</h3>
+<div class="method"><h4 id="BaseRequest">
+<button class="show-code">Code</button>
+new <strong>BaseRequest</strong>(<a href="http://api.dartlang.org/dart_core/String.html">String</a> method, <a href="http://api.dartlang.org/dart_uri/Uri.html">Uri</a> url) <a class="anchor-link" href="#BaseRequest"
+              title="Permalink to BaseRequest.BaseRequest">#</a></h4>
+<div class="doc">
+<p>Creates a new HTTP request.</p>
+<pre class="source">
+BaseRequest(this.method, this.url)
+ : headers = &lt;String, String&gt;{};
+</pre>
+</div>
+</div>
+</div>
+<div>
+<h3>Properties</h3>
+<div class="field"><h4 id="contentLength">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_core/int.html">int</a>         <strong>contentLength</strong> <a class="anchor-link"
+            href="#contentLength"
+            title="Permalink to BaseRequest.contentLength">#</a>
+        </h4>
+        <div class="doc">
+<p>The size of the request body, in bytes. This defaults to -1, which
+indicates that the size of the request is not known in advance.</p>
+<pre class="source">
+int get contentLength =&gt; _contentLength;
+</pre>
+<pre class="source">
+set contentLength(int value) {
+ _checkFinalized();
+ _contentLength = value;
+}
+</pre>
+</div>
+</div>
+<div class="field"><h4 id="finalized">
+<button class="show-code">Code</button>
+final <a href="http://api.dartlang.org/dart_core/bool.html">bool</a>         <strong>finalized</strong> <a class="anchor-link"
+            href="#finalized"
+            title="Permalink to BaseRequest.finalized">#</a>
+        </h4>
+        <div class="doc">
+<p>Whether the request has been finalized.</p>
+<pre class="source">
+bool get finalized =&gt; _finalized;
+</pre>
+</div>
+</div>
+<div class="field"><h4 id="followRedirects">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_core/bool.html">bool</a>         <strong>followRedirects</strong> <a class="anchor-link"
+            href="#followRedirects"
+            title="Permalink to BaseRequest.followRedirects">#</a>
+        </h4>
+        <div class="doc">
+<p>Whether the client should follow redirects while resolving this request.
+Defaults to true.</p>
+<pre class="source">
+bool get followRedirects =&gt; _followRedirects;
+</pre>
+<pre class="source">
+set followRedirects(bool value) {
+ _checkFinalized();
+ _followRedirects = value;
+}
+</pre>
+</div>
+</div>
+<div class="field"><h4 id="headers">
+<button class="show-code">Code</button>
+final <a href="http://api.dartlang.org/dart_core/Map.html">Map</a>&lt;<a href="http://api.dartlang.org/dart_core/String.html">String</a>, <a href="http://api.dartlang.org/dart_core/String.html">String</a>&gt;         <strong>headers</strong> <a class="anchor-link"
+            href="#headers"
+            title="Permalink to BaseRequest.headers">#</a>
+        </h4>
+        <div class="doc">
+<p>The headers for this request.</p>
+<pre class="source">
+final Map&lt;String, String&gt; headers
+</pre>
+</div>
+</div>
+<div class="field"><h4 id="maxRedirects">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_core/int.html">int</a>         <strong>maxRedirects</strong> <a class="anchor-link"
+            href="#maxRedirects"
+            title="Permalink to BaseRequest.maxRedirects">#</a>
+        </h4>
+        <div class="doc">
+<p>The maximum number of redirects to follow when <a class="crossref" href="../base_request/BaseRequest.html#followRedirects">followRedirects</a> is true.
+If this number is exceeded the <code>BaseResponse</code> future will signal a
+<code>RedirectLimitExceeded</code> exception. Defaults to 5.</p>
+<pre class="source">
+int get maxRedirects =&gt; _maxRedirects;
+</pre>
+<pre class="source">
+set maxRedirects(int value) {
+ _checkFinalized();
+ _maxRedirects = value;
+}
+</pre>
+</div>
+</div>
+<div class="field"><h4 id="method">
+<button class="show-code">Code</button>
+final <a href="http://api.dartlang.org/dart_core/String.html">String</a>         <strong>method</strong> <a class="anchor-link"
+            href="#method"
+            title="Permalink to BaseRequest.method">#</a>
+        </h4>
+        <div class="doc">
+<p>The HTTP method of the request. Most commonly "GET" or "POST", less
+commonly "HEAD", "PUT", or "DELETE". Non-standard method names are also
+supported.</p>
+<pre class="source">
+final String method
+</pre>
+</div>
+</div>
+<div class="field"><h4 id="persistentConnection">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_core/bool.html">bool</a>         <strong>persistentConnection</strong> <a class="anchor-link"
+            href="#persistentConnection"
+            title="Permalink to BaseRequest.persistentConnection">#</a>
+        </h4>
+        <div class="doc">
+<p>Whether a persistent connection should be maintained with the server.
+Defaults to true.</p>
+<pre class="source">
+bool get persistentConnection =&gt; _persistentConnection;
+</pre>
+<pre class="source">
+set persistentConnection(bool value) {
+ _checkFinalized();
+ _persistentConnection = value;
+}
+</pre>
+</div>
+</div>
+<div class="field"><h4 id="url">
+<button class="show-code">Code</button>
+final <a href="http://api.dartlang.org/dart_uri/Uri.html">Uri</a>         <strong>url</strong> <a class="anchor-link"
+            href="#url"
+            title="Permalink to BaseRequest.url">#</a>
+        </h4>
+        <div class="doc">
+<p>The URL to which the request will be sent.</p>
+<pre class="source">
+final Uri url
+</pre>
+</div>
+</div>
+</div>
+<div>
+<h3>Methods</h3>
+<div class="method"><h4 id="finalize">
+<button class="show-code">Code</button>
+<a href="../byte_stream/ByteStream.html">ByteStream</a> <strong>finalize</strong>() <a class="anchor-link" href="#finalize"
+              title="Permalink to BaseRequest.finalize">#</a></h4>
+<div class="doc">
+<p>Finalizes the HTTP request in preparation for it being sent. This freezes
+all mutable fields and returns a single-subscription <code>ByteStream</code> that
+emits the body of the request.</p>
+<p>The base implementation of this returns null rather than a <code>ByteStream</code>;
+subclasses are responsible for creating the return value, which should be
+single-subscription to ensure that no data is dropped. They should also
+freeze any additional mutable fields they add that don't make sense to
+change after the request headers are sent.</p>
+<pre class="source">
+ByteStream finalize() {
+ // TODO(nweiz): freeze headers
+ if (finalized) throw new StateError("Can't finalize a finalized Request.");
+ _finalized = true;
+ return null;
+}
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="send">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_async/Future.html">Future</a>&lt;<a href="../streamed_response/StreamedResponse.html">StreamedResponse</a>&gt; <strong>send</strong>() <a class="anchor-link" href="#send"
+              title="Permalink to BaseRequest.send">#</a></h4>
+<div class="doc">
+<p>Sends this request.</p>
+<p>This automatically initializes a new <code>Client</code> and closes that client once
+the request is complete. If you're planning on making multiple requests to
+the same server, you should use a single <code>Client</code> for all of those
+requests.</p>
+<pre class="source">
+Future&lt;StreamedResponse&gt; send() {
+ var client = new Client();
+ return client.send(this).then((response) {
+   var stream = onDone(response.stream, client.close);
+   return new StreamedResponse(
+       new ByteStream(stream),
+       response.statusCode,
+       response.contentLength,
+       request: response.request,
+       headers: response.headers,
+       isRedirect: response.isRedirect,
+       persistentConnection: response.persistentConnection,
+       reasonPhrase: response.reasonPhrase);
+ }).catchError((e) {
+   client.close();
+   throw e;
+ });
+}
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="toString">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_core/String.html">String</a> <strong>toString</strong>() <a class="anchor-link" href="#toString"
+              title="Permalink to BaseRequest.toString">#</a></h4>
+<div class="doc">
+<div class="inherited">
+<p>Returns a string representation of this object.</p>
+<div class="docs-inherited-from">docs inherited from <a href="http://api.dartlang.org/dart_core/Object.html">Object</a> </div></div>
+<pre class="source">
+String toString() =&gt; "$method $url";
+</pre>
+</div>
+</div>
+</div>
+        </div>
+        <div class="clear"></div>
+        </div>
+        <div class="footer">
+          
+        </div>
+        <script async src="../client-live-nav.js"></script>
+        </body></html>
+        

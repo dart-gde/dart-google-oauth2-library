@@ -1,0 +1,101 @@
+        <!DOCTYPE html>
+        <html>
+        <head>
+                <meta charset="utf-8">
+        <title>OAuth2 abstract class / google_oauth2_browser Library / Dart Documentation</title>
+        <link rel="stylesheet" type="text/css"
+            href="../styles.css">
+        <link href="//fonts.googleapis.com/css?family=Open+Sans:400,600,700,800" rel="stylesheet" type="text/css">
+        <link rel="shortcut icon" href="../favicon.ico">
+        
+        </head>
+        <body data-library="google_oauth2_browser" data-type="OAuth2">
+        <div class="page">
+        <div class="header">
+          <a href="../index.html"><div class="logo"></div></a>
+          <a href="../index.html">Dart Documentation</a>
+         &rsaquo; <a href="../google_oauth2_browser.html">google_oauth2_browser</a> &rsaquo; <a href="../google_oauth2_browser/OAuth2.html">OAuth2</a>        <div id="search-box">
+          <input type="search" name="q" id="q" autocomplete="off"
+              class="search-input" placeholder="Search API">
+        </div>
+        
+      </div>
+      <div class="drop-down" id="drop-down"></div>
+      
+        <div class="nav">
+        
+</div>
+<div class="content">
+        <h2><strong>OAuth2</strong>
+          abstract class
+        </h2>
+        
+<button id="show-inherited" class="show-inherited">Hide inherited</button>
+<div class="doc">
+<p>An OAuth2 authentication context.</p>
+<pre class="source">
+abstract class OAuth2 {
+
+ var token;
+ 
+ OAuth2();
+
+ /**
+  * Take a [request] and return the request with the authorization headers set correctly 
+  */
+ Future&lt;HttpRequest&gt; authenticate(HttpRequest request);
+
+}
+</pre>
+</div>
+<h3>Subclasses</h3>
+<p>
+<span class="type-box"><span class="icon-class"></span><a href="../google_oauth2_browser/GoogleOAuth2.html">GoogleOAuth2</a></span>, <span class="type-box"><span class="icon-class"></span><a href="../google_oauth2_browser/SimpleOAuth2.html">SimpleOAuth2</a></span></p>
+<div>
+<h3>Constructors</h3>
+<div class="method"><h4 id="OAuth2">
+<button class="show-code">Code</button>
+new <strong>OAuth2</strong>() <a class="anchor-link" href="#OAuth2"
+              title="Permalink to OAuth2.OAuth2">#</a></h4>
+<div class="doc">
+<pre class="source">
+OAuth2();
+</pre>
+</div>
+</div>
+</div>
+<div>
+<h3>Properties</h3>
+<div class="field"><h4 id="token">
+<button class="show-code">Code</button>
+var         <strong>token</strong> <a class="anchor-link"
+            href="#token"
+            title="Permalink to OAuth2.token">#</a>
+        </h4>
+        <div class="doc">
+<pre class="source">
+var token
+</pre>
+</div>
+</div>
+</div>
+<div>
+<h3>Methods</h3>
+<div class="method"><h4 id="authenticate">
+abstract <a href="http://api.dartlang.org/dart_async/Future.html">Future</a>&lt;<a href="http://api.dartlang.org/dart_html/HttpRequest.html">HttpRequest</a>&gt; <strong>authenticate</strong>(<a href="http://api.dartlang.org/dart_html/HttpRequest.html">HttpRequest</a> request) <a class="anchor-link" href="#authenticate"
+              title="Permalink to OAuth2.authenticate">#</a></h4>
+<div class="doc">
+<p>Take a 
+<span class="param">request</span> and return the request with the authorization headers set correctly </p>
+</div>
+</div>
+</div>
+        </div>
+        <div class="clear"></div>
+        </div>
+        <div class="footer">
+          
+        </div>
+        <script async src="../client-live-nav.js"></script>
+        </body></html>
+        

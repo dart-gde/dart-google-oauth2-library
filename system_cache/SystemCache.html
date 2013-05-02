@@ -1,0 +1,176 @@
+        <!DOCTYPE html>
+        <html>
+        <head>
+                <meta charset="utf-8">
+        <title>SystemCache class / system_cache Library / Dart Documentation</title>
+        <link rel="stylesheet" type="text/css"
+            href="../styles.css">
+        <link href="//fonts.googleapis.com/css?family=Open+Sans:400,600,700,800" rel="stylesheet" type="text/css">
+        <link rel="shortcut icon" href="../favicon.ico">
+        
+        </head>
+        <body data-library="system_cache" data-type="SystemCache">
+        <div class="page">
+        <div class="header">
+          <a href="../index.html"><div class="logo"></div></a>
+          <a href="../index.html">Dart Documentation</a>
+         &rsaquo; <a href="../system_cache.html">system_cache</a> &rsaquo; <a href="../system_cache/SystemCache.html">SystemCache</a>        <div id="search-box">
+          <input type="search" name="q" id="q" autocomplete="off"
+              class="search-input" placeholder="Search API">
+        </div>
+        
+      </div>
+      <div class="drop-down" id="drop-down"></div>
+      
+        <div class="nav">
+        
+</div>
+<div class="content">
+        <h2><strong>SystemCache</strong>
+          class
+        </h2>
+        
+<button id="show-inherited" class="show-inherited">Hide inherited</button>
+<div class="doc">
+<p>The system-wide cache of installed packages.</p>
+<p>This cache contains all packages that are downloaded from the internet.
+Packages that are available locally (e.g. from the SDK) don't use this
+cache.</p>
+<pre class="source">
+class SystemCache {
+ /// The root directory where this package cache is located.
+ final String rootDir;
+
+ String get tempDir =&gt; path.join(rootDir, '_temp');
+
+ /// Creates a new package cache which is backed by the given directory on the
+ /// user's file system.
+ SystemCache(this.rootDir);
+
+ /// Creates a system cache and registers the standard set of sources.
+ factory SystemCache.withSources(String rootDir) {
+   var cache = new SystemCache(rootDir);
+
+   return cache;
+ }
+
+ /// Create a new temporary directory within the system cache. The system
+ /// cache maintains its own temporary directory that it uses to stage
+ /// packages into while installing. It uses this instead of the OS's system
+ /// temp directory to ensure that it's on the same volume as the pub system
+ /// cache so that it can move the directory from it.
+ String createTempDir() {
+   var temp = ensureDir(tempDir);
+   return io.createTempDir(path.join(temp, 'dir'));
+ }
+
+ /// Deletes the system cache's internal temp directory.
+ void deleteTempDir() {
+   log.fine('Clean up system cache temp directory $tempDir.');
+   if (dirExists(tempDir)) deleteEntry(tempDir);
+ }
+}
+</pre>
+</div>
+<div>
+<h3>Constructors</h3>
+<div class="method"><h4 id="SystemCache">
+<button class="show-code">Code</button>
+new <strong>SystemCache</strong>(<a href="http://api.dartlang.org/dart_core/String.html">String</a> rootDir) <a class="anchor-link" href="#SystemCache"
+              title="Permalink to SystemCache.SystemCache">#</a></h4>
+<div class="doc">
+<p>Creates a new package cache which is backed by the given directory on the
+user's file system.</p>
+<pre class="source">
+SystemCache(this.rootDir);
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="SystemCache.withSources">
+<button class="show-code">Code</button>
+factory <strong>SystemCache.withSources</strong>(<a href="http://api.dartlang.org/dart_core/String.html">String</a> rootDir) <a class="anchor-link" href="#SystemCache.withSources"
+              title="Permalink to SystemCache.SystemCache.withSources">#</a></h4>
+<div class="doc">
+<p>Creates a system cache and registers the standard set of sources.</p>
+<pre class="source">
+factory SystemCache.withSources(String rootDir) {
+ var cache = new SystemCache(rootDir);
+
+ return cache;
+}
+</pre>
+</div>
+</div>
+</div>
+<div>
+<h3>Properties</h3>
+<div class="field"><h4 id="rootDir">
+<button class="show-code">Code</button>
+final <a href="http://api.dartlang.org/dart_core/String.html">String</a>         <strong>rootDir</strong> <a class="anchor-link"
+            href="#rootDir"
+            title="Permalink to SystemCache.rootDir">#</a>
+        </h4>
+        <div class="doc">
+<p>The root directory where this package cache is located.</p>
+<pre class="source">
+final String rootDir
+</pre>
+</div>
+</div>
+<div class="field"><h4 id="tempDir">
+<button class="show-code">Code</button>
+final <a href="http://api.dartlang.org/dart_core/String.html">String</a>         <strong>tempDir</strong> <a class="anchor-link"
+            href="#tempDir"
+            title="Permalink to SystemCache.tempDir">#</a>
+        </h4>
+        <div class="doc">
+<pre class="source">
+String get tempDir =&gt; path.join(rootDir, '_temp');
+</pre>
+</div>
+</div>
+</div>
+<div>
+<h3>Methods</h3>
+<div class="method"><h4 id="createTempDir">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_core/String.html">String</a> <strong>createTempDir</strong>() <a class="anchor-link" href="#createTempDir"
+              title="Permalink to SystemCache.createTempDir">#</a></h4>
+<div class="doc">
+<p>Create a new temporary directory within the system cache. The system
+cache maintains its own temporary directory that it uses to stage
+packages into while installing. It uses this instead of the OS's system
+temp directory to ensure that it's on the same volume as the pub system
+cache so that it can move the directory from it.</p>
+<pre class="source">
+String createTempDir() {
+ var temp = ensureDir(tempDir);
+ return io.createTempDir(path.join(temp, 'dir'));
+}
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="deleteTempDir">
+<button class="show-code">Code</button>
+void <strong>deleteTempDir</strong>() <a class="anchor-link" href="#deleteTempDir"
+              title="Permalink to SystemCache.deleteTempDir">#</a></h4>
+<div class="doc">
+<p>Deletes the system cache's internal temp directory.</p>
+<pre class="source">
+void deleteTempDir() {
+ log.fine('Clean up system cache temp directory $tempDir.');
+ if (dirExists(tempDir)) deleteEntry(tempDir);
+}
+</pre>
+</div>
+</div>
+</div>
+        </div>
+        <div class="clear"></div>
+        </div>
+        <div class="footer">
+          
+        </div>
+        <script async src="../client-live-nav.js"></script>
+        </body></html>
+        
