@@ -1,0 +1,125 @@
+        <!DOCTYPE html>
+        <html>
+        <head>
+                <meta charset="utf-8">
+        <title>SimpleOAuth2 class / google_oauth2_browser Library / Dart Documentation</title>
+        <link rel="stylesheet" type="text/css"
+            href="../styles.css">
+        <link href="//fonts.googleapis.com/css?family=Open+Sans:400,600,700,800" rel="stylesheet" type="text/css">
+        <link rel="shortcut icon" href="../favicon.ico">
+        
+        </head>
+        <body data-library="google_oauth2_browser" data-type="SimpleOAuth2">
+        <div class="page">
+        <div class="header">
+          <a href="../index.html"><div class="logo"></div></a>
+          <a href="../index.html">Dart Documentation</a>
+         &rsaquo; <a href="../google_oauth2_browser.html">google_oauth2_browser</a> &rsaquo; <a href="../google_oauth2_browser/SimpleOAuth2.html">SimpleOAuth2</a>        <div id="search-box">
+          <input type="search" name="q" id="q" autocomplete="off"
+              class="search-input" placeholder="Search API">
+        </div>
+        
+      </div>
+      <div class="drop-down" id="drop-down"></div>
+      
+        <div class="nav">
+        
+</div>
+<div class="content">
+        <h2><strong>SimpleOAuth2</strong>
+          class
+        </h2>
+        
+<button id="show-inherited" class="show-inherited">Hide inherited</button>
+<div class="doc">
+<p> A simple OAuth2 authentication context which can use if you already have a <a class="crossref" href="../google_oauth2_browser/SimpleOAuth2.html#token">token</a>
+ via another mechanism, like f.e. the Chrome Extension Identity API</p>
+<pre class="source">
+class SimpleOAuth2 extends OAuth2 {
+ String token;
+ String tokenType;
+
+ /// Creates an OAuth2 context for the application using [token] for authentication
+ SimpleOAuth2(String this.token, {String this.tokenType: "Bearer"}) : super();
+
+ Future&lt;HttpRequest&gt; authenticate(HttpRequest request) {
+   request.setRequestHeader("Authorization", "${tokenType} ${token}");
+   return new Future.value(request);
+ }
+}
+</pre>
+</div>
+<h3>Extends</h3>
+<p>
+<span class="type-box"><span class="icon-class"></span><a href="../google_oauth2_browser/OAuth2.html">OAuth2</a></span>&nbsp;&gt;&nbsp;<span class="type-box"><span class="icon-class"></span><strong>SimpleOAuth2</strong></span></p>
+<div>
+<h3>Constructors</h3>
+<div class="method"><h4 id="SimpleOAuth2">
+<button class="show-code">Code</button>
+new <strong>SimpleOAuth2</strong>(<a href="http://api.dartlang.org/dart_core/String.html">String</a> token, {<a href="http://api.dartlang.org/dart_core/String.html">String</a> tokenType: "Bearer"}) <a class="anchor-link" href="#SimpleOAuth2"
+              title="Permalink to SimpleOAuth2.SimpleOAuth2">#</a></h4>
+<div class="doc">
+<p>Creates an OAuth2 context for the application using 
+<span class="param">token</span> for authentication</p>
+<pre class="source">
+SimpleOAuth2(String this.token, {String this.tokenType: "Bearer"}) : super();
+</pre>
+</div>
+</div>
+</div>
+<div>
+<h3>Properties</h3>
+<div class="field"><h4 id="token">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_core/String.html">String</a>         <strong>token</strong> <a class="anchor-link"
+            href="#token"
+            title="Permalink to SimpleOAuth2.token">#</a>
+        </h4>
+        <div class="doc">
+<pre class="source">
+String token
+</pre>
+</div>
+</div>
+<div class="field"><h4 id="tokenType">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_core/String.html">String</a>         <strong>tokenType</strong> <a class="anchor-link"
+            href="#tokenType"
+            title="Permalink to SimpleOAuth2.tokenType">#</a>
+        </h4>
+        <div class="doc">
+<pre class="source">
+String tokenType
+</pre>
+</div>
+</div>
+</div>
+<div>
+<h3>Methods</h3>
+<div class="method"><h4 id="authenticate">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_async/Future.html">Future</a>&lt;<a href="http://api.dartlang.org/dart_html/HttpRequest.html">HttpRequest</a>&gt; <strong>authenticate</strong>(<a href="http://api.dartlang.org/dart_html/HttpRequest.html">HttpRequest</a> request) <a class="anchor-link" href="#authenticate"
+              title="Permalink to SimpleOAuth2.authenticate">#</a></h4>
+<div class="doc">
+<div class="inherited">
+<p>Take a 
+<span class="param">request</span> and return the request with the authorization headers set correctly </p>
+<div class="docs-inherited-from">docs inherited from <a href="../google_oauth2_browser/OAuth2.html">OAuth2</a> </div></div>
+<pre class="source">
+Future&lt;HttpRequest&gt; authenticate(HttpRequest request) {
+ request.setRequestHeader("Authorization", "${tokenType} ${token}");
+ return new Future.value(request);
+}
+</pre>
+</div>
+</div>
+</div>
+        </div>
+        <div class="clear"></div>
+        </div>
+        <div class="footer">
+          
+        </div>
+        <script async src="../client-live-nav.js"></script>
+        </body></html>
+        

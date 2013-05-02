@@ -1,0 +1,496 @@
+        <!DOCTYPE html>
+        <html>
+        <head>
+                <meta charset="utf-8">
+        <title>MultipartRequest class / multipart_request Library / Dart Documentation</title>
+        <link rel="stylesheet" type="text/css"
+            href="../styles.css">
+        <link href="//fonts.googleapis.com/css?family=Open+Sans:400,600,700,800" rel="stylesheet" type="text/css">
+        <link rel="shortcut icon" href="../favicon.ico">
+        
+        </head>
+        <body data-library="multipart_request" data-type="MultipartRequest">
+        <div class="page">
+        <div class="header">
+          <a href="../index.html"><div class="logo"></div></a>
+          <a href="../index.html">Dart Documentation</a>
+         &rsaquo; <a href="../multipart_request.html">multipart_request</a> &rsaquo; <a href="../multipart_request/MultipartRequest.html">MultipartRequest</a>        <div id="search-box">
+          <input type="search" name="q" id="q" autocomplete="off"
+              class="search-input" placeholder="Search API">
+        </div>
+        
+      </div>
+      <div class="drop-down" id="drop-down"></div>
+      
+        <div class="nav">
+        
+</div>
+<div class="content">
+        <h2><strong>MultipartRequest</strong>
+          class
+        </h2>
+        
+<button id="show-inherited" class="show-inherited">Hide inherited</button>
+<div class="doc">
+<p>A <code>multipart/form-data</code> request. Such a request has both string <a class="crossref" href="../multipart_request/MultipartRequest.html#fields">fields</a>,
+which function as normal form fields, and (potentially streamed) binary
+<a class="crossref" href="../multipart_request/MultipartRequest.html#files">files</a>.</p>
+<p>This request automatically sets the Content-Type header to
+<code>multipart/form-data</code> and the Content-Transfer-Encoding header to <code>binary</code>.
+These values will override any values set by the user.</p>
+<pre><code>var uri = Uri.parse("http://pub.dartlang.org/packages/create");
+var request = new http.MultipartRequest("POST", url);
+request.fields['user'] = 'nweiz@google.com';
+request.files.add(new http.MultipartFile.fromFile(
+    'package',
+    new File('build/package.tar.gz'),
+    contentType: new ContentType('application', 'x-tar'));
+request.send().then((response) {
+  if (response.statusCode == 200) print("Uploaded!");
+});
+</code></pre>
+<pre class="source">
+class MultipartRequest extends BaseRequest {
+ /// The total length of the multipart boundaries used when building the
+ /// request body. According to http://tools.ietf.org/html/rfc1341.html, this
+ /// can't be longer than 70.
+ static final int _BOUNDARY_LENGTH = 70;
+
+ static final Random _random = new Random();
+
+ /// The form fields to send for this request.
+ final Map&lt;String, String&gt; fields;
+
+ /// The private version of [files].
+ final List&lt;MultipartFile&gt; _files;
+
+ /// Creates a new [MultipartRequest].
+ MultipartRequest(String method, Uri url)
+   : super(method, url),
+     fields = {},
+     _files = &lt;MultipartFile&gt;[];
+
+ /// The list of files to upload for this request.
+ List&lt;MultipartFile&gt; get files =&gt; _files;
+
+ /// The total length of the request body, in bytes. This is calculated from
+ /// [fields] and [files] and cannot be set manually.
+ int get contentLength {
+   var length = 0;
+
+   fields.forEach((name, value) {
+     length += "--".length + _BOUNDARY_LENGTH + "\r\n".length +
+         _headerForField(name, value).length +
+         encodeUtf8(value).length + "\r\n".length;
+   });
+
+   for (var file in _files) {
+     length += "--".length + _BOUNDARY_LENGTH + "\r\n".length +
+         _headerForFile(file).length +
+         file.length + "\r\n".length;
+   }
+
+   return length + "--".length + _BOUNDARY_LENGTH + "--\r\n".length;
+ }
+
+ set contentLength(int value) {
+   throw new UnsupportedError("Cannot set the contentLength property of "
+       "multipart requests.");
+ }
+
+ /// Freezes all mutable fields and returns a single-subscription [ByteStream]
+ /// that will emit the request body.
+ ByteStream finalize() {
+   // TODO(nweiz): freeze fields and files
+   var boundary = _boundaryString(_BOUNDARY_LENGTH);
+   headers['content-type'] = 'multipart/form-data; boundary="$boundary"';
+   headers['content-transfer-encoding'] = 'binary';
+   super.finalize();
+
+   var controller = new StreamController&lt;List&lt;int&gt;&gt;();
+
+   void writeAscii(String string) {
+     assert(isPlainAscii(string));
+     controller.add(string.codeUnits);
+   }
+
+   writeUtf8(String string) =&gt; controller.add(encodeUtf8(string));
+   writeLine() =&gt; controller.add([13, 10]); // \r\n
+
+   fields.forEach((name, value) {
+     writeAscii('--$boundary\r\n');
+     writeAscii(_headerForField(name, value));
+     writeUtf8(value);
+     writeLine();
+   });
+
+   Future.forEach(_files, (file) {
+     writeAscii('--$boundary\r\n');
+     writeAscii(_headerForFile(file));
+     return writeStreamToSink(file.finalize(), controller)
+       .then((_) =&gt; writeLine());
+   }).then((_) {
+     // TODO(nweiz): pass any errors propagated through this future on to
+     // the stream. See issue 3657.
+     writeAscii('--$boundary--\r\n');
+     controller.close();
+   });
+
+   return new ByteStream(controller.stream);
+ }
+
+ /// All character codes that are valid in multipart boundaries. From
+ /// http://tools.ietf.org/html/rfc2046#section-5.1.1.
+ static final List&lt;int&gt; _BOUNDARY_CHARACTERS = const &lt;int&gt;[
+   39, 40, 41, 43, 95, 44, 45, 46, 47, 58, 61, 63, 48, 49, 50, 51, 52, 53, 54,
+   55, 56, 57, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80,
+   81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 97, 98, 99, 100, 101, 102, 103,
+   104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118,
+   119, 120, 121, 122
+ ];
+
+ /// Returns the header string for a field. The return value is guaranteed to
+ /// contain only ASCII characters.
+ String _headerForField(String name, String value) {
+   // http://tools.ietf.org/html/rfc2388 mandates some complex encodings for
+   // field names and file names, but in practice user agents seem to just
+   // URL-encode them so we do the same.
+   var header = 'content-disposition: form-data; name="${encodeUri(name)}"';
+   if (!isPlainAscii(value)) {
+     header = '$header\r\ncontent-type: text/plain; charset=utf-8';
+   }
+   return '$header\r\n\r\n';
+ }
+
+ /// Returns the header string for a file. The return value is guaranteed to
+ /// contain only ASCII characters.
+ String _headerForFile(MultipartFile file) {
+   var header = 'content-type: ${file.contentType}\r\n'
+     'content-disposition: form-data; name="${encodeUri(file.field)}"';
+
+   if (file.filename != null) {
+     header = '$header; filename="${encodeUri(file.filename)}"';
+   }
+   return '$header\r\n\r\n';
+ }
+
+ /// Returns a randomly-generated multipart boundary string of the given
+ /// [length].
+ String _boundaryString(int length) {
+   var prefix = "dart-http-boundary-";
+   var list = new List&lt;int&gt;(length - prefix.length);
+   for (var i = 0; i &lt; list.length; i++) {
+     list[i] = _BOUNDARY_CHARACTERS[
+         _random.nextInt(_BOUNDARY_CHARACTERS.length)];
+   }
+   return "$prefix${new String.fromCharCodes(list)}";
+ }
+}
+</pre>
+</div>
+<h3>Extends</h3>
+<p>
+<span class="type-box"><span class="icon-class"></span><a href="../base_request/BaseRequest.html">BaseRequest</a></span>&nbsp;&gt;&nbsp;<span class="type-box"><span class="icon-class"></span><strong>MultipartRequest</strong></span></p>
+<div>
+<h3>Constructors</h3>
+<div class="method"><h4 id="MultipartRequest">
+<button class="show-code">Code</button>
+new <strong>MultipartRequest</strong>(<a href="http://api.dartlang.org/dart_core/String.html">String</a> method, <a href="http://api.dartlang.org/dart_uri/Uri.html">Uri</a> url) <a class="anchor-link" href="#MultipartRequest"
+              title="Permalink to MultipartRequest.MultipartRequest">#</a></h4>
+<div class="doc">
+<p>Creates a new <a class="crossref" href="../multipart_request/MultipartRequest.html#MultipartRequest">MultipartRequest</a>.</p>
+<pre class="source">
+MultipartRequest(String method, Uri url)
+ : super(method, url),
+   fields = {},
+   _files = &lt;MultipartFile&gt;[];
+</pre>
+</div>
+</div>
+</div>
+<div>
+<h3>Properties</h3>
+<div class="field"><h4 id="contentLength">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_core/int.html">int</a>         <strong>contentLength</strong> <a class="anchor-link"
+            href="#contentLength"
+            title="Permalink to MultipartRequest.contentLength">#</a>
+        </h4>
+        <div class="doc">
+<p>The total length of the request body, in bytes. This is calculated from
+<a class="crossref" href="../multipart_request/MultipartRequest.html#fields">fields</a> and <a class="crossref" href="../multipart_request/MultipartRequest.html#files">files</a> and cannot be set manually.</p>
+<pre class="source">
+int get contentLength {
+ var length = 0;
+
+ fields.forEach((name, value) {
+   length += "--".length + _BOUNDARY_LENGTH + "\r\n".length +
+       _headerForField(name, value).length +
+       encodeUtf8(value).length + "\r\n".length;
+ });
+
+ for (var file in _files) {
+   length += "--".length + _BOUNDARY_LENGTH + "\r\n".length +
+       _headerForFile(file).length +
+       file.length + "\r\n".length;
+ }
+
+ return length + "--".length + _BOUNDARY_LENGTH + "--\r\n".length;
+}
+</pre>
+<pre class="source">
+set contentLength(int value) {
+ throw new UnsupportedError("Cannot set the contentLength property of "
+     "multipart requests.");
+}
+</pre>
+</div>
+</div>
+<div class="field"><h4 id="fields">
+<button class="show-code">Code</button>
+final <a href="http://api.dartlang.org/dart_core/Map.html">Map</a>&lt;<a href="http://api.dartlang.org/dart_core/String.html">String</a>, <a href="http://api.dartlang.org/dart_core/String.html">String</a>&gt;         <strong>fields</strong> <a class="anchor-link"
+            href="#fields"
+            title="Permalink to MultipartRequest.fields">#</a>
+        </h4>
+        <div class="doc">
+<p>The form fields to send for this request.</p>
+<pre class="source">
+final Map&lt;String, String&gt; fields
+</pre>
+</div>
+</div>
+<div class="field"><h4 id="files">
+<button class="show-code">Code</button>
+final <a href="http://api.dartlang.org/dart_core/List.html">List</a>&lt;<a href="../multipart_file/MultipartFile.html">MultipartFile</a>&gt;         <strong>files</strong> <a class="anchor-link"
+            href="#files"
+            title="Permalink to MultipartRequest.files">#</a>
+        </h4>
+        <div class="doc">
+<p>The list of files to upload for this request.</p>
+<pre class="source">
+List&lt;MultipartFile&gt; get files =&gt; _files;
+</pre>
+</div>
+</div>
+<div class="field inherited"><h4 id="finalized">
+<button class="show-code">Code</button>
+final <a href="http://api.dartlang.org/dart_core/bool.html">bool</a>         <strong>finalized</strong> <a class="anchor-link"
+            href="#finalized"
+            title="Permalink to MultipartRequest.finalized">#</a>
+        </h4>
+        <div class="inherited-from">inherited from <a href="../base_request/BaseRequest.html">BaseRequest</a> </div><div class="doc">
+<p>Whether the request has been finalized.</p>
+<pre class="source">
+bool get finalized =&gt; _finalized;
+</pre>
+</div>
+</div>
+<div class="field inherited"><h4 id="followRedirects">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_core/bool.html">bool</a>         <strong>followRedirects</strong> <a class="anchor-link"
+            href="#followRedirects"
+            title="Permalink to MultipartRequest.followRedirects">#</a>
+        </h4>
+        <div class="inherited-from">inherited from <a href="../base_request/BaseRequest.html">BaseRequest</a> </div><div class="doc">
+<p>Whether the client should follow redirects while resolving this request.
+Defaults to true.</p>
+<pre class="source">
+bool get followRedirects =&gt; _followRedirects;
+</pre>
+<pre class="source">
+set followRedirects(bool value) {
+ _checkFinalized();
+ _followRedirects = value;
+}
+</pre>
+</div>
+</div>
+<div class="field inherited"><h4 id="headers">
+<button class="show-code">Code</button>
+final <a href="http://api.dartlang.org/dart_core/Map.html">Map</a>&lt;<a href="http://api.dartlang.org/dart_core/String.html">String</a>, <a href="http://api.dartlang.org/dart_core/String.html">String</a>&gt;         <strong>headers</strong> <a class="anchor-link"
+            href="#headers"
+            title="Permalink to MultipartRequest.headers">#</a>
+        </h4>
+        <div class="inherited-from">inherited from <a href="../base_request/BaseRequest.html">BaseRequest</a> </div><div class="doc">
+<p>The headers for this request.</p>
+<pre class="source">
+final Map&lt;String, String&gt; headers
+</pre>
+</div>
+</div>
+<div class="field inherited"><h4 id="maxRedirects">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_core/int.html">int</a>         <strong>maxRedirects</strong> <a class="anchor-link"
+            href="#maxRedirects"
+            title="Permalink to MultipartRequest.maxRedirects">#</a>
+        </h4>
+        <div class="inherited-from">inherited from <a href="../base_request/BaseRequest.html">BaseRequest</a> </div><div class="doc">
+<p>The maximum number of redirects to follow when <code>followRedirects</code> is true.
+If this number is exceeded the <code>BaseResponse</code> future will signal a
+<code>RedirectLimitExceeded</code> exception. Defaults to 5.</p>
+<pre class="source">
+int get maxRedirects =&gt; _maxRedirects;
+</pre>
+<pre class="source">
+set maxRedirects(int value) {
+ _checkFinalized();
+ _maxRedirects = value;
+}
+</pre>
+</div>
+</div>
+<div class="field inherited"><h4 id="method">
+<button class="show-code">Code</button>
+final <a href="http://api.dartlang.org/dart_core/String.html">String</a>         <strong>method</strong> <a class="anchor-link"
+            href="#method"
+            title="Permalink to MultipartRequest.method">#</a>
+        </h4>
+        <div class="inherited-from">inherited from <a href="../base_request/BaseRequest.html">BaseRequest</a> </div><div class="doc">
+<p>The HTTP method of the request. Most commonly "GET" or "POST", less
+commonly "HEAD", "PUT", or "DELETE". Non-standard method names are also
+supported.</p>
+<pre class="source">
+final String method
+</pre>
+</div>
+</div>
+<div class="field inherited"><h4 id="persistentConnection">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_core/bool.html">bool</a>         <strong>persistentConnection</strong> <a class="anchor-link"
+            href="#persistentConnection"
+            title="Permalink to MultipartRequest.persistentConnection">#</a>
+        </h4>
+        <div class="inherited-from">inherited from <a href="../base_request/BaseRequest.html">BaseRequest</a> </div><div class="doc">
+<p>Whether a persistent connection should be maintained with the server.
+Defaults to true.</p>
+<pre class="source">
+bool get persistentConnection =&gt; _persistentConnection;
+</pre>
+<pre class="source">
+set persistentConnection(bool value) {
+ _checkFinalized();
+ _persistentConnection = value;
+}
+</pre>
+</div>
+</div>
+<div class="field inherited"><h4 id="url">
+<button class="show-code">Code</button>
+final <a href="http://api.dartlang.org/dart_uri/Uri.html">Uri</a>         <strong>url</strong> <a class="anchor-link"
+            href="#url"
+            title="Permalink to MultipartRequest.url">#</a>
+        </h4>
+        <div class="inherited-from">inherited from <a href="../base_request/BaseRequest.html">BaseRequest</a> </div><div class="doc">
+<p>The URL to which the request will be sent.</p>
+<pre class="source">
+final Uri url
+</pre>
+</div>
+</div>
+</div>
+<div>
+<h3>Methods</h3>
+<div class="method"><h4 id="finalize">
+<button class="show-code">Code</button>
+<a href="../byte_stream/ByteStream.html">ByteStream</a> <strong>finalize</strong>() <a class="anchor-link" href="#finalize"
+              title="Permalink to MultipartRequest.finalize">#</a></h4>
+<div class="doc">
+<p>Freezes all mutable fields and returns a single-subscription <code>ByteStream</code>
+that will emit the request body.</p>
+<pre class="source">
+ByteStream finalize() {
+ // TODO(nweiz): freeze fields and files
+ var boundary = _boundaryString(_BOUNDARY_LENGTH);
+ headers['content-type'] = 'multipart/form-data; boundary="$boundary"';
+ headers['content-transfer-encoding'] = 'binary';
+ super.finalize();
+
+ var controller = new StreamController&lt;List&lt;int&gt;&gt;();
+
+ void writeAscii(String string) {
+   assert(isPlainAscii(string));
+   controller.add(string.codeUnits);
+ }
+
+ writeUtf8(String string) =&gt; controller.add(encodeUtf8(string));
+ writeLine() =&gt; controller.add([13, 10]); // \r\n
+
+ fields.forEach((name, value) {
+   writeAscii('--$boundary\r\n');
+   writeAscii(_headerForField(name, value));
+   writeUtf8(value);
+   writeLine();
+ });
+
+ Future.forEach(_files, (file) {
+   writeAscii('--$boundary\r\n');
+   writeAscii(_headerForFile(file));
+   return writeStreamToSink(file.finalize(), controller)
+     .then((_) =&gt; writeLine());
+ }).then((_) {
+   // TODO(nweiz): pass any errors propagated through this future on to
+   // the stream. See issue 3657.
+   writeAscii('--$boundary--\r\n');
+   controller.close();
+ });
+
+ return new ByteStream(controller.stream);
+}
+</pre>
+</div>
+</div>
+<div class="method inherited"><h4 id="send">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_async/Future.html">Future</a>&lt;<a href="../streamed_response/StreamedResponse.html">StreamedResponse</a>&gt; <strong>send</strong>() <a class="anchor-link" href="#send"
+              title="Permalink to MultipartRequest.send">#</a></h4>
+<div class="inherited-from">inherited from <a href="../base_request/BaseRequest.html">BaseRequest</a> </div><div class="doc">
+<p>Sends this request.</p>
+<p>This automatically initializes a new <code>Client</code> and closes that client once
+the request is complete. If you're planning on making multiple requests to
+the same server, you should use a single <code>Client</code> for all of those
+requests.</p>
+<pre class="source">
+Future&lt;StreamedResponse&gt; send() {
+ var client = new Client();
+ return client.send(this).then((response) {
+   var stream = onDone(response.stream, client.close);
+   return new StreamedResponse(
+       new ByteStream(stream),
+       response.statusCode,
+       response.contentLength,
+       request: response.request,
+       headers: response.headers,
+       isRedirect: response.isRedirect,
+       persistentConnection: response.persistentConnection,
+       reasonPhrase: response.reasonPhrase);
+ }).catchError((e) {
+   client.close();
+   throw e;
+ });
+}
+</pre>
+</div>
+</div>
+<div class="method inherited"><h4 id="toString">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_core/String.html">String</a> <strong>toString</strong>() <a class="anchor-link" href="#toString"
+              title="Permalink to MultipartRequest.toString">#</a></h4>
+<div class="inherited-from">inherited from <a href="../base_request/BaseRequest.html">BaseRequest</a> </div><div class="doc">
+<div class="inherited">
+<p>Returns a string representation of this object.</p>
+<div class="docs-inherited-from">docs inherited from <a href="http://api.dartlang.org/dart_core/Object.html">Object</a> </div></div>
+<pre class="source">
+String toString() =&gt; "$method $url";
+</pre>
+</div>
+</div>
+</div>
+        </div>
+        <div class="clear"></div>
+        </div>
+        <div class="footer">
+          
+        </div>
+        <script async src="../client-live-nav.js"></script>
+        </body></html>
+        
