@@ -1,0 +1,120 @@
+        <!DOCTYPE html>
+        <html>
+        <head>
+                <meta charset="utf-8">
+        <title>PubProcessResult class / io Library / Dart Documentation</title>
+        <link rel="stylesheet" type="text/css"
+            href="../styles.css">
+        <link href="//fonts.googleapis.com/css?family=Open+Sans:400,600,700,800" rel="stylesheet" type="text/css">
+        <link rel="shortcut icon" href="../favicon.ico">
+        
+        </head>
+        <body data-library="io" data-type="PubProcessResult">
+        <div class="page">
+        <div class="header">
+          <a href="../index.html"><div class="logo"></div></a>
+          <a href="../index.html">Dart Documentation</a>
+         &rsaquo; <a href="../io.html">io</a> &rsaquo; <a href="../io/PubProcessResult.html">PubProcessResult</a>        <div id="search-box">
+          <input type="search" name="q" id="q" autocomplete="off"
+              class="search-input" placeholder="Search API">
+        </div>
+        
+      </div>
+      <div class="drop-down" id="drop-down"></div>
+      
+        <div class="nav">
+        
+</div>
+<div class="content">
+        <h2><strong>PubProcessResult</strong>
+          class
+        </h2>
+        
+<button id="show-inherited" class="show-inherited">Hide inherited</button>
+<div class="doc">
+<p>Contains the results of invoking a <code>Process</code> and waiting for it to complete.</p>
+<pre class="source">
+class PubProcessResult {
+ final List&lt;String&gt; stdout;
+ final List&lt;String&gt; stderr;
+ final int exitCode;
+
+ const PubProcessResult(this.stdout, this.stderr, this.exitCode);
+
+ bool get success =&gt; exitCode == 0;
+}
+</pre>
+</div>
+<div>
+<h3>Constructors</h3>
+<div class="method"><h4 id="PubProcessResult">
+<button class="show-code">Code</button>
+const <strong>PubProcessResult</strong>(<a href="http://api.dartlang.org/dart_core/List.html">List</a>&lt;<a href="http://api.dartlang.org/dart_core/String.html">String</a>&gt; stdout, <a href="http://api.dartlang.org/dart_core/List.html">List</a>&lt;<a href="http://api.dartlang.org/dart_core/String.html">String</a>&gt; stderr, <a href="http://api.dartlang.org/dart_core/int.html">int</a> exitCode) <a class="anchor-link" href="#PubProcessResult"
+              title="Permalink to PubProcessResult.PubProcessResult">#</a></h4>
+<div class="doc">
+<pre class="source">
+const PubProcessResult(this.stdout, this.stderr, this.exitCode);
+</pre>
+</div>
+</div>
+</div>
+<div>
+<h3>Properties</h3>
+<div class="field"><h4 id="exitCode">
+<button class="show-code">Code</button>
+final <a href="http://api.dartlang.org/dart_core/int.html">int</a>         <strong>exitCode</strong> <a class="anchor-link"
+            href="#exitCode"
+            title="Permalink to PubProcessResult.exitCode">#</a>
+        </h4>
+        <div class="doc">
+<pre class="source">
+final int exitCode
+</pre>
+</div>
+</div>
+<div class="field"><h4 id="stderr">
+<button class="show-code">Code</button>
+final <a href="http://api.dartlang.org/dart_core/List.html">List</a>&lt;<a href="http://api.dartlang.org/dart_core/String.html">String</a>&gt;         <strong>stderr</strong> <a class="anchor-link"
+            href="#stderr"
+            title="Permalink to PubProcessResult.stderr">#</a>
+        </h4>
+        <div class="doc">
+<pre class="source">
+final List&lt;String&gt; stderr
+</pre>
+</div>
+</div>
+<div class="field"><h4 id="stdout">
+<button class="show-code">Code</button>
+final <a href="http://api.dartlang.org/dart_core/List.html">List</a>&lt;<a href="http://api.dartlang.org/dart_core/String.html">String</a>&gt;         <strong>stdout</strong> <a class="anchor-link"
+            href="#stdout"
+            title="Permalink to PubProcessResult.stdout">#</a>
+        </h4>
+        <div class="doc">
+<pre class="source">
+final List&lt;String&gt; stdout
+</pre>
+</div>
+</div>
+<div class="field"><h4 id="success">
+<button class="show-code">Code</button>
+final <a href="http://api.dartlang.org/dart_core/bool.html">bool</a>         <strong>success</strong> <a class="anchor-link"
+            href="#success"
+            title="Permalink to PubProcessResult.success">#</a>
+        </h4>
+        <div class="doc">
+<pre class="source">
+bool get success =&gt; exitCode == 0;
+</pre>
+</div>
+</div>
+</div>
+        </div>
+        <div class="clear"></div>
+        </div>
+        <div class="footer">
+          
+        </div>
+        <script async src="../client-live-nav.js"></script>
+        </body></html>
+        

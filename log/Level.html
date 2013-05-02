@@ -1,0 +1,218 @@
+        <!DOCTYPE html>
+        <html>
+        <head>
+                <meta charset="utf-8">
+        <title>Level class / log Library / Dart Documentation</title>
+        <link rel="stylesheet" type="text/css"
+            href="../styles.css">
+        <link href="//fonts.googleapis.com/css?family=Open+Sans:400,600,700,800" rel="stylesheet" type="text/css">
+        <link rel="shortcut icon" href="../favicon.ico">
+        
+        </head>
+        <body data-library="log" data-type="Level">
+        <div class="page">
+        <div class="header">
+          <a href="../index.html"><div class="logo"></div></a>
+          <a href="../index.html">Dart Documentation</a>
+         &rsaquo; <a href="../log.html">log</a> &rsaquo; <a href="../log/Level.html">Level</a>        <div id="search-box">
+          <input type="search" name="q" id="q" autocomplete="off"
+              class="search-input" placeholder="Search API">
+        </div>
+        
+      </div>
+      <div class="drop-down" id="drop-down"></div>
+      
+        <div class="nav">
+        
+</div>
+<div class="content">
+        <h2><strong>Level</strong>
+          class
+        </h2>
+        
+<button id="show-inherited" class="show-inherited">Hide inherited</button>
+<div class="doc">
+<p>An enum type for defining the different logging levels. By default, <a class="crossref" href="../log/Level.html#ERROR">ERROR</a>
+and <a class="crossref" href="../log/Level.html#WARNING">WARNING</a> messages are printed to sterr. <a class="crossref" href="../log/Level.html#MESSAGE">MESSAGE</a> messages are printed
+to stdout, and others are ignored.</p>
+<pre class="source">
+class Level {
+ /// An error occurred and an operation could not be completed. Usually shown
+ /// to the user on stderr.
+ static const ERROR = const Level._("ERR ");
+
+ /// Something unexpected happened, but the program was able to continue,
+ /// though possibly in a degraded fashion.
+ static const WARNING = const Level._("WARN");
+
+ /// A message intended specifically to be shown to the user.
+ static const MESSAGE = const Level._("MSG ");
+
+ /// Some interaction with the external world occurred, such as a network
+ /// operation, process spawning, or file IO.
+ static const IO = const Level._("IO  ");
+
+ /// Incremental output during pub's version constraint solver.
+ static const SOLVER = const Level._("SLVR");
+
+ /// Fine-grained and verbose additional information. Can be used to provide
+ /// program state context for other logs (such as what pub was doing when an
+ /// IO operation occurred) or just more detail for an operation.
+ static const FINE = const Level._("FINE");
+
+ const Level._(this.name);
+ final String name;
+
+ String toString() =&gt; name;
+ int get hashCode =&gt; name.hashCode;
+}
+</pre>
+</div>
+<div>
+<h3>Static Properties</h3>
+<div class="field"><h4 id="ERROR">
+<button class="show-code">Code</button>
+const         <strong>ERROR</strong> <a class="anchor-link"
+            href="#ERROR"
+            title="Permalink to Level.ERROR">#</a>
+        </h4>
+        <div class="doc">
+<p>An error occurred and an operation could not be completed. Usually shown
+to the user on stderr.</p>
+<pre class="source">
+static const ERROR = const Level._("ERR ")
+</pre>
+</div>
+</div>
+<div class="field"><h4 id="FINE">
+<button class="show-code">Code</button>
+const         <strong>FINE</strong> <a class="anchor-link"
+            href="#FINE"
+            title="Permalink to Level.FINE">#</a>
+        </h4>
+        <div class="doc">
+<p>Fine-grained and verbose additional information. Can be used to provide
+program state context for other logs (such as what pub was doing when an
+IO operation occurred) or just more detail for an operation.</p>
+<pre class="source">
+static const FINE = const Level._("FINE")
+</pre>
+</div>
+</div>
+<div class="field"><h4 id="IO">
+<button class="show-code">Code</button>
+const         <strong>IO</strong> <a class="anchor-link"
+            href="#IO"
+            title="Permalink to Level.IO">#</a>
+        </h4>
+        <div class="doc">
+<p>Some interaction with the external world occurred, such as a network
+operation, process spawning, or file IO.</p>
+<pre class="source">
+static const IO = const Level._("IO  ")
+</pre>
+</div>
+</div>
+<div class="field"><h4 id="MESSAGE">
+<button class="show-code">Code</button>
+const         <strong>MESSAGE</strong> <a class="anchor-link"
+            href="#MESSAGE"
+            title="Permalink to Level.MESSAGE">#</a>
+        </h4>
+        <div class="doc">
+<p>A message intended specifically to be shown to the user.</p>
+<pre class="source">
+static const MESSAGE = const Level._("MSG ")
+</pre>
+</div>
+</div>
+<div class="field"><h4 id="SOLVER">
+<button class="show-code">Code</button>
+const         <strong>SOLVER</strong> <a class="anchor-link"
+            href="#SOLVER"
+            title="Permalink to Level.SOLVER">#</a>
+        </h4>
+        <div class="doc">
+<p>Incremental output during pub's version constraint solver.</p>
+<pre class="source">
+static const SOLVER = const Level._("SLVR")
+</pre>
+</div>
+</div>
+<div class="field"><h4 id="WARNING">
+<button class="show-code">Code</button>
+const         <strong>WARNING</strong> <a class="anchor-link"
+            href="#WARNING"
+            title="Permalink to Level.WARNING">#</a>
+        </h4>
+        <div class="doc">
+<p>Something unexpected happened, but the program was able to continue,
+though possibly in a degraded fashion.</p>
+<pre class="source">
+static const WARNING = const Level._("WARN")
+</pre>
+</div>
+</div>
+</div>
+<div>
+<h3>Properties</h3>
+<div class="field"><h4 id="hashCode">
+<button class="show-code">Code</button>
+final <a href="http://api.dartlang.org/dart_core/int.html">int</a>         <strong>hashCode</strong> <a class="anchor-link"
+            href="#hashCode"
+            title="Permalink to Level.hashCode">#</a>
+        </h4>
+        <div class="doc">
+<div class="inherited">
+<p>Get a hash code for this object.</p>
+<p>All objects have hash codes. Hash codes are guaranteed to be the
+same for objects that are equal when compared using the equality
+operator <code>==</code>. Other than that there are no guarantees about
+the hash codes. They will not be consistent between runs and
+there are no distribution guarantees.</p>
+<p>If a subclass overrides <a class="crossref" href="../log/Level.html#hashCode">hashCode</a> it should override the
+equality operator as well to maintain consistency.</p>
+<div class="docs-inherited-from">docs inherited from <a href="http://api.dartlang.org/dart_core/Object.html">Object</a> </div></div>
+<pre class="source">
+int get hashCode =&gt; name.hashCode;
+</pre>
+</div>
+</div>
+<div class="field"><h4 id="name">
+<button class="show-code">Code</button>
+final <a href="http://api.dartlang.org/dart_core/String.html">String</a>         <strong>name</strong> <a class="anchor-link"
+            href="#name"
+            title="Permalink to Level.name">#</a>
+        </h4>
+        <div class="doc">
+<pre class="source">
+final String name
+</pre>
+</div>
+</div>
+</div>
+<div>
+<h3>Methods</h3>
+<div class="method"><h4 id="toString">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_core/String.html">String</a> <strong>toString</strong>() <a class="anchor-link" href="#toString"
+              title="Permalink to Level.toString">#</a></h4>
+<div class="doc">
+<div class="inherited">
+<p>Returns a string representation of this object.</p>
+<div class="docs-inherited-from">docs inherited from <a href="http://api.dartlang.org/dart_core/Object.html">Object</a> </div></div>
+<pre class="source">
+String toString() =&gt; name;
+</pre>
+</div>
+</div>
+</div>
+        </div>
+        <div class="clear"></div>
+        </div>
+        <div class="footer">
+          
+        </div>
+        <script async src="../client-live-nav.js"></script>
+        </body></html>
+        

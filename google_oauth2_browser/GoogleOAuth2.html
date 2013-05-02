@@ -1,0 +1,461 @@
+        <!DOCTYPE html>
+        <html>
+        <head>
+                <meta charset="utf-8">
+        <title>GoogleOAuth2 class / google_oauth2_browser Library / Dart Documentation</title>
+        <link rel="stylesheet" type="text/css"
+            href="../styles.css">
+        <link href="//fonts.googleapis.com/css?family=Open+Sans:400,600,700,800" rel="stylesheet" type="text/css">
+        <link rel="shortcut icon" href="../favicon.ico">
+        
+        </head>
+        <body data-library="google_oauth2_browser" data-type="GoogleOAuth2">
+        <div class="page">
+        <div class="header">
+          <a href="../index.html"><div class="logo"></div></a>
+          <a href="../index.html">Dart Documentation</a>
+         &rsaquo; <a href="../google_oauth2_browser.html">google_oauth2_browser</a> &rsaquo; <a href="../google_oauth2_browser/GoogleOAuth2.html">GoogleOAuth2</a>        <div id="search-box">
+          <input type="search" name="q" id="q" autocomplete="off"
+              class="search-input" placeholder="Search API">
+        </div>
+        
+      </div>
+      <div class="drop-down" id="drop-down"></div>
+      
+        <div class="nav">
+        
+</div>
+<div class="content">
+        <h2><strong>GoogleOAuth2</strong>
+          class
+        </h2>
+        
+<button id="show-inherited" class="show-inherited">Hide inherited</button>
+<div class="doc">
+<p>An OAuth2 authentication context.</p>
+<pre class="source">
+class GoogleOAuth2 extends OAuth2 {
+ String _clientId;
+ List&lt;String&gt; _scopes;
+ List&lt;String&gt; _request_visible_actions;
+ String _provider;
+ Function _tokenLoaded;
+
+ Future&lt;_ProxyChannel&gt; _channel;
+
+ /// Future of the token we're waiting for.
+ Future&lt;Token&gt; _tokenFuture;
+ /// Destination for not-yet-validated tokens we're waiting to receive over
+ /// the proxy channel.
+ Completer&lt;Token&gt; _tokenCompleter;
+ /// The last fetched token.
+ Token __token; // Double-underscore because it has a private setter _token.
+
+ /// Creates an OAuth2 context for the application identified by [clientId]
+ /// and the permissions described by [scopes].
+ /// If [tokenLoaded] is provided, it will be called with a [Token] when one
+ /// is available. This can be used e.g. to set up a 'logged in' view.
+ GoogleOAuth2(
+   String this._clientId,
+   List&lt;String&gt; this._scopes,
+   {
+     List&lt;String&gt; request_visible_actions: null,
+     String provider: "https://accounts.google.com/o/oauth2/",
+     tokenLoaded(Token token),
+     bool autoLogin: false
+   }
+ ) : _provider = provider, _tokenLoaded = tokenLoaded, _request_visible_actions = request_visible_actions, super()
+ {
+   _channel = _createFutureChannel();
+   // Attempt an immediate login, we may already be authorized.
+   if (autoLogin) {
+     login(immediate:true)
+       .then((t) =&gt; print("Automatic login successful"))
+       .catchError((e) =&gt; print("$e"));
+   }
+ }
+
+ /// Set up the proxy iframe in the provider's origin that will receive
+ /// postMessages and relay them to us.
+ /// This completes asynchronously as the proxy iframe is not ready to use
+ /// until we've received an 'oauth2relayReady' message from it.
+ Future&lt;_ProxyChannel&gt; _createFutureChannel() {
+   final completer = new Completer&lt;_ProxyChannel&gt;();
+   var channel;
+   channel = new _ProxyChannel(_provider, (subject, args) {
+     switch (subject) {
+       case "oauth2relayReady":
+         completer.complete(channel);
+         break;
+       case "oauth2callback":
+         try {
+           Token token = Token._parse(args[0]);
+           _tokenCompleter.complete(token);
+         } catch (exception) {
+           _tokenCompleter.completeError(exception);
+         }
+         break;
+     }
+   });
+   return completer.future;
+ }
+
+ /// Get the URI that prompts the user for pemission (if required).
+ String _getAuthorizeUri(bool immediate) {
+   Map&lt;String, String&gt; queryParams = {
+     "response_type": "token",
+     "client_id": _clientId,
+     "origin": window.location.origin,
+     "redirect_uri": "postmessage", // Response will post to the proxy iframe
+     "scope": _scopes.join(" "),
+     "immediate": immediate,
+   };
+   if (_request_visible_actions != null &amp;&amp; _request_visible_actions.length &gt; 0) {
+     queryParams["request_visible_actions"] = _request_visible_actions.join(" ");
+   }
+   return new UrlPattern("${_provider}auth").generate({}, queryParams);
+ }
+
+ /// Deletes the stored token
+ logout() {
+   _token = null;
+ }
+
+ /// Attempt to authenticate.
+ /// If you have an existing valid token, it will be immediately returned.
+ /// If you have an expired token, it will be silently renewed (override
+ ///   with immediate:false)
+ /// If you have no token, a popup prompt will be displayed.
+ /// If the user declines, closes the popup, or the service returns a token
+ /// that cannot be validated, an exception will be delivered.
+ Future&lt;Token&gt; login({immediate: null}) {
+   if (token != null) {
+     if (token.expired) {
+       if (immediate == null) {
+         immediate = true; // We should be able to simply renew
+       }
+     } else { // We already have a good token
+       return new Future&lt;Token&gt;.value(token);
+     }
+   }
+   if (immediate == null) {
+     immediate = false;
+   }
+
+   // Login may already be in progress
+   if (_tokenFuture != null) {
+     // An in-progress request will satisfy an immediate request
+     // (even if it's not immediate).
+     if (!immediate) {
+       Completer result = new Completer&lt;Token&gt;();
+       _tokenFuture
+         .then((value) =&gt; result.complete(value))
+         .catchError((e) {
+           login(immediate:immediate)
+             .then((value) =&gt; result.complete(value))
+             .catchError((e) =&gt; result.completeError(e));
+         });
+       return result.future;
+     }
+   } else {
+     Completer&lt;Token&gt; tokenCompleter = new Completer();
+     tokenCompleter.future
+       .then((token) {
+         _tokenFuture = null;
+         _token = token;
+       })
+       .catchError((e) {
+         _tokenFuture = null;
+         _token = null;
+       });
+
+     _tokenFuture = tokenCompleter.future;
+
+     completeByPromptingUser() {
+       _tokenCompleter = _wrapValidation(tokenCompleter);
+
+       // Synchronous if the channel is already open -&gt; avoids popup blocker
+
+       _channel
+         .then((value) {
+           String uri = _getAuthorizeUri(immediate);
+           if (immediate) {
+             IFrameElement iframe = _iframe(uri);
+             _tokenCompleter.future.whenComplete(() =&gt; iframe.remove());
+           } else {
+             WindowBase popup = _popup(uri);
+             new _WindowPoller(_tokenCompleter, popup).poll();
+           }
+         })
+         .catchError((e) {
+           return _tokenCompleter.completeError(e);
+         });
+     }
+
+     final stored = _storedToken;
+     if ((stored != null) &amp;&amp; !stored.expired) {
+       stored.validate(_clientId)
+         .then((v) =&gt; tokenCompleter.complete(stored))
+         .catchError((e) =&gt; completeByPromptingUser());
+     } else {
+       completeByPromptingUser();
+     }
+   }
+   return _tokenFuture;
+ }
+
+ Future&lt;HttpRequest&gt; authenticate(HttpRequest request) =&gt;
+     login().then((token) {
+       request.setRequestHeader("Authorization", "${token.type} ${token.data}");
+       return request;
+     });
+
+ /// Returns the OAuth2 token, if one is currently available.
+ Token get token =&gt; __token;
+
+ set _token(Token value) {
+   final invokeCallbacks = (__token == null) &amp;&amp; (value != null);
+   try {
+     _storedToken = value;
+   } catch (e) {
+     print("Failed to cache OAuth2 token: $e");
+   }
+   __token = value;
+   if (invokeCallbacks &amp;&amp; (_tokenLoaded != null)) {
+     var timer = new Timer(const Duration(milliseconds: 0), () {
+       try {
+         _tokenLoaded(value);
+       } catch (e) {
+         print("Failed to invoke tokenLoaded callback: $e");
+       }
+     });
+   }
+ }
+
+ Token get _storedToken =&gt; window.localStorage.containsKey(_storageKey)
+     ? new Token.fromJson(window.localStorage[_storageKey])
+     : null;
+
+ set _storedToken(Token value) =&gt; (value == null)
+     ? window.localStorage.remove(_storageKey)
+     : window.localStorage[_storageKey] = value.toJson();
+
+ /// Returns a unique identifier for this context for use in localStorage.
+ String get _storageKey =&gt; JSON.stringify({
+   "clientId": _clientId,
+   "scopes": _scopes,
+   "provider": _provider,
+ });
+
+ /// Takes a completer that accepts validated tokens, and returns a completer
+ /// that accepts unvalidated tokens.
+ Completer&lt;Token&gt; _wrapValidation(Completer&lt;Token&gt; validTokenCompleter) {
+   Completer&lt;Token&gt; result = new Completer();
+   result.future
+     .then((value) {
+       value.validate(_clientId)
+         .then((validation) {
+           if (validation) {
+             validTokenCompleter.complete(value);
+           } else {
+             validTokenCompleter.completeError(new Exception("Server returned token is invalid"));
+           }
+         })
+         .catchError((e) =&gt; validTokenCompleter.completeError(e));
+     })
+     .catchError((e) =&gt; validTokenCompleter.completeError(e));
+
+   return result;
+ }
+}
+</pre>
+</div>
+<h3>Extends</h3>
+<p>
+<span class="type-box"><span class="icon-class"></span><a href="../google_oauth2_browser/OAuth2.html">OAuth2</a></span>&nbsp;&gt;&nbsp;<span class="type-box"><span class="icon-class"></span><strong>GoogleOAuth2</strong></span></p>
+<div>
+<h3>Constructors</h3>
+<div class="method"><h4 id="GoogleOAuth2">
+<button class="show-code">Code</button>
+new <strong>GoogleOAuth2</strong>(<a href="http://api.dartlang.org/dart_core/String.html">String</a> _clientId, <a href="http://api.dartlang.org/dart_core/List.html">List</a>&lt;<a href="http://api.dartlang.org/dart_core/String.html">String</a>&gt; _scopes, {<a href="http://api.dartlang.org/dart_core/List.html">List</a>&lt;<a href="http://api.dartlang.org/dart_core/String.html">String</a>&gt; request_visible_actions: null, <a href="http://api.dartlang.org/dart_core/String.html">String</a> provider: "https://accounts.google.com/o/oauth2/", tokenLoaded(<a href="../google_oauth2_browser/Token.html">Token</a> token), <a href="http://api.dartlang.org/dart_core/bool.html">bool</a> autoLogin: false}) <a class="anchor-link" href="#GoogleOAuth2"
+              title="Permalink to GoogleOAuth2.GoogleOAuth2">#</a></h4>
+<div class="doc">
+<p>Creates an OAuth2 context for the application identified by <code>clientId</code>
+and the permissions described by <code>scopes</code>.
+If 
+<span class="param">tokenLoaded</span> is provided, it will be called with a <a class="crossref" href="../google_oauth2_browser/Token.html">Token</a> when one
+is available. This can be used e.g. to set up a 'logged in' view.</p>
+<pre class="source">
+GoogleOAuth2(
+ String this._clientId,
+ List&lt;String&gt; this._scopes,
+ {
+   List&lt;String&gt; request_visible_actions: null,
+   String provider: "https://accounts.google.com/o/oauth2/",
+   tokenLoaded(Token token),
+   bool autoLogin: false
+ }
+) : _provider = provider, _tokenLoaded = tokenLoaded, _request_visible_actions = request_visible_actions, super()
+{
+ _channel = _createFutureChannel();
+ // Attempt an immediate login, we may already be authorized.
+ if (autoLogin) {
+   login(immediate:true)
+     .then((t) =&gt; print("Automatic login successful"))
+     .catchError((e) =&gt; print("$e"));
+ }
+}
+</pre>
+</div>
+</div>
+</div>
+<div>
+<h3>Properties</h3>
+<div class="field"><h4 id="token">
+<button class="show-code">Code</button>
+final <a href="../google_oauth2_browser/Token.html">Token</a>         <strong>token</strong> <a class="anchor-link"
+            href="#token"
+            title="Permalink to GoogleOAuth2.token">#</a>
+        </h4>
+        <div class="doc">
+<p>Returns the OAuth2 token, if one is currently available.</p>
+<pre class="source">
+Token get token =&gt; __token;
+</pre>
+</div>
+</div>
+</div>
+<div>
+<h3>Methods</h3>
+<div class="method"><h4 id="authenticate">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_async/Future.html">Future</a>&lt;<a href="http://api.dartlang.org/dart_html/HttpRequest.html">HttpRequest</a>&gt; <strong>authenticate</strong>(<a href="http://api.dartlang.org/dart_html/HttpRequest.html">HttpRequest</a> request) <a class="anchor-link" href="#authenticate"
+              title="Permalink to GoogleOAuth2.authenticate">#</a></h4>
+<div class="doc">
+<div class="inherited">
+<p>Take a 
+<span class="param">request</span> and return the request with the authorization headers set correctly </p>
+<div class="docs-inherited-from">docs inherited from <a href="../google_oauth2_browser/OAuth2.html">OAuth2</a> </div></div>
+<pre class="source">
+Future&lt;HttpRequest&gt; authenticate(HttpRequest request) =&gt;
+   login().then((token) {
+     request.setRequestHeader("Authorization", "${token.type} ${token.data}");
+     return request;
+   });
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="login">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_async/Future.html">Future</a>&lt;<a href="../google_oauth2_browser/Token.html">Token</a>&gt; <strong>login</strong>({immediate: null}) <a class="anchor-link" href="#login"
+              title="Permalink to GoogleOAuth2.login">#</a></h4>
+<div class="doc">
+<p>Attempt to authenticate.
+If you have an existing valid token, it will be immediately returned.
+If you have an expired token, it will be silently renewed (override
+  with immediate:false)
+If you have no token, a popup prompt will be displayed.
+If the user declines, closes the popup, or the service returns a token
+that cannot be validated, an exception will be delivered.</p>
+<pre class="source">
+Future&lt;Token&gt; login({immediate: null}) {
+ if (token != null) {
+   if (token.expired) {
+     if (immediate == null) {
+       immediate = true; // We should be able to simply renew
+     }
+   } else { // We already have a good token
+     return new Future&lt;Token&gt;.value(token);
+   }
+ }
+ if (immediate == null) {
+   immediate = false;
+ }
+
+ // Login may already be in progress
+ if (_tokenFuture != null) {
+   // An in-progress request will satisfy an immediate request
+   // (even if it's not immediate).
+   if (!immediate) {
+     Completer result = new Completer&lt;Token&gt;();
+     _tokenFuture
+       .then((value) =&gt; result.complete(value))
+       .catchError((e) {
+         login(immediate:immediate)
+           .then((value) =&gt; result.complete(value))
+           .catchError((e) =&gt; result.completeError(e));
+       });
+     return result.future;
+   }
+ } else {
+   Completer&lt;Token&gt; tokenCompleter = new Completer();
+   tokenCompleter.future
+     .then((token) {
+       _tokenFuture = null;
+       _token = token;
+     })
+     .catchError((e) {
+       _tokenFuture = null;
+       _token = null;
+     });
+
+   _tokenFuture = tokenCompleter.future;
+
+   completeByPromptingUser() {
+     _tokenCompleter = _wrapValidation(tokenCompleter);
+
+     // Synchronous if the channel is already open -&gt; avoids popup blocker
+
+     _channel
+       .then((value) {
+         String uri = _getAuthorizeUri(immediate);
+         if (immediate) {
+           IFrameElement iframe = _iframe(uri);
+           _tokenCompleter.future.whenComplete(() =&gt; iframe.remove());
+         } else {
+           WindowBase popup = _popup(uri);
+           new _WindowPoller(_tokenCompleter, popup).poll();
+         }
+       })
+       .catchError((e) {
+         return _tokenCompleter.completeError(e);
+       });
+   }
+
+   final stored = _storedToken;
+   if ((stored != null) &amp;&amp; !stored.expired) {
+     stored.validate(_clientId)
+       .then((v) =&gt; tokenCompleter.complete(stored))
+       .catchError((e) =&gt; completeByPromptingUser());
+   } else {
+     completeByPromptingUser();
+   }
+ }
+ return _tokenFuture;
+}
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="logout">
+<button class="show-code">Code</button>
+dynamic <strong>logout</strong>() <a class="anchor-link" href="#logout"
+              title="Permalink to GoogleOAuth2.logout">#</a></h4>
+<div class="doc">
+<p>Deletes the stored token</p>
+<pre class="source">
+logout() {
+ _token = null;
+}
+</pre>
+</div>
+</div>
+</div>
+        </div>
+        <div class="clear"></div>
+        </div>
+        <div class="footer">
+          
+        </div>
+        <script async src="../client-live-nav.js"></script>
+        </body></html>
+        

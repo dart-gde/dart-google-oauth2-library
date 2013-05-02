@@ -1,0 +1,204 @@
+        <!DOCTYPE html>
+        <html>
+        <head>
+                <meta charset="utf-8">
+        <title>BaseResponse abstract class / base_response Library / Dart Documentation</title>
+        <link rel="stylesheet" type="text/css"
+            href="../styles.css">
+        <link href="//fonts.googleapis.com/css?family=Open+Sans:400,600,700,800" rel="stylesheet" type="text/css">
+        <link rel="shortcut icon" href="../favicon.ico">
+        
+        </head>
+        <body data-library="base_response" data-type="BaseResponse">
+        <div class="page">
+        <div class="header">
+          <a href="../index.html"><div class="logo"></div></a>
+          <a href="../index.html">Dart Documentation</a>
+         &rsaquo; <a href="../base_response.html">base_response</a> &rsaquo; <a href="../base_response/BaseResponse.html">BaseResponse</a>        <div id="search-box">
+          <input type="search" name="q" id="q" autocomplete="off"
+              class="search-input" placeholder="Search API">
+        </div>
+        
+      </div>
+      <div class="drop-down" id="drop-down"></div>
+      
+        <div class="nav">
+        
+</div>
+<div class="content">
+        <h2><strong>BaseResponse</strong>
+          abstract class
+        </h2>
+        
+<button id="show-inherited" class="show-inherited">Hide inherited</button>
+<div class="doc">
+<p>The base class for HTTP responses.</p>
+<p>Subclasses of <a class="crossref" href="../base_response/BaseResponse.html#BaseResponse">BaseResponse</a> are usually not constructed manually; instead,
+they're returned by <code>BaseClient.send</code> or other HTTP client methods.</p>
+<pre class="source">
+abstract class BaseResponse {
+ /// The (frozen) request that triggered this response.
+ final BaseRequest request;
+
+ /// The status code of the response.
+ final int statusCode;
+
+ /// The reason phrase associated with the status code.
+ final String reasonPhrase;
+
+ /// The size of the response body, in bytes. If the size of the request is not
+ /// known in advance, this is -1.
+ final int contentLength;
+
+ // TODO(nweiz): automatically parse cookies from headers
+
+ // TODO(nweiz): make this a HttpHeaders object.
+ /// The headers for this response.
+ final Map&lt;String, String&gt; headers;
+
+ /// Whether this response is a redirect.
+ final bool isRedirect;
+
+ /// Whether the server requested that a persistent connection be maintained.
+ final bool persistentConnection;
+
+ /// Creates a new HTTP response.
+ BaseResponse(
+     this.statusCode,
+     this.contentLength,
+     {this.request,
+      this.headers: const {},
+      this.isRedirect: false,
+      this.persistentConnection: true,
+      this.reasonPhrase});
+}
+</pre>
+</div>
+<h3>Subclasses</h3>
+<p>
+<span class="type-box"><span class="icon-class"></span><a href="../response/Response.html">Response</a></span>, <span class="type-box"><span class="icon-class"></span><a href="../streamed_response/StreamedResponse.html">StreamedResponse</a></span></p>
+<div>
+<h3>Constructors</h3>
+<div class="method"><h4 id="BaseResponse">
+<button class="show-code">Code</button>
+new <strong>BaseResponse</strong>(<a href="http://api.dartlang.org/dart_core/int.html">int</a> statusCode, <a href="http://api.dartlang.org/dart_core/int.html">int</a> contentLength, {<a href="../base_request/BaseRequest.html">BaseRequest</a> request, <a href="http://api.dartlang.org/dart_core/Map.html">Map</a>&lt;<a href="http://api.dartlang.org/dart_core/String.html">String</a>, <a href="http://api.dartlang.org/dart_core/String.html">String</a>&gt; headers: const{}, <a href="http://api.dartlang.org/dart_core/bool.html">bool</a> isRedirect: false, <a href="http://api.dartlang.org/dart_core/bool.html">bool</a> persistentConnection: true, <a href="http://api.dartlang.org/dart_core/String.html">String</a> reasonPhrase}) <a class="anchor-link" href="#BaseResponse"
+              title="Permalink to BaseResponse.BaseResponse">#</a></h4>
+<div class="doc">
+<p>Creates a new HTTP response.</p>
+<pre class="source">
+BaseResponse(
+   this.statusCode,
+   this.contentLength,
+   {this.request,
+    this.headers: const {},
+    this.isRedirect: false,
+    this.persistentConnection: true,
+    this.reasonPhrase});
+</pre>
+</div>
+</div>
+</div>
+<div>
+<h3>Properties</h3>
+<div class="field"><h4 id="contentLength">
+<button class="show-code">Code</button>
+final <a href="http://api.dartlang.org/dart_core/int.html">int</a>         <strong>contentLength</strong> <a class="anchor-link"
+            href="#contentLength"
+            title="Permalink to BaseResponse.contentLength">#</a>
+        </h4>
+        <div class="doc">
+<p>The size of the response body, in bytes. If the size of the request is not
+known in advance, this is -1.</p>
+<pre class="source">
+final int contentLength
+</pre>
+</div>
+</div>
+<div class="field"><h4 id="headers">
+<button class="show-code">Code</button>
+final <a href="http://api.dartlang.org/dart_core/Map.html">Map</a>&lt;<a href="http://api.dartlang.org/dart_core/String.html">String</a>, <a href="http://api.dartlang.org/dart_core/String.html">String</a>&gt;         <strong>headers</strong> <a class="anchor-link"
+            href="#headers"
+            title="Permalink to BaseResponse.headers">#</a>
+        </h4>
+        <div class="doc">
+<p>The headers for this response.</p>
+<pre class="source">
+final Map&lt;String, String&gt; headers
+</pre>
+</div>
+</div>
+<div class="field"><h4 id="isRedirect">
+<button class="show-code">Code</button>
+final <a href="http://api.dartlang.org/dart_core/bool.html">bool</a>         <strong>isRedirect</strong> <a class="anchor-link"
+            href="#isRedirect"
+            title="Permalink to BaseResponse.isRedirect">#</a>
+        </h4>
+        <div class="doc">
+<p>Whether this response is a redirect.</p>
+<pre class="source">
+final bool isRedirect
+</pre>
+</div>
+</div>
+<div class="field"><h4 id="persistentConnection">
+<button class="show-code">Code</button>
+final <a href="http://api.dartlang.org/dart_core/bool.html">bool</a>         <strong>persistentConnection</strong> <a class="anchor-link"
+            href="#persistentConnection"
+            title="Permalink to BaseResponse.persistentConnection">#</a>
+        </h4>
+        <div class="doc">
+<p>Whether the server requested that a persistent connection be maintained.</p>
+<pre class="source">
+final bool persistentConnection
+</pre>
+</div>
+</div>
+<div class="field"><h4 id="reasonPhrase">
+<button class="show-code">Code</button>
+final <a href="http://api.dartlang.org/dart_core/String.html">String</a>         <strong>reasonPhrase</strong> <a class="anchor-link"
+            href="#reasonPhrase"
+            title="Permalink to BaseResponse.reasonPhrase">#</a>
+        </h4>
+        <div class="doc">
+<p>The reason phrase associated with the status code.</p>
+<pre class="source">
+final String reasonPhrase
+</pre>
+</div>
+</div>
+<div class="field"><h4 id="request">
+<button class="show-code">Code</button>
+final <a href="../base_request/BaseRequest.html">BaseRequest</a>         <strong>request</strong> <a class="anchor-link"
+            href="#request"
+            title="Permalink to BaseResponse.request">#</a>
+        </h4>
+        <div class="doc">
+<p>The (frozen) request that triggered this response.</p>
+<pre class="source">
+final BaseRequest request
+</pre>
+</div>
+</div>
+<div class="field"><h4 id="statusCode">
+<button class="show-code">Code</button>
+final <a href="http://api.dartlang.org/dart_core/int.html">int</a>         <strong>statusCode</strong> <a class="anchor-link"
+            href="#statusCode"
+            title="Permalink to BaseResponse.statusCode">#</a>
+        </h4>
+        <div class="doc">
+<p>The status code of the response.</p>
+<pre class="source">
+final int statusCode
+</pre>
+</div>
+</div>
+</div>
+        </div>
+        <div class="clear"></div>
+        </div>
+        <div class="footer">
+          
+        </div>
+        <script async src="../client-live-nav.js"></script>
+        </body></html>
+        

@@ -1,0 +1,175 @@
+        <!DOCTYPE html>
+        <html>
+        <head>
+                <meta charset="utf-8">
+        <title>utils Library / Dart Documentation</title>
+        <link rel="stylesheet" type="text/css"
+            href="styles.css">
+        <link href="//fonts.googleapis.com/css?family=Open+Sans:400,600,700,800" rel="stylesheet" type="text/css">
+        <link rel="shortcut icon" href="favicon.ico">
+        
+        </head>
+        <body data-library="utils">
+        <div class="page">
+        <div class="header">
+          <a href="index.html"><div class="logo"></div></a>
+          <a href="index.html">Dart Documentation</a>
+         &rsaquo; <a href="utils.html">utils</a>        <div id="search-box">
+          <input type="search" name="q" id="q" autocomplete="off"
+              class="search-input" placeholder="Search API">
+        </div>
+        
+      </div>
+      <div class="drop-down" id="drop-down"></div>
+      
+        <div class="nav">
+        
+</div>
+<div class="content">
+<h2><strong>utils</strong> library</h2>
+<div>
+<h3>Properties</h3>
+<div class="field"><h4 id="async">
+<button class="show-code">Code</button>
+final <a href="http://api.dartlang.org/dart_async/Future.html">Future</a>         <strong>async</strong> <a class="anchor-link"
+            href="#async"
+            title="Permalink to async">#</a>
+        </h4>
+        <div class="doc">
+<p>Returns a <code>Future</code> that asynchronously completes to <code>null</code>.</p>
+<pre class="source">
+Future get async =&gt; new Future.delayed(const Duration(milliseconds: 0),
+                                      () =&gt; null);
+</pre>
+</div>
+</div>
+</div>
+<div>
+<h3>Functions</h3>
+<div class="method"><h4 id="split1">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_core/List.html">List</a>&lt;<a href="http://api.dartlang.org/dart_core/String.html">String</a>&gt; <strong>split1</strong>(<a href="http://api.dartlang.org/dart_core/String.html">String</a> toSplit, <a href="http://api.dartlang.org/dart_core/String.html">String</a> pattern) <a class="anchor-link" href="#split1"
+              title="Permalink to split1">#</a></h4>
+<div class="doc">
+<p>Like <code>String.split</code>, but only splits on the first occurrence of the pattern.
+This will always return a list of two elements or fewer.</p>
+<pre class="source">
+List&lt;String&gt; split1(String toSplit, String pattern) {
+ if (toSplit.isEmpty) return &lt;String&gt;[];
+
+ var index = toSplit.indexOf(pattern);
+ if (index == -1) return [toSplit];
+ return [toSplit.substring(0, index),
+     toSplit.substring(index + pattern.length)];
+}
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="urlDecode">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_core/String.html">String</a> <strong>urlDecode</strong>(<a href="http://api.dartlang.org/dart_core/String.html">String</a> encoded) <a class="anchor-link" href="#urlDecode"
+              title="Permalink to urlDecode">#</a></h4>
+<div class="doc">
+<p>Decode a URL-encoded string. Unlike <code>decodeUriComponent</code>, this includes
+replacing <code>+</code> with <code> </code>.</p>
+<pre class="source">
+String urlDecode(String encoded) =&gt;
+ decodeUriComponent(encoded.replaceAll("+", " "));
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="mapAddAll">
+<button class="show-code">Code</button>
+void <strong>mapAddAll</strong>(<a href="http://api.dartlang.org/dart_core/Map.html">Map</a> destination, <a href="http://api.dartlang.org/dart_core/Map.html">Map</a> source) <a class="anchor-link" href="#mapAddAll"
+              title="Permalink to mapAddAll">#</a></h4>
+<div class="doc">
+<p>Add all key/value pairs from 
+<span class="param">source</span> to 
+<span class="param">destination</span>, overwriting any
+pre-existing values.</p>
+<pre class="source">
+void mapAddAll(Map destination, Map source) =&gt;
+ source.forEach((key, value) =&gt; destination[key] = value);
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="mapToQuery">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_core/String.html">String</a> <strong>mapToQuery</strong>(<a href="http://api.dartlang.org/dart_core/Map.html">Map</a>&lt;<a href="http://api.dartlang.org/dart_core/String.html">String</a>, <a href="http://api.dartlang.org/dart_core/String.html">String</a>&gt; map) <a class="anchor-link" href="#mapToQuery"
+              title="Permalink to mapToQuery">#</a></h4>
+<div class="doc">
+<p>Convert a <code>Map</code> from parameter names to values to a URL query string.</p>
+<pre class="source">
+String mapToQuery(Map&lt;String, String&gt; map) {
+ var pairs = &lt;List&lt;String&gt;&gt;[];
+ map.forEach((key, value) {
+   key = encodeUriComponent(key);
+   value = (value == null || value.isEmpty) ? null : encodeUriComponent(value);
+   pairs.add([key, value]);
+ });
+ return pairs.map((pair) {
+   if (pair[1] == null) return pair[0];
+   return "${pair[0]}=${pair[1]}";
+ }).join("&amp;");
+}
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="queryToMap">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_core/Map.html">Map</a>&lt;<a href="http://api.dartlang.org/dart_core/String.html">String</a>, <a href="http://api.dartlang.org/dart_core/String.html">String</a>&gt; <strong>queryToMap</strong>(<a href="http://api.dartlang.org/dart_core/String.html">String</a> queryList) <a class="anchor-link" href="#queryToMap"
+              title="Permalink to queryToMap">#</a></h4>
+<div class="doc">
+<p>Convert a URL query string (or <code>application/x-www-form-urlencoded</code> body)
+into a <code>Map</code> from parameter names to values.</p>
+<pre class="source">
+Map&lt;String, String&gt; queryToMap(String queryList) {
+ var map = {};
+ for (var pair in queryList.split("&amp;")) {
+   var split = split1(pair, "=");
+   if (split.isEmpty) continue;
+   var key = urlDecode(split[0]);
+   var value = split.length &gt; 1 ? urlDecode(split[1]) : "";
+   map[key] = value;
+ }
+ return map;
+}
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="addQueryParameters">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_uri/Uri.html">Uri</a> <strong>addQueryParameters</strong>(<a href="http://api.dartlang.org/dart_uri/Uri.html">Uri</a> url, <a href="http://api.dartlang.org/dart_core/Map.html">Map</a>&lt;<a href="http://api.dartlang.org/dart_core/String.html">String</a>, <a href="http://api.dartlang.org/dart_core/String.html">String</a>&gt; parameters) <a class="anchor-link" href="#addQueryParameters"
+              title="Permalink to addQueryParameters">#</a></h4>
+<div class="doc">
+<p>Adds additional query parameters to 
+<span class="param">url</span>, overwriting the original
+parameters if a name conflict occurs.</p>
+<pre class="source">
+Uri addQueryParameters(Uri url, Map&lt;String, String&gt; parameters) {
+ var queryMap = queryToMap(url.query);
+ mapAddAll(queryMap, parameters);
+ return url.resolve("?${mapToQuery(queryMap)}");
+}
+</pre>
+</div>
+</div>
+</div>
+<div>
+<h3>Classes</h3>
+          <div class="type">
+          <h4>
+            <a href="utils/AuthenticateHeader.html"><strong>AuthenticateHeader</strong></a>
+          </h4>
+          </div>
+          
+</div>
+        </div>
+        <div class="clear"></div>
+        </div>
+        <div class="footer">
+          
+        </div>
+        <script async src="client-live-nav.js"></script>
+        </body></html>
+        

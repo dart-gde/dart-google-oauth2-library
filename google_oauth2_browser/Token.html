@@ -1,0 +1,342 @@
+        <!DOCTYPE html>
+        <html>
+        <head>
+                <meta charset="utf-8">
+        <title>Token class / google_oauth2_browser Library / Dart Documentation</title>
+        <link rel="stylesheet" type="text/css"
+            href="../styles.css">
+        <link href="//fonts.googleapis.com/css?family=Open+Sans:400,600,700,800" rel="stylesheet" type="text/css">
+        <link rel="shortcut icon" href="../favicon.ico">
+        
+        </head>
+        <body data-library="google_oauth2_browser" data-type="Token">
+        <div class="page">
+        <div class="header">
+          <a href="../index.html"><div class="logo"></div></a>
+          <a href="../index.html">Dart Documentation</a>
+         &rsaquo; <a href="../google_oauth2_browser.html">google_oauth2_browser</a> &rsaquo; <a href="../google_oauth2_browser/Token.html">Token</a>        <div id="search-box">
+          <input type="search" name="q" id="q" autocomplete="off"
+              class="search-input" placeholder="Search API">
+        </div>
+        
+      </div>
+      <div class="drop-down" id="drop-down"></div>
+      
+        <div class="nav">
+        
+</div>
+<div class="content">
+        <h2><strong>Token</strong>
+          class
+        </h2>
+        
+<button id="show-inherited" class="show-inherited">Hide inherited</button>
+<div class="doc">
+<p>An OAuth2 authentication token.</p>
+<pre class="source">
+class Token {
+ /// The token type, usually "Bearer"
+ final String type;
+ /// The raw token data used for authentication
+ final String data;
+ /// Time at which the token will be expired
+ final DateTime expiry;
+ /// The email address of the user, only set if the scopes include
+ /// https://www.googleapis.com/auth/userinfo.email
+ String get email =&gt; _email;
+ /// A unique identifier of the user, only set if the scopes include
+ /// https://www.googleapis.com/auth/userinfo.profile
+ String get userId =&gt; _userId;
+ String _email;
+ String _userId;
+
+ Token(String this.type, String this.data, DateTime this.expiry);
+
+ factory Token.fromJson(String json) {
+   final map = JSON.parse(json);
+   final token = new Token(map['type'], map['data'],
+       new DateTime.fromMillisecondsSinceEpoch(map['expiry']));
+   token._email = map['email'];
+   token._userId = map['userId'];
+   return token;
+ }
+
+ bool get expired =&gt; new DateTime.now().compareTo(expiry) &gt; 0;
+
+ String toString() =&gt; "[Token type=$type, data=$data, expired=$expired, "
+     "expiry=$expiry, email=$email, userId=$userId]";
+
+ /// Query whether this token is still valid.
+ Future&lt;bool&gt; validate(String clientId,
+     {String service: "https://www.googleapis.com/oauth2/v1/tokeninfo"}) {
+   String url = new UrlPattern(service).generate({}, {"access_token": data});
+   var completer = new Completer();
+   var request = new HttpRequest();
+   request.onLoadEnd.listen((Event e) {
+     if (request.status == 200) {
+       completer.complete(request.responseText);
+     }
+   });
+   request.open("GET", url);
+   request.send();
+
+   return completer.future.then((json) {
+     final data = JSON.parse(json);
+     final valid = clientId == data['audience'];
+     if (valid) {
+       _email = data['email'];
+       _userId = data['user_id'];
+     }
+     return valid;
+   });
+ }
+
+ String toJson() {
+   return JSON.stringify({
+     "type": type,
+     "data": data,
+     "expiry": expiry.millisecondsSinceEpoch,
+     "email": email,
+     "userId": userId,
+   });
+ }
+
+ static Token _parse(String data) {
+   if (data == null) {
+     throw new Exception("No auth token data");
+   }
+
+   Map&lt;String, String&gt; params = {};
+   for (String kv in _tokenizeRelativeUrl(data)) {
+     if (kv.isEmpty) {
+       continue;
+     }
+     int eqIndex = kv.indexOf('=');
+     if (eqIndex &lt; 0) {
+       params[kv] = "";
+     } else {
+       params[kv.substring(0, eqIndex)] = kv.substring(eqIndex + 1);
+     }
+   }
+
+   if (params.containsKey('error')) {
+     throw new AuthException(params['error'], params);
+   }
+   for (String param in ['access_token', 'token_type', 'expires_in']) {
+     if (!params.containsKey(param)) {
+       throw new Exception("Missing parameter $param");
+     }
+   }
+
+   // Mark tokens as 'expired' 20 seconds early so it's still valid when used.
+   Duration duration =
+       new Duration(seconds: int.parse(params['expires_in']) - 20);
+   return new Token(params['token_type'], params['access_token'],
+       new DateTime.now().add(duration));
+ }
+
+ /// Extracts &amp;-separated tokens from the path, query, and fragment of [uri].
+ static List&lt;String&gt; _tokenizeRelativeUrl(String uri) {
+   final u = new Uri.fromString(uri);
+   final result = [];
+   [u.path, u.query, u.fragment].forEach((x) {
+     if (x != null) result.addAll(_tokenize(x));
+   });
+   return result;
+ }
+
+ static List&lt;String&gt; _tokenize(String data) {
+   return data.isEmpty ? [] : data.split('&amp;');
+ }
+}
+</pre>
+</div>
+<div>
+<h3>Constructors</h3>
+<div class="method"><h4 id="Token">
+<button class="show-code">Code</button>
+new <strong>Token</strong>(<a href="http://api.dartlang.org/dart_core/String.html">String</a> type, <a href="http://api.dartlang.org/dart_core/String.html">String</a> data, <a href="http://api.dartlang.org/dart_core/DateTime.html">DateTime</a> expiry) <a class="anchor-link" href="#Token"
+              title="Permalink to Token.Token">#</a></h4>
+<div class="doc">
+<pre class="source">
+Token(String this.type, String this.data, DateTime this.expiry);
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="Token.fromJson">
+<button class="show-code">Code</button>
+factory <strong>Token.fromJson</strong>(<a href="http://api.dartlang.org/dart_core/String.html">String</a> json) <a class="anchor-link" href="#Token.fromJson"
+              title="Permalink to Token.Token.fromJson">#</a></h4>
+<div class="doc">
+<pre class="source">
+factory Token.fromJson(String json) {
+ final map = JSON.parse(json);
+ final token = new Token(map['type'], map['data'],
+     new DateTime.fromMillisecondsSinceEpoch(map['expiry']));
+ token._email = map['email'];
+ token._userId = map['userId'];
+ return token;
+}
+</pre>
+</div>
+</div>
+</div>
+<div>
+<h3>Properties</h3>
+<div class="field"><h4 id="data">
+<button class="show-code">Code</button>
+final <a href="http://api.dartlang.org/dart_core/String.html">String</a>         <strong>data</strong> <a class="anchor-link"
+            href="#data"
+            title="Permalink to Token.data">#</a>
+        </h4>
+        <div class="doc">
+<p>The raw token data used for authentication</p>
+<pre class="source">
+final String data
+</pre>
+</div>
+</div>
+<div class="field"><h4 id="email">
+<button class="show-code">Code</button>
+final <a href="http://api.dartlang.org/dart_core/String.html">String</a>         <strong>email</strong> <a class="anchor-link"
+            href="#email"
+            title="Permalink to Token.email">#</a>
+        </h4>
+        <div class="doc">
+<p>The email address of the user, only set if the scopes include
+https://www.googleapis.com/auth/userinfo.email</p>
+<pre class="source">
+String get email =&gt; _email;
+</pre>
+</div>
+</div>
+<div class="field"><h4 id="expired">
+<button class="show-code">Code</button>
+final <a href="http://api.dartlang.org/dart_core/bool.html">bool</a>         <strong>expired</strong> <a class="anchor-link"
+            href="#expired"
+            title="Permalink to Token.expired">#</a>
+        </h4>
+        <div class="doc">
+<pre class="source">
+bool get expired =&gt; new DateTime.now().compareTo(expiry) &gt; 0;
+</pre>
+</div>
+</div>
+<div class="field"><h4 id="expiry">
+<button class="show-code">Code</button>
+final <a href="http://api.dartlang.org/dart_core/DateTime.html">DateTime</a>         <strong>expiry</strong> <a class="anchor-link"
+            href="#expiry"
+            title="Permalink to Token.expiry">#</a>
+        </h4>
+        <div class="doc">
+<p>Time at which the token will be expired</p>
+<pre class="source">
+final DateTime expiry
+</pre>
+</div>
+</div>
+<div class="field"><h4 id="type">
+<button class="show-code">Code</button>
+final <a href="http://api.dartlang.org/dart_core/String.html">String</a>         <strong>type</strong> <a class="anchor-link"
+            href="#type"
+            title="Permalink to Token.type">#</a>
+        </h4>
+        <div class="doc">
+<p>The token type, usually "Bearer"</p>
+<pre class="source">
+final String type
+</pre>
+</div>
+</div>
+<div class="field"><h4 id="userId">
+<button class="show-code">Code</button>
+final <a href="http://api.dartlang.org/dart_core/String.html">String</a>         <strong>userId</strong> <a class="anchor-link"
+            href="#userId"
+            title="Permalink to Token.userId">#</a>
+        </h4>
+        <div class="doc">
+<p>A unique identifier of the user, only set if the scopes include
+https://www.googleapis.com/auth/userinfo.profile</p>
+<pre class="source">
+String get userId =&gt; _userId;
+</pre>
+</div>
+</div>
+</div>
+<div>
+<h3>Methods</h3>
+<div class="method"><h4 id="toJson">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_core/String.html">String</a> <strong>toJson</strong>() <a class="anchor-link" href="#toJson"
+              title="Permalink to Token.toJson">#</a></h4>
+<div class="doc">
+<pre class="source">
+String toJson() {
+ return JSON.stringify({
+   "type": type,
+   "data": data,
+   "expiry": expiry.millisecondsSinceEpoch,
+   "email": email,
+   "userId": userId,
+ });
+}
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="toString">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_core/String.html">String</a> <strong>toString</strong>() <a class="anchor-link" href="#toString"
+              title="Permalink to Token.toString">#</a></h4>
+<div class="doc">
+<div class="inherited">
+<p>Returns a string representation of this object.</p>
+<div class="docs-inherited-from">docs inherited from <a href="http://api.dartlang.org/dart_core/Object.html">Object</a> </div></div>
+<pre class="source">
+String toString() =&gt; "[Token type=$type, data=$data, expired=$expired, "
+   "expiry=$expiry, email=$email, userId=$userId]";
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="validate">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_async/Future.html">Future</a>&lt;<a href="http://api.dartlang.org/dart_core/bool.html">bool</a>&gt; <strong>validate</strong>(<a href="http://api.dartlang.org/dart_core/String.html">String</a> clientId, {<a href="http://api.dartlang.org/dart_core/String.html">String</a> service: "https://www.googleapis.com/oauth2/v1/tokeninfo"}) <a class="anchor-link" href="#validate"
+              title="Permalink to Token.validate">#</a></h4>
+<div class="doc">
+<p>Query whether this token is still valid.</p>
+<pre class="source">
+Future&lt;bool&gt; validate(String clientId,
+   {String service: "https://www.googleapis.com/oauth2/v1/tokeninfo"}) {
+ String url = new UrlPattern(service).generate({}, {"access_token": data});
+ var completer = new Completer();
+ var request = new HttpRequest();
+ request.onLoadEnd.listen((Event e) {
+   if (request.status == 200) {
+     completer.complete(request.responseText);
+   }
+ });
+ request.open("GET", url);
+ request.send();
+
+ return completer.future.then((json) {
+   final data = JSON.parse(json);
+   final valid = clientId == data['audience'];
+   if (valid) {
+     _email = data['email'];
+     _userId = data['user_id'];
+   }
+   return valid;
+ });
+}
+</pre>
+</div>
+</div>
+</div>
+        </div>
+        <div class="clear"></div>
+        </div>
+        <div class="footer">
+          
+        </div>
+        <script async src="../client-live-nav.js"></script>
+        </body></html>
+        

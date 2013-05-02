@@ -1,0 +1,158 @@
+        <!DOCTYPE html>
+        <html>
+        <head>
+                <meta charset="utf-8">
+        <title>UrlPattern class / url_pattern Library / Dart Documentation</title>
+        <link rel="stylesheet" type="text/css"
+            href="../styles.css">
+        <link href="//fonts.googleapis.com/css?family=Open+Sans:400,600,700,800" rel="stylesheet" type="text/css">
+        <link rel="shortcut icon" href="../favicon.ico">
+        
+        </head>
+        <body data-library="url_pattern" data-type="UrlPattern">
+        <div class="page">
+        <div class="header">
+          <a href="../index.html"><div class="logo"></div></a>
+          <a href="../index.html">Dart Documentation</a>
+         &rsaquo; <a href="../url_pattern.html">url_pattern</a> &rsaquo; <a href="../url_pattern/UrlPattern.html">UrlPattern</a>        <div id="search-box">
+          <input type="search" name="q" id="q" autocomplete="off"
+              class="search-input" placeholder="Search API">
+        </div>
+        
+      </div>
+      <div class="drop-down" id="drop-down"></div>
+      
+        <div class="nav">
+        
+</div>
+<div class="content">
+        <h2><strong>UrlPattern</strong>
+          class
+        </h2>
+        
+<button id="show-inherited" class="show-inherited">Hide inherited</button>
+<div class="doc">
+<p>URL template with placeholders that can be filled in to produce a URL. </p>
+<pre class="source">
+class UrlPattern {
+ List&lt;_UrlPatternToken&gt; _tokens;
+ /**
+  * Creates a UrlPattern from the specification [:pattern:].
+  * See http://tools.ietf.org/html/draft-gregorio-uritemplate-07
+  * We only implement a very simple subset for now.
+  */
+ UrlPattern(String pattern) : _tokens = [] {
+   var cursor = 0;
+   while (cursor &lt; pattern.length) {
+     final open = pattern.indexOf("{", cursor);
+     if (open &lt; 0) {
+       final rest = pattern.substring(cursor);
+       _tokens.add((params) =&gt; rest);
+       cursor = pattern.length;
+     } else {
+       if (open &gt; cursor) {
+         final intermediate = pattern.substring(cursor, open);
+         _tokens.add((params) =&gt; intermediate);
+       }
+       final close = pattern.indexOf("}", open);
+       if (close &lt; 0) throw new ArgumentError("Token meets end of text: $pattern");
+       String variable = pattern.substring(open + 1, close);
+       _tokens.add((params) =&gt; (params[variable] == null)
+           ? 'null'
+           : encodeUriComponent(params[variable].toString()));
+       cursor = close + 1;
+     }
+   }
+ }
+ /** Generate a URL with the specified list of URL and query parameters. */
+ String generate(Map&lt;String, Object&gt; urlParams, Map&lt;String, Object&gt; queryParams) {
+   final buffer = new StringBuffer();
+   _tokens.forEach((token) =&gt; buffer.write(token(urlParams)));
+   var first = true;
+   queryParams.forEach((key, value) {
+     if (value == null) return;
+     buffer.write(first ? '?' : '&amp;');
+     if (first) first = false;
+     buffer.write(encodeUriComponent(key.toString()));
+     buffer.write('=');
+     buffer.write(encodeUriComponent(value.toString()));
+   });
+   return buffer.toString();
+ }
+}
+</pre>
+</div>
+<div>
+<h3>Constructors</h3>
+<div class="method"><h4 id="UrlPattern">
+<button class="show-code">Code</button>
+new <strong>UrlPattern</strong>(<a href="http://api.dartlang.org/dart_core/String.html">String</a> pattern) <a class="anchor-link" href="#UrlPattern"
+              title="Permalink to UrlPattern.UrlPattern">#</a></h4>
+<div class="doc">
+<p>Creates a UrlPattern from the specification <code>pattern</code>.
+See http://tools.ietf.org/html/draft-gregorio-uritemplate-07
+We only implement a very simple subset for now.</p>
+<pre class="source">
+UrlPattern(String pattern) : _tokens = [] {
+ var cursor = 0;
+ while (cursor &lt; pattern.length) {
+   final open = pattern.indexOf("{", cursor);
+   if (open &lt; 0) {
+     final rest = pattern.substring(cursor);
+     _tokens.add((params) =&gt; rest);
+     cursor = pattern.length;
+   } else {
+     if (open &gt; cursor) {
+       final intermediate = pattern.substring(cursor, open);
+       _tokens.add((params) =&gt; intermediate);
+     }
+     final close = pattern.indexOf("}", open);
+     if (close &lt; 0) throw new ArgumentError("Token meets end of text: $pattern");
+     String variable = pattern.substring(open + 1, close);
+     _tokens.add((params) =&gt; (params[variable] == null)
+         ? 'null'
+         : encodeUriComponent(params[variable].toString()));
+     cursor = close + 1;
+   }
+ }
+}
+</pre>
+</div>
+</div>
+</div>
+<div>
+<h3>Methods</h3>
+<div class="method"><h4 id="generate">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_core/String.html">String</a> <strong>generate</strong>(<a href="http://api.dartlang.org/dart_core/Map.html">Map</a>&lt;<a href="http://api.dartlang.org/dart_core/String.html">String</a>, <a href="http://api.dartlang.org/dart_core/Object.html">Object</a>&gt; urlParams, <a href="http://api.dartlang.org/dart_core/Map.html">Map</a>&lt;<a href="http://api.dartlang.org/dart_core/String.html">String</a>, <a href="http://api.dartlang.org/dart_core/Object.html">Object</a>&gt; queryParams) <a class="anchor-link" href="#generate"
+              title="Permalink to UrlPattern.generate">#</a></h4>
+<div class="doc">
+<p>Generate a URL with the specified list of URL and query parameters. </p>
+<pre class="source">
+String generate(Map&lt;String, Object&gt; urlParams, Map&lt;String, Object&gt; queryParams) {
+ final buffer = new StringBuffer();
+ _tokens.forEach((token) =&gt; buffer.write(token(urlParams)));
+ var first = true;
+ queryParams.forEach((key, value) {
+   if (value == null) return;
+   buffer.write(first ? '?' : '&amp;');
+   if (first) first = false;
+   buffer.write(encodeUriComponent(key.toString()));
+   buffer.write('=');
+   buffer.write(encodeUriComponent(value.toString()));
+ });
+ return buffer.toString();
+}
+</pre>
+</div>
+</div>
+</div>
+        </div>
+        <div class="clear"></div>
+        </div>
+        <div class="footer">
+          
+        </div>
+        <script async src="../client-live-nav.js"></script>
+        </body></html>
+        

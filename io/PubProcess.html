@@ -1,0 +1,259 @@
+        <!DOCTYPE html>
+        <html>
+        <head>
+                <meta charset="utf-8">
+        <title>PubProcess class / io Library / Dart Documentation</title>
+        <link rel="stylesheet" type="text/css"
+            href="../styles.css">
+        <link href="//fonts.googleapis.com/css?family=Open+Sans:400,600,700,800" rel="stylesheet" type="text/css">
+        <link rel="shortcut icon" href="../favicon.ico">
+        
+        </head>
+        <body data-library="io" data-type="PubProcess">
+        <div class="page">
+        <div class="header">
+          <a href="../index.html"><div class="logo"></div></a>
+          <a href="../index.html">Dart Documentation</a>
+         &rsaquo; <a href="../io.html">io</a> &rsaquo; <a href="../io/PubProcess.html">PubProcess</a>        <div id="search-box">
+          <input type="search" name="q" id="q" autocomplete="off"
+              class="search-input" placeholder="Search API">
+        </div>
+        
+      </div>
+      <div class="drop-down" id="drop-down"></div>
+      
+        <div class="nav">
+        
+</div>
+<div class="content">
+        <h2><strong>PubProcess</strong>
+          class
+        </h2>
+        
+<button id="show-inherited" class="show-inherited">Hide inherited</button>
+<div class="doc">
+<p>A wrapper around <code>Process</code> that exposes <code>dart:async</code>-style APIs.</p>
+<pre class="source">
+class PubProcess {
+ /// The underlying `dart:io` [Process].
+ final Process _process;
+
+ /// The mutable field for [stdin].
+ EventSink&lt;List&lt;int&gt;&gt; _stdin;
+
+ /// The mutable field for [stdinClosed].
+ Future _stdinClosed;
+
+ /// The mutable field for [stdout].
+ ByteStream _stdout;
+
+ /// The mutable field for [stderr].
+ ByteStream _stderr;
+
+ /// The mutable field for [exitCode].
+ Future&lt;int&gt; _exitCode;
+
+ /// The sink used for passing data to the process's standard input stream.
+ /// Errors on this stream are surfaced through [stdinClosed], [stdout],
+ /// [stderr], and [exitCode], which are all members of an [ErrorGroup].
+ EventSink&lt;List&lt;int&gt;&gt; get stdin =&gt; _stdin;
+
+ // TODO(nweiz): write some more sophisticated Future machinery so that this
+ // doesn't surface errors from the other streams/futures, but still passes its
+ // unhandled errors to them. Right now it's impossible to recover from a stdin
+ // error and continue interacting with the process.
+ /// A [Future] that completes when [stdin] is closed, either by the user or by
+ /// the process itself.
+ ///
+ /// This is in an [ErrorGroup] with [stdout], [stderr], and [exitCode], so any
+ /// error in process will be passed to it, but won't reach the top-level error
+ /// handler unless nothing has handled it.
+ Future get stdinClosed =&gt; _stdinClosed;
+
+ /// The process's standard output stream.
+ ///
+ /// This is in an [ErrorGroup] with [stdinClosed], [stderr], and [exitCode],
+ /// so any error in process will be passed to it, but won't reach the
+ /// top-level error handler unless nothing has handled it.
+ ByteStream get stdout =&gt; _stdout;
+
+ /// The process's standard error stream.
+ ///
+ /// This is in an [ErrorGroup] with [stdinClosed], [stdout], and [exitCode],
+ /// so any error in process will be passed to it, but won't reach the
+ /// top-level error handler unless nothing has handled it.
+ ByteStream get stderr =&gt; _stderr;
+
+ /// A [Future] that will complete to the process's exit code once the process
+ /// has finished running.
+ ///
+ /// This is in an [ErrorGroup] with [stdinClosed], [stdout], and [stderr], so
+ /// any error in process will be passed to it, but won't reach the top-level
+ /// error handler unless nothing has handled it.
+ Future&lt;int&gt; get exitCode =&gt; _exitCode;
+
+ /// Creates a new [PubProcess] wrapping [process].
+ PubProcess(Process process)
+   : _process = process {
+   var errorGroup = new ErrorGroup();
+
+   var pair = consumerToSink(process.stdin);
+   _stdin = pair.first;
+   _stdinClosed = errorGroup.registerFuture(pair.last);
+
+   _stdout = new ByteStream(
+       errorGroup.registerStream(process.stdout));
+   _stderr = new ByteStream(
+       errorGroup.registerStream(process.stderr));
+
+   var exitCodeCompleter = new Completer();
+   _exitCode = errorGroup.registerFuture(exitCodeCompleter.future);
+   _process.exitCode.then((code) =&gt; exitCodeCompleter.complete(code));
+ }
+
+ /// Sends [signal] to the underlying process.
+ bool kill([ProcessSignal signal = ProcessSignal.SIGTERM]) =&gt;
+   _process.kill(signal);
+}
+</pre>
+</div>
+<div>
+<h3>Constructors</h3>
+<div class="method"><h4 id="PubProcess">
+<button class="show-code">Code</button>
+new <strong>PubProcess</strong>(<a href="http://api.dartlang.org/dart_io/Process.html">Process</a> process) <a class="anchor-link" href="#PubProcess"
+              title="Permalink to PubProcess.PubProcess">#</a></h4>
+<div class="doc">
+<p>Creates a new <a class="crossref" href="../io/PubProcess.html#PubProcess">PubProcess</a> wrapping 
+<span class="param">process</span>.</p>
+<pre class="source">
+PubProcess(Process process)
+ : _process = process {
+ var errorGroup = new ErrorGroup();
+
+ var pair = consumerToSink(process.stdin);
+ _stdin = pair.first;
+ _stdinClosed = errorGroup.registerFuture(pair.last);
+
+ _stdout = new ByteStream(
+     errorGroup.registerStream(process.stdout));
+ _stderr = new ByteStream(
+     errorGroup.registerStream(process.stderr));
+
+ var exitCodeCompleter = new Completer();
+ _exitCode = errorGroup.registerFuture(exitCodeCompleter.future);
+ _process.exitCode.then((code) =&gt; exitCodeCompleter.complete(code));
+}
+</pre>
+</div>
+</div>
+</div>
+<div>
+<h3>Properties</h3>
+<div class="field"><h4 id="exitCode">
+<button class="show-code">Code</button>
+final <a href="http://api.dartlang.org/dart_async/Future.html">Future</a>&lt;<a href="http://api.dartlang.org/dart_core/int.html">int</a>&gt;         <strong>exitCode</strong> <a class="anchor-link"
+            href="#exitCode"
+            title="Permalink to PubProcess.exitCode">#</a>
+        </h4>
+        <div class="doc">
+<p>A <code>Future</code> that will complete to the process's exit code once the process
+has finished running.</p>
+<p>This is in an <code>ErrorGroup</code> with <a class="crossref" href="../io/PubProcess.html#stdinClosed">stdinClosed</a>, <a class="crossref" href="../io/PubProcess.html#stdout">stdout</a>, and <a class="crossref" href="../io/PubProcess.html#stderr">stderr</a>, so
+any error in process will be passed to it, but won't reach the top-level
+error handler unless nothing has handled it.</p>
+<pre class="source">
+Future&lt;int&gt; get exitCode =&gt; _exitCode;
+</pre>
+</div>
+</div>
+<div class="field"><h4 id="stderr">
+<button class="show-code">Code</button>
+final <a href="../byte_stream/ByteStream.html">ByteStream</a>         <strong>stderr</strong> <a class="anchor-link"
+            href="#stderr"
+            title="Permalink to PubProcess.stderr">#</a>
+        </h4>
+        <div class="doc">
+<p>The process's standard error stream.</p>
+<p>This is in an <code>ErrorGroup</code> with <a class="crossref" href="../io/PubProcess.html#stdinClosed">stdinClosed</a>, <a class="crossref" href="../io/PubProcess.html#stdout">stdout</a>, and <a class="crossref" href="../io/PubProcess.html#exitCode">exitCode</a>,
+so any error in process will be passed to it, but won't reach the
+top-level error handler unless nothing has handled it.</p>
+<pre class="source">
+ByteStream get stderr =&gt; _stderr;
+</pre>
+</div>
+</div>
+<div class="field"><h4 id="stdin">
+<button class="show-code">Code</button>
+final <a href="http://api.dartlang.org/dart_async/EventSink.html">EventSink</a>&lt;<a href="http://api.dartlang.org/dart_core/List.html">List</a>&lt;<a href="http://api.dartlang.org/dart_core/int.html">int</a>&gt;&gt;         <strong>stdin</strong> <a class="anchor-link"
+            href="#stdin"
+            title="Permalink to PubProcess.stdin">#</a>
+        </h4>
+        <div class="doc">
+<p>The sink used for passing data to the process's standard input stream.
+Errors on this stream are surfaced through <a class="crossref" href="../io/PubProcess.html#stdinClosed">stdinClosed</a>, <a class="crossref" href="../io/PubProcess.html#stdout">stdout</a>,
+<a class="crossref" href="../io/PubProcess.html#stderr">stderr</a>, and <a class="crossref" href="../io/PubProcess.html#exitCode">exitCode</a>, which are all members of an <code>ErrorGroup</code>.</p>
+<pre class="source">
+EventSink&lt;List&lt;int&gt;&gt; get stdin =&gt; _stdin;
+</pre>
+</div>
+</div>
+<div class="field"><h4 id="stdinClosed">
+<button class="show-code">Code</button>
+final <a href="http://api.dartlang.org/dart_async/Future.html">Future</a>         <strong>stdinClosed</strong> <a class="anchor-link"
+            href="#stdinClosed"
+            title="Permalink to PubProcess.stdinClosed">#</a>
+        </h4>
+        <div class="doc">
+<p>A <code>Future</code> that completes when <a class="crossref" href="../io/PubProcess.html#stdin">stdin</a> is closed, either by the user or by
+the process itself.</p>
+<p>This is in an <code>ErrorGroup</code> with <a class="crossref" href="../io/PubProcess.html#stdout">stdout</a>, <a class="crossref" href="../io/PubProcess.html#stderr">stderr</a>, and <a class="crossref" href="../io/PubProcess.html#exitCode">exitCode</a>, so any
+error in process will be passed to it, but won't reach the top-level error
+handler unless nothing has handled it.</p>
+<pre class="source">
+Future get stdinClosed =&gt; _stdinClosed;
+</pre>
+</div>
+</div>
+<div class="field"><h4 id="stdout">
+<button class="show-code">Code</button>
+final <a href="../byte_stream/ByteStream.html">ByteStream</a>         <strong>stdout</strong> <a class="anchor-link"
+            href="#stdout"
+            title="Permalink to PubProcess.stdout">#</a>
+        </h4>
+        <div class="doc">
+<p>The process's standard output stream.</p>
+<p>This is in an <code>ErrorGroup</code> with <a class="crossref" href="../io/PubProcess.html#stdinClosed">stdinClosed</a>, <a class="crossref" href="../io/PubProcess.html#stderr">stderr</a>, and <a class="crossref" href="../io/PubProcess.html#exitCode">exitCode</a>,
+so any error in process will be passed to it, but won't reach the
+top-level error handler unless nothing has handled it.</p>
+<pre class="source">
+ByteStream get stdout =&gt; _stdout;
+</pre>
+</div>
+</div>
+</div>
+<div>
+<h3>Methods</h3>
+<div class="method"><h4 id="kill">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_core/bool.html">bool</a> <strong>kill</strong>([<a href="http://api.dartlang.org/dart_io/ProcessSignal.html">ProcessSignal</a> signal = ProcessSignal.SIGTERM]) <a class="anchor-link" href="#kill"
+              title="Permalink to PubProcess.kill">#</a></h4>
+<div class="doc">
+<p>Sends 
+<span class="param">signal</span> to the underlying process.</p>
+<pre class="source">
+bool kill([ProcessSignal signal = ProcessSignal.SIGTERM]) =&gt;
+ _process.kill(signal);
+</pre>
+</div>
+</div>
+</div>
+        </div>
+        <div class="clear"></div>
+        </div>
+        <div class="footer">
+          
+        </div>
+        <script async src="../client-live-nav.js"></script>
+        </body></html>
+        
