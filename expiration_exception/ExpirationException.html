@@ -1,0 +1,106 @@
+        <!DOCTYPE html>
+        <html>
+        <head>
+                <meta charset="utf-8">
+        <title>ExpirationException class / expiration_exception Library / Dart Documentation</title>
+        <link rel="stylesheet" type="text/css"
+            href="../styles.css">
+        <link href="//fonts.googleapis.com/css?family=Open+Sans:400,600,700,800" rel="stylesheet" type="text/css">
+        <link rel="shortcut icon" href="../favicon.ico">
+        
+        </head>
+        <body data-library="expiration_exception" data-type="ExpirationException">
+        <div class="page">
+        <div class="header">
+          <a href="../index.html"><div class="logo"></div></a>
+          <a href="../index.html">Dart Documentation</a>
+         &rsaquo; <a href="../expiration_exception.html">expiration_exception</a> &rsaquo; <a href="../expiration_exception/ExpirationException.html">ExpirationException</a>        <div id="search-box">
+          <input type="search" name="q" id="q" autocomplete="off"
+              class="search-input" placeholder="Search API">
+        </div>
+        
+      </div>
+      <div class="drop-down" id="drop-down"></div>
+      
+        <div class="nav">
+        
+</div>
+<div class="content">
+        <h2><strong>ExpirationException</strong>
+          class
+        </h2>
+        
+<button id="show-inherited" class="show-inherited">Hide inherited</button>
+<div class="doc">
+<p>An exception raised when attempting to use expired OAuth2 credentials.</p>
+<pre class="source">
+class ExpirationException implements Exception {
+ /// The expired credentials.
+ final Credentials credentials;
+
+ /// Creates an ExpirationException.
+ ExpirationException(this.credentials);
+
+ /// Provides a string description of the ExpirationException.
+ String toString() =&gt;
+   "OAuth2 credentials have expired and can't be refreshed.";
+}
+</pre>
+</div>
+<h3>Implements</h3>
+<p>
+<span class="type-box"><span class="icon-exception"></span><a href="../dart_core/Exception.html">Exception</a></span></p>
+<div>
+<h3>Constructors</h3>
+<div class="method"><h4 id="ExpirationException">
+<button class="show-code">Code</button>
+new <strong>ExpirationException</strong>(<a href="../credentials/Credentials.html">Credentials</a> credentials) <a class="anchor-link" href="#ExpirationException"
+              title="Permalink to ExpirationException.ExpirationException">#</a></h4>
+<div class="doc">
+<p>Creates an ExpirationException.</p>
+<pre class="source">
+ExpirationException(this.credentials);
+</pre>
+</div>
+</div>
+</div>
+<div>
+<h3>Properties</h3>
+<div class="field"><h4 id="credentials">
+<button class="show-code">Code</button>
+final <a href="../credentials/Credentials.html">Credentials</a>         <strong>credentials</strong> <a class="anchor-link"
+            href="#credentials"
+            title="Permalink to ExpirationException.credentials">#</a>
+        </h4>
+        <div class="doc">
+<p>The expired credentials.</p>
+<pre class="source">
+final Credentials credentials
+</pre>
+</div>
+</div>
+</div>
+<div>
+<h3>Methods</h3>
+<div class="method"><h4 id="toString">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_core/String.html">String</a> <strong>toString</strong>() <a class="anchor-link" href="#toString"
+              title="Permalink to ExpirationException.toString">#</a></h4>
+<div class="doc">
+<p>Provides a string description of the ExpirationException.</p>
+<pre class="source">
+String toString() =&gt;
+ "OAuth2 credentials have expired and can't be refreshed.";
+</pre>
+</div>
+</div>
+</div>
+        </div>
+        <div class="clear"></div>
+        </div>
+        <div class="footer">
+          
+        </div>
+        <script async src="../client-live-nav.js"></script>
+        </body></html>
+        

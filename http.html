@@ -1,0 +1,243 @@
+        <!DOCTYPE html>
+        <html>
+        <head>
+                <meta charset="utf-8">
+        <title>http Library / Dart Documentation</title>
+        <link rel="stylesheet" type="text/css"
+            href="styles.css">
+        <link href="//fonts.googleapis.com/css?family=Open+Sans:400,600,700,800" rel="stylesheet" type="text/css">
+        <link rel="shortcut icon" href="favicon.ico">
+        
+        </head>
+        <body data-library="http">
+        <div class="page">
+        <div class="header">
+          <a href="index.html"><div class="logo"></div></a>
+          <a href="index.html">Dart Documentation</a>
+         &rsaquo; <a href="http.html">http</a>        <div id="search-box">
+          <input type="search" name="q" id="q" autocomplete="off"
+              class="search-input" placeholder="Search API">
+        </div>
+        
+      </div>
+      <div class="drop-down" id="drop-down"></div>
+      
+        <div class="nav">
+        
+</div>
+<div class="content">
+<h2><strong>http</strong> library</h2>
+<div class="doc"><p>A composable, <code>Future</code>-based library for making HTTP requests.</p>
+<h2>Installing</h2>
+<p>Use <a href="http://pub.dartlang.org">pub</a> to install this package. Add the following to your
+<code>pubspec.yaml</code> file.</p>
+<pre><code>dependencies:
+  http: any
+</code></pre>
+<p>Then run <code>pub install</code>.</p>
+<p>For more information, see the
+<a href="http://pub.dartlang.org/packages/http">http package on pub.dartlang.org</a>.</p>
+<p>The easiest way to use this library is via the top-level functions. They
+allow you to make individual HTTP requests with minimal hassle:</p>
+<pre><code>import 'package:http/http.dart' as http;
+
+var url = "http://example.com/whatsit/create";
+http.post(url, fields: {"name": "doodle", "color": "blue"})
+    .then((response) {
+  print("Response status: ${response.statusCode}");
+  print("Response body: ${response.body}");
+});
+
+http.read("http://example.com/foobar.txt").then(print);
+</code></pre>
+<p>If you're making multiple requests to the same server, you can keep open a
+persistent connection by using a <code>Client</code> rather than making one-off
+requests. If you do this, make sure to close the client when you're done:</p>
+<pre><code>var client = new http.Client();
+client.post(
+    "http://example.com/whatsit/create",
+    fields: {"name": "doodle", "color": "blue"})
+  .then((response) =&gt; client.get(response.bodyFields['uri']))
+  .then((response) =&gt; print(response.body))
+  .whenComplete(client.close);
+</code></pre>
+<p>You can also exert more fine-grained control over your requests and
+responses by creating <code>Request</code> or <code>StreamedRequest</code> objects yourself and
+passing them to <code>Client.send</code>.</p>
+<p>This package is designed to be composable. This makes it easy for external
+libraries to work with one another to add behavior to it. Libraries wishing
+to add behavior should create a subclass of <code>BaseClient</code> that wraps another
+<code>Client</code> and adds the desired behavior:</p>
+<pre><code>class UserAgentClient extends http.BaseClient {
+  final String userAgent;
+  final http.Client _inner;
+
+  UserAgentClient(this.userAgent, this._inner);
+
+  Future&lt;StreamedResponse&gt; send(BaseRequest request) {
+    request.headers[HttpHeaders.USER_AGENT] = userAgent;
+    return _inner.send(request);
+  }
+}
+</code></pre></div>
+<h3>Exports</h3>
+<ul>
+<ul><a href="base_client.html">base_client</a></ul>
+<ul><a href="base_request.html">base_request</a></ul>
+<ul><a href="base_response.html">base_response</a></ul>
+<ul><a href="byte_stream.html">byte_stream</a></ul>
+<ul><a href="client.html">client</a></ul>
+<ul><a href="multipart_file.html">multipart_file</a></ul>
+<ul><a href="multipart_request.html">multipart_request</a></ul>
+<ul><a href="request.html">request</a></ul>
+<ul><a href="response.html">response</a></ul>
+<ul><a href="streamed_request.html">streamed_request</a></ul>
+<ul><a href="streamed_response.html">streamed_response</a></ul>
+</ul>
+<div>
+<h3>Functions</h3>
+<div class="method"><h4 id="readBytes">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_async/Future.html">Future</a>&lt;<a href="http://api.dartlang.org/dart_typed_data/Uint8List.html">Uint8List</a>&gt; <strong>readBytes</strong>(url, {<a href="http://api.dartlang.org/dart_core/Map.html">Map</a>&lt;<a href="http://api.dartlang.org/dart_core/String.html">String</a>, <a href="http://api.dartlang.org/dart_core/String.html">String</a>&gt; headers}) <a class="anchor-link" href="#readBytes"
+              title="Permalink to readBytes">#</a></h4>
+<div class="doc">
+<p>Sends an HTTP GET request with the given headers to the given URL, which can
+be a <code>Uri</code> or a <code>String</code>, and returns a Future that completes to the body of
+the response as a list of bytes.</p>
+<p>The Future will emit an <code>HttpException</code> if the response doesn't have a
+success status code.</p>
+<p>This automatically initializes a new <code>Client</code> and closes that client once
+the request is complete. If you're planning on making multiple requests to
+the same server, you should use a single <code>Client</code> for all of those requests.</p>
+<p>For more fine-grained control over the request and response, use <code>Request</code>
+instead.</p>
+<pre class="source">
+Future&lt;Uint8List&gt; readBytes(url, {Map&lt;String, String&gt; headers}) =&gt;
+ _withClient((client) =&gt; client.readBytes(url, headers: headers));
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="read">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_async/Future.html">Future</a>&lt;<a href="http://api.dartlang.org/dart_core/String.html">String</a>&gt; <strong>read</strong>(url, {<a href="http://api.dartlang.org/dart_core/Map.html">Map</a>&lt;<a href="http://api.dartlang.org/dart_core/String.html">String</a>, <a href="http://api.dartlang.org/dart_core/String.html">String</a>&gt; headers}) <a class="anchor-link" href="#read"
+              title="Permalink to read">#</a></h4>
+<div class="doc">
+<p>Sends an HTTP GET request with the given headers to the given URL, which can
+be a <code>Uri</code> or a <code>String</code>, and returns a Future that completes to the body of
+the response as a <code>String</code>.</p>
+<p>The Future will emit an <code>HttpException</code> if the response doesn't have a
+success status code.</p>
+<p>This automatically initializes a new <code>Client</code> and closes that client once
+the request is complete. If you're planning on making multiple requests to
+the same server, you should use a single <code>Client</code> for all of those requests.</p>
+<p>For more fine-grained control over the request and response, use <code>Request</code>
+instead.</p>
+<pre class="source">
+Future&lt;String&gt; read(url, {Map&lt;String, String&gt; headers}) =&gt;
+ _withClient((client) =&gt; client.read(url, headers: headers));
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="delete">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_async/Future.html">Future</a>&lt;<a href="response/Response.html">Response</a>&gt; <strong>delete</strong>(url, {<a href="http://api.dartlang.org/dart_core/Map.html">Map</a>&lt;<a href="http://api.dartlang.org/dart_core/String.html">String</a>, <a href="http://api.dartlang.org/dart_core/String.html">String</a>&gt; headers}) <a class="anchor-link" href="#delete"
+              title="Permalink to delete">#</a></h4>
+<div class="doc">
+<p>Sends an HTTP DELETE request with the given headers to the given URL, which
+can be a <code>Uri</code> or a <code>String</code>.</p>
+<p>This automatically initializes a new <code>Client</code> and closes that client once
+the request is complete. If you're planning on making multiple requests to
+the same server, you should use a single <code>Client</code> for all of those requests.</p>
+<p>For more fine-grained control over the request, use <code>Request</code> instead.</p>
+<pre class="source">
+Future&lt;Response&gt; delete(url, {Map&lt;String, String&gt; headers}) =&gt;
+ _withClient((client) =&gt; client.delete(url, headers: headers));
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="put">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_async/Future.html">Future</a>&lt;<a href="response/Response.html">Response</a>&gt; <strong>put</strong>(url, {<a href="http://api.dartlang.org/dart_core/Map.html">Map</a>&lt;<a href="http://api.dartlang.org/dart_core/String.html">String</a>, <a href="http://api.dartlang.org/dart_core/String.html">String</a>&gt; headers, <a href="http://api.dartlang.org/dart_core/Map.html">Map</a>&lt;<a href="http://api.dartlang.org/dart_core/String.html">String</a>, <a href="http://api.dartlang.org/dart_core/String.html">String</a>&gt; fields}) <a class="anchor-link" href="#put"
+              title="Permalink to put">#</a></h4>
+<div class="doc">
+<p>Sends an HTTP POST request with the given headers and fields to the given
+URL, which can be a <code>Uri</code> or a <code>String</code>. If any fields are specified, the
+content-type is automatically set to <code>"application/x-www-form-urlencoded"</code>.</p>
+<p>This automatically initializes a new <code>Client</code> and closes that client once
+the request is complete. If you're planning on making multiple requests to
+the same server, you should use a single <code>Client</code> for all of those requests.</p>
+<p>For more fine-grained control over the request, use <code>Request</code> or
+<code>StreamedRequest</code> instead.</p>
+<pre class="source">
+Future&lt;Response&gt; put(url,
+   {Map&lt;String, String&gt; headers,
+    Map&lt;String, String&gt; fields}) =&gt;
+ _withClient((client) =&gt; client.put(url, headers: headers, fields: fields));
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="post">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_async/Future.html">Future</a>&lt;<a href="response/Response.html">Response</a>&gt; <strong>post</strong>(url, {<a href="http://api.dartlang.org/dart_core/Map.html">Map</a>&lt;<a href="http://api.dartlang.org/dart_core/String.html">String</a>, <a href="http://api.dartlang.org/dart_core/String.html">String</a>&gt; headers, <a href="http://api.dartlang.org/dart_core/Map.html">Map</a>&lt;<a href="http://api.dartlang.org/dart_core/String.html">String</a>, <a href="http://api.dartlang.org/dart_core/String.html">String</a>&gt; fields}) <a class="anchor-link" href="#post"
+              title="Permalink to post">#</a></h4>
+<div class="doc">
+<p>Sends an HTTP POST request with the given headers and fields to the given
+URL, which an be a <code>Uri</code> or a <code>String</code>. If any fields are specified, the
+content-type is automatically set to <code>"application/x-www-form-urlencoded"</code>.</p>
+<p>This automatically initializes a new <code>Client</code> and closes that client once
+the request is complete. If you're planning on making multiple requests to
+the same server, you should use a single <code>Client</code> for all of those requests.</p>
+<p>For more fine-grained control over the request, use <code>Request</code> or
+<code>StreamedRequest</code> instead.</p>
+<pre class="source">
+Future&lt;Response&gt; post(url,
+   {Map&lt;String, String&gt; headers,
+    Map&lt;String, String&gt; fields}) =&gt;
+ _withClient((client) =&gt; client.post(url, headers: headers, fields: fields));
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="get">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_async/Future.html">Future</a>&lt;<a href="response/Response.html">Response</a>&gt; <strong>get</strong>(url, {<a href="http://api.dartlang.org/dart_core/Map.html">Map</a>&lt;<a href="http://api.dartlang.org/dart_core/String.html">String</a>, <a href="http://api.dartlang.org/dart_core/String.html">String</a>&gt; headers}) <a class="anchor-link" href="#get"
+              title="Permalink to get">#</a></h4>
+<div class="doc">
+<p>Sends an HTTP GET request with the given headers to the given URL, which can
+be a <code>Uri</code> or a <code>String</code>.</p>
+<p>This automatically initializes a new <code>Client</code> and closes that client once
+the request is complete. If you're planning on making multiple requests to
+the same server, you should use a single <code>Client</code> for all of those requests.</p>
+<p>For more fine-grained control over the request, use <code>Request</code> instead.</p>
+<pre class="source">
+Future&lt;Response&gt; get(url, {Map&lt;String, String&gt; headers}) =&gt;
+ _withClient((client) =&gt; client.get(url, headers: headers));
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="head">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_async/Future.html">Future</a>&lt;<a href="response/Response.html">Response</a>&gt; <strong>head</strong>(url, {<a href="http://api.dartlang.org/dart_core/Map.html">Map</a>&lt;<a href="http://api.dartlang.org/dart_core/String.html">String</a>, <a href="http://api.dartlang.org/dart_core/String.html">String</a>&gt; headers}) <a class="anchor-link" href="#head"
+              title="Permalink to head">#</a></h4>
+<div class="doc">
+<p>Sends an HTTP HEAD request with the given headers to the given URL, which
+can be a <code>Uri</code> or a <code>String</code>.</p>
+<p>This automatically initializes a new <code>Client</code> and closes that client once
+the request is complete. If you're planning on making multiple requests to
+the same server, you should use a single <code>Client</code> for all of those requests.</p>
+<p>For more fine-grained control over the request, use <code>Request</code> instead.</p>
+<pre class="source">
+Future&lt;Response&gt; head(url, {Map&lt;String, String&gt; headers}) =&gt;
+ _withClient((client) =&gt; client.head(url, headers: headers));
+</pre>
+</div>
+</div>
+</div>
+        </div>
+        <div class="clear"></div>
+        </div>
+        <div class="footer">
+          
+        </div>
+        <script async src="client-live-nav.js"></script>
+        </body></html>
+        

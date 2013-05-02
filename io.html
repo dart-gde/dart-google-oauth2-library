@@ -1,0 +1,889 @@
+        <!DOCTYPE html>
+        <html>
+        <head>
+                <meta charset="utf-8">
+        <title>io Library / Dart Documentation</title>
+        <link rel="stylesheet" type="text/css"
+            href="styles.css">
+        <link href="//fonts.googleapis.com/css?family=Open+Sans:400,600,700,800" rel="stylesheet" type="text/css">
+        <link rel="shortcut icon" href="favicon.ico">
+        
+        </head>
+        <body data-library="io">
+        <div class="page">
+        <div class="header">
+          <a href="index.html"><div class="logo"></div></a>
+          <a href="index.html">Dart Documentation</a>
+         &rsaquo; <a href="io.html">io</a>        <div id="search-box">
+          <input type="search" name="q" id="q" autocomplete="off"
+              class="search-input" placeholder="Search API">
+        </div>
+        
+      </div>
+      <div class="drop-down" id="drop-down"></div>
+      
+        <div class="nav">
+        
+</div>
+<div class="content">
+<h2><strong>io</strong> library</h2>
+<div class="doc"><p>Helper functionality to make working with IO easier.</p></div>
+<h3>Exports</h3>
+<ul>
+<ul><a href="http.html">http</a> show <code>ByteStream</code></ul>
+<ul><a href="base_client.html">base_client</a> show <code>ByteStream</code></ul>
+<ul><a href="base_request.html">base_request</a> show <code>ByteStream</code></ul>
+<ul><a href="base_response.html">base_response</a> show <code>ByteStream</code></ul>
+<ul><a href="byte_stream.html">byte_stream</a> show <a class="crossref" href="byte_stream/ByteStream.html">ByteStream</a></ul>
+<ul><a href="client.html">client</a> show <code>ByteStream</code></ul>
+<ul><a href="multipart_file.html">multipart_file</a> show <code>ByteStream</code></ul>
+<ul><a href="multipart_request.html">multipart_request</a> show <code>ByteStream</code></ul>
+<ul><a href="request.html">request</a> show <code>ByteStream</code></ul>
+<ul><a href="response.html">response</a> show <code>ByteStream</code></ul>
+<ul><a href="streamed_request.html">streamed_request</a> show <code>ByteStream</code></ul>
+<ul><a href="streamed_response.html">streamed_response</a> show <code>ByteStream</code></ul>
+</ul>
+<div>
+<h3>Properties</h3>
+<div class="field"><h4 id="stdinLines">
+<button class="show-code">Code</button>
+final <a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a>&lt;<a href="http://api.dartlang.org/dart_core/String.html">String</a>&gt;         <strong>stdinLines</strong> <a class="anchor-link"
+            href="#stdinLines"
+            title="Permalink to stdinLines">#</a>
+        </h4>
+        <div class="doc">
+<p>A line-by-line stream of standard input.</p>
+<pre class="source">
+final Stream&lt;String&gt; stdinLines = streamToLines(
+   new ByteStream(stdin).toStringStream())
+</pre>
+</div>
+</div>
+</div>
+<div>
+<h3>Functions</h3>
+<div class="method"><h4 id="createTarGz">
+<button class="show-code">Code</button>
+<a href="byte_stream/ByteStream.html">ByteStream</a> <strong>createTarGz</strong>(<a href="http://api.dartlang.org/dart_core/List.html">List</a> contents, {baseDir}) <a class="anchor-link" href="#createTarGz"
+              title="Permalink to createTarGz">#</a></h4>
+<div class="doc">
+<p>Create a .tar.gz archive from a list of entries. Each entry can be a
+<code>String</code>, <code>Directory</code>, or <code>File</code> object. The root of the archive is
+considered to be 
+<span class="param">baseDir</span>, which defaults to the current working directory.
+Returns a <code>ByteStream</code> that will emit the contents of the archive.</p>
+<pre class="source">
+ByteStream createTarGz(List contents, {baseDir}) {
+ var buffer = new StringBuffer();
+ buffer.write('Creating .tag.gz stream containing:\n');
+ contents.forEach((file) =&gt; buffer.write('$file\n'));
+ log.fine(buffer.toString());
+
+ var controller = new StreamController&lt;List&lt;int&gt;&gt;();
+
+ if (baseDir == null) baseDir = path.current;
+ baseDir = path.absolute(baseDir);
+ contents = contents.map((entry) {
+   entry = path.absolute(entry);
+   if (!isBeneath(entry, baseDir)) {
+     throw 'Entry $entry is not inside $baseDir.';
+   }
+   return path.relative(entry, from: baseDir);
+ }).toList();
+
+ if (Platform.operatingSystem != "windows") {
+   var args = ["--create", "--gzip", "--directory", baseDir];
+   args.addAll(contents);
+   // TODO(nweiz): It's possible that enough command-line arguments will make
+   // the process choke, so at some point we should save the arguments to a
+   // file and pass them in via --files-from for tar and -i@filename for 7zip.
+   startProcess("tar", args).then((process) {
+     store(process.stdout, controller);
+   }).catchError((e) {
+     // We don't have to worry about double-signaling here, since the store()
+     // above will only be reached if startProcess succeeds.
+     controller.addError(e);
+     controller.close();
+   });
+   return new ByteStream(controller.stream);
+ }
+
+ withTempDir((tempDir) {
+   // Create the tar file.
+   var tarFile = path.join(tempDir, "intermediate.tar");
+   var args = ["a", "-w$baseDir", tarFile];
+   args.addAll(contents.map((entry) =&gt; '-i!"$entry"'));
+
+   // Note: This line of code gets munged by create_sdk.py to be the correct
+   // relative path to 7zip in the SDK.
+   var pathTo7zip = '../../third_party/7zip/7za.exe';
+   var command = relativeToPub(pathTo7zip);
+
+   // We're passing 'baseDir' both as '-w' and setting it as the working
+   // directory explicitly here intentionally. The former ensures that the
+   // files added to the archive have the correct relative path in the archive.
+   // The latter enables relative paths in the "-i" args to be resolved.
+   return runProcess(command, args, workingDir: baseDir).then((_) {
+     // GZIP it. 7zip doesn't support doing both as a single operation. Send
+     // the output to stdout.
+     args = ["a", "unused", "-tgzip", "-so", tarFile];
+     return startProcess(command, args);
+   }).then((process) {
+     // Ignore 7zip's stderr. 7zip writes its normal output to stderr. We don't
+     // want to show that since it's meaningless.
+     //
+     // TODO(rnystrom): Should log the stderr and display it if an actual error
+     // occurs.
+     return store(process.stdout, controller);
+   });
+ }).catchError((e) {
+   // We don't have to worry about double-signaling here, since the store()
+   // above will only be reached if everything succeeds.
+   controller.addError(e);
+   controller.close();
+ });
+ return new ByteStream(controller.stream);
+}
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="extractTarGz">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_async/Future.html">Future</a>&lt;<a href="http://api.dartlang.org/dart_core/bool.html">bool</a>&gt; <strong>extractTarGz</strong>(<a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a>&lt;<a href="http://api.dartlang.org/dart_core/List.html">List</a>&lt;<a href="http://api.dartlang.org/dart_core/int.html">int</a>&gt;&gt; stream, <a href="http://api.dartlang.org/dart_core/String.html">String</a> destination) <a class="anchor-link" href="#extractTarGz"
+              title="Permalink to extractTarGz">#</a></h4>
+<div class="doc">
+<p>Extracts a <code>.tar.gz</code> file from 
+<span class="param">stream</span> to 
+<span class="param">destination</span>. Returns whether
+or not the extraction was successful.</p>
+<pre class="source">
+Future&lt;bool&gt; extractTarGz(Stream&lt;List&lt;int&gt;&gt; stream, String destination) {
+ log.fine("Extracting .tar.gz stream to $destination.");
+
+ if (Platform.operatingSystem == "windows") {
+   return _extractTarGzWindows(stream, destination);
+ }
+
+ return startProcess("tar",
+     ["--extract", "--gunzip", "--directory", destination]).then((process) {
+   // Ignore errors on process.std{out,err}. They'll be passed to
+   // process.exitCode, and we don't want them being top-levelled by
+   // std{out,err}Sink.
+   store(process.stdout.handleError((_) {}), stdout, closeSink: false);
+   store(process.stderr.handleError((_) {}), stderr, closeSink: false);
+   return Future.wait([
+     store(stream, process.stdin),
+     process.exitCode
+   ]);
+ }).then((results) {
+   var exitCode = results[1];
+   if (exitCode != 0) {
+     throw "Failed to extract .tar.gz stream to $destination (exit code "
+       "$exitCode).";
+   }
+   log.fine("Extracted .tar.gz stream to $destination. Exit code $exitCode.");
+ });
+}
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="withTempDir">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_async/Future.html">Future</a> <strong>withTempDir</strong>(<a href="http://api.dartlang.org/dart_async/Future.html">Future</a> fn(<a href="http://api.dartlang.org/dart_core/String.html">String</a> path)) <a class="anchor-link" href="#withTempDir"
+              title="Permalink to withTempDir">#</a></h4>
+<div class="doc">
+<p>Creates a temporary directory and passes its path to 
+<span class="param">fn</span>. Once the <code>Future</code>
+returned by 
+<span class="param">fn</span> completes, the temporary directory and all its contents
+will be deleted. 
+<span class="param">fn</span> can also return <code>null</code>, in which case the temporary
+directory is deleted immediately afterwards.</p>
+<p>Returns a future that completes to the value that the future returned from
+
+<span class="param">fn</span> completes to.</p>
+<pre class="source">
+Future withTempDir(Future fn(String path)) {
+ return new Future.sync(() {
+   var tempDir = createTempDir();
+   return new Future.sync(() =&gt; fn(tempDir))
+       .whenComplete(() =&gt; deleteEntry(tempDir));
+ });
+}
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="timeout">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_async/Future.html">Future</a> <strong>timeout</strong>(<a href="http://api.dartlang.org/dart_async/Future.html">Future</a> input, <a href="http://api.dartlang.org/dart_core/int.html">int</a> milliseconds, <a href="http://api.dartlang.org/dart_core/String.html">String</a> description) <a class="anchor-link" href="#timeout"
+              title="Permalink to timeout">#</a></h4>
+<div class="doc">
+<p>Wraps 
+<span class="param">input</span> to provide a timeout. If 
+<span class="param">input</span> completes before
+
+<span class="param">milliseconds</span> have passed, then the return value completes in the same way.
+However, if 
+<span class="param">milliseconds</span> pass before 
+<span class="param">input</span> has completed, it completes
+with a <a class="crossref" href="io/TimeoutException.html">TimeoutException</a> with 
+<span class="param">description</span> (which should be a fragment
+describing the action that timed out).</p>
+<p>Note that timing out will not cancel the asynchronous operation behind
+
+<span class="param">input</span>.</p>
+<pre class="source">
+Future timeout(Future input, int milliseconds, String description) {
+ var completer = new Completer();
+ var timer = new Timer(new Duration(milliseconds: milliseconds), () {
+   completer.completeError(new TimeoutException(
+       'Timed out while $description.'));
+ });
+ input.then((value) {
+   if (completer.isCompleted) return;
+   timer.cancel();
+   completer.complete(value);
+ }).catchError((e) {
+   if (completer.isCompleted) return;
+   timer.cancel();
+   completer.completeError(e);
+ });
+ return completer.future;
+}
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="startProcess">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_async/Future.html">Future</a>&lt;<a href="io/PubProcess.html">PubProcess</a>&gt; <strong>startProcess</strong>(<a href="http://api.dartlang.org/dart_core/String.html">String</a> executable, <a href="http://api.dartlang.org/dart_core/List.html">List</a>&lt;<a href="http://api.dartlang.org/dart_core/String.html">String</a>&gt; args, {workingDir, <a href="http://api.dartlang.org/dart_core/Map.html">Map</a>&lt;<a href="http://api.dartlang.org/dart_core/String.html">String</a>, <a href="http://api.dartlang.org/dart_core/String.html">String</a>&gt; environment}) <a class="anchor-link" href="#startProcess"
+              title="Permalink to startProcess">#</a></h4>
+<div class="doc">
+<p>Spawns the process located at 
+<span class="param">executable</span>, passing in 
+<span class="param">args</span>. Returns a
+<code>Future</code> that will complete with the <code>Process</code> once it's been started.</p>
+<p>The spawned process will inherit its parent's environment variables. If
+
+<span class="param">environment</span> is provided, that will be used to augment (not replace) the
+the inherited variables.</p>
+<pre class="source">
+Future&lt;PubProcess&gt; startProcess(String executable, List&lt;String&gt; args,
+   {workingDir, Map&lt;String, String&gt; environment}) =&gt;
+ _doProcess(Process.start, executable, args, workingDir, environment)
+     .then((process) =&gt; new PubProcess(process));
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="runProcess">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_async/Future.html">Future</a>&lt;<a href="io/PubProcessResult.html">PubProcessResult</a>&gt; <strong>runProcess</strong>(<a href="http://api.dartlang.org/dart_core/String.html">String</a> executable, <a href="http://api.dartlang.org/dart_core/List.html">List</a>&lt;<a href="http://api.dartlang.org/dart_core/String.html">String</a>&gt; args, {workingDir, <a href="http://api.dartlang.org/dart_core/Map.html">Map</a>&lt;<a href="http://api.dartlang.org/dart_core/String.html">String</a>, <a href="http://api.dartlang.org/dart_core/String.html">String</a>&gt; environment}) <a class="anchor-link" href="#runProcess"
+              title="Permalink to runProcess">#</a></h4>
+<div class="doc">
+<p>Spawns and runs the process located at 
+<span class="param">executable</span>, passing in 
+<span class="param">args</span>.
+Returns a <code>Future</code> that will complete with the results of the process after
+it has ended.</p>
+<p>The spawned process will inherit its parent's environment variables. If
+
+<span class="param">environment</span> is provided, that will be used to augment (not replace) the
+the inherited variables.</p>
+<pre class="source">
+Future&lt;PubProcessResult&gt; runProcess(String executable, List&lt;String&gt; args,
+   {workingDir, Map&lt;String, String&gt; environment}) {
+ return _doProcess(Process.run, executable, args, workingDir, environment)
+     .then((result) {
+   // TODO(rnystrom): Remove this and change to returning one string.
+   List&lt;String&gt; toLines(String output) {
+     var lines = splitLines(output);
+     if (!lines.isEmpty &amp;&amp; lines.last == "") lines.removeLast();
+     return lines;
+   }
+
+   var pubResult = new PubProcessResult(toLines(result.stdout),
+                               toLines(result.stderr),
+                               result.exitCode);
+
+   log.processResult(executable, pubResult);
+   return pubResult;
+ });
+}
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="store">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_async/Future.html">Future</a> <strong>store</strong>(<a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a> stream, <a href="http://api.dartlang.org/dart_async/EventSink.html">EventSink</a> sink, {<a href="http://api.dartlang.org/dart_core/bool.html">bool</a> cancelOnError: true, closeSink: true}) <a class="anchor-link" href="#store"
+              title="Permalink to store">#</a></h4>
+<div class="doc">
+<p>Pipes all data and errors from 
+<span class="param">stream</span> into 
+<span class="param">sink</span>. When 
+<span class="param">stream</span> is done,
+the returned <code>Future</code> is completed and 
+<span class="param">sink</span> is closed if 
+<span class="param">closeSink</span> is
+true.</p>
+<p>When an error occurs on 
+<span class="param">stream</span>, that error is passed to 
+<span class="param">sink</span>. If
+
+<span class="param">cancelOnError</span> is true, <code>Future</code> will be completed successfully and no
+more data or errors will be piped from 
+<span class="param">stream</span> to 
+<span class="param">sink</span>. If
+
+<span class="param">cancelOnError</span> and 
+<span class="param">closeSink</span> are both true, 
+<span class="param">sink</span> will then be
+closed.</p>
+<pre class="source">
+Future store(Stream stream, EventSink sink,
+   {bool cancelOnError: true, closeSink: true}) {
+ var completer = new Completer();
+ stream.listen(sink.add,
+     onError: (e) {
+       sink.addError(e);
+       if (cancelOnError) {
+         completer.complete();
+         if (closeSink) sink.close();
+       }
+     },
+     onDone: () {
+       if (closeSink) sink.close();
+       completer.complete();
+     }, cancelOnError: cancelOnError);
+ return completer.future;
+}
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="consumerToSink">
+<button class="show-code">Code</button>
+<a href="utils/Pair.html">Pair</a>&lt;<a href="http://api.dartlang.org/dart_async/EventSink.html">EventSink</a>, <a href="http://api.dartlang.org/dart_async/Future.html">Future</a>&gt; <strong>consumerToSink</strong>(<a href="http://api.dartlang.org/dart_async/StreamConsumer.html">StreamConsumer</a> consumer) <a class="anchor-link" href="#consumerToSink"
+              title="Permalink to consumerToSink">#</a></h4>
+<div class="doc">
+<p>Returns a <code>EventSink</code> that pipes all data to 
+<span class="param">consumer</span> and a <code>Future</code> that
+will succeed when <code>EventSink</code> is closed or fail with any errors that occur
+while writing.</p>
+<pre class="source">
+Pair&lt;EventSink, Future&gt; consumerToSink(StreamConsumer consumer) {
+ var controller = new StreamController();
+ var done = controller.stream.pipe(consumer);
+ return new Pair&lt;EventSink, Future&gt;(controller.sink, done);
+}
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="drainStream">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_async/Future.html">Future</a> <strong>drainStream</strong>(<a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a> stream) <a class="anchor-link" href="#drainStream"
+              title="Permalink to drainStream">#</a></h4>
+<div class="doc">
+<p>Reads and discards all output from 
+<span class="param">stream</span>. Returns a <code>Future</code> that
+completes when the stream is closed.</p>
+<pre class="source">
+Future drainStream(Stream stream) {
+ return stream.fold(null, (x, y) {});
+}
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="confirm">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_async/Future.html">Future</a>&lt;<a href="http://api.dartlang.org/dart_core/bool.html">bool</a>&gt; <strong>confirm</strong>(<a href="http://api.dartlang.org/dart_core/String.html">String</a> message) <a class="anchor-link" href="#confirm"
+              title="Permalink to confirm">#</a></h4>
+<div class="doc">
+<p>Displays a message and reads a yes/no confirmation from the user. Returns
+a <code>Future</code> that completes to <code>true</code> if the user confirms or <code>false</code> if they
+do not.</p>
+<p>This will automatically append " (y/n)?" to the message, so 
+<span class="param">message</span>
+should just be a fragment like, "Are you sure you want to proceed".</p>
+<pre class="source">
+Future&lt;bool&gt; confirm(String message) {
+ log.fine('Showing confirm message: $message');
+ stdout.write("$message (y/n)? ");
+ return streamFirst(stdinLines)
+     .then((line) =&gt; new RegExp(r"^[yY]").hasMatch(line));
+}
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="relativeToPub">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_core/String.html">String</a> <strong>relativeToPub</strong>(<a href="http://api.dartlang.org/dart_core/String.html">String</a> target) <a class="anchor-link" href="#relativeToPub"
+              title="Permalink to relativeToPub">#</a></h4>
+<div class="doc">
+<p>Resolves 
+<span class="param">target</span> relative to the location of pub.dart.</p>
+<pre class="source">
+String relativeToPub(String target) {
+ var scriptPath = new File(new Options().script).fullPathSync();
+
+ // Walk up until we hit the "util(s)" directory. This lets us figure out where
+ // we are if this function is called from pub.dart, or one of the tests,
+ // which also live under "utils", or from the SDK where pub is in "util".
+ var utilDir = path.dirname(scriptPath);
+ while (path.basename(utilDir) != 'utils' &amp;&amp;
+        path.basename(utilDir) != 'util') {
+   if (path.basename(utilDir) == '') throw 'Could not find path to pub.';
+   utilDir = path.dirname(utilDir);
+ }
+
+ return path.normalize(path.join(utilDir, 'pub', target));
+}
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="createPackageSymlink">
+<button class="show-code">Code</button>
+void <strong>createPackageSymlink</strong>(<a href="http://api.dartlang.org/dart_core/String.html">String</a> name, <a href="http://api.dartlang.org/dart_core/String.html">String</a> target, <a href="http://api.dartlang.org/dart_core/String.html">String</a> symlink, {<a href="http://api.dartlang.org/dart_core/bool.html">bool</a> isSelfLink: false, <a href="http://api.dartlang.org/dart_core/bool.html">bool</a> relative: false}) <a class="anchor-link" href="#createPackageSymlink"
+              title="Permalink to createPackageSymlink">#</a></h4>
+<div class="doc">
+<p>Creates a new symlink that creates an alias at 
+<span class="param">symlink</span> that points to the
+<code>lib</code> directory of package 
+<span class="param">target</span>. If 
+<span class="param">target</span> does not have a <code>lib</code>
+directory, this shows a warning if appropriate and then does nothing.</p>
+<p>If 
+<span class="param">relative</span> is true, creates a symlink with a relative path from the
+symlink to the target. Otherwise, uses the 
+<span class="param">target</span> path unmodified.</p>
+<pre class="source">
+void createPackageSymlink(String name, String target, String symlink,
+   {bool isSelfLink: false, bool relative: false}) {
+ // See if the package has a "lib" directory.
+ target = path.join(target, 'lib');
+ log.fine("Creating ${isSelfLink ? "self" : ""}link for package '$name'.");
+ if (dirExists(target)) {
+   createSymlink(target, symlink, relative: relative);
+   return;
+ }
+
+ // It's OK for the self link (i.e. the root package) to not have a lib
+ // directory since it may just be a leaf application that only has
+ // code in bin or web.
+ if (!isSelfLink) {
+   log.warning('Warning: Package "$name" does not have a "lib" directory so '
+               'you will not be able to import any libraries from it.');
+ }
+}
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="createSymlink">
+<button class="show-code">Code</button>
+void <strong>createSymlink</strong>(<a href="http://api.dartlang.org/dart_core/String.html">String</a> target, <a href="http://api.dartlang.org/dart_core/String.html">String</a> symlink, {<a href="http://api.dartlang.org/dart_core/bool.html">bool</a> relative: false}) <a class="anchor-link" href="#createSymlink"
+              title="Permalink to createSymlink">#</a></h4>
+<div class="doc">
+<p>Creates a new symlink at path 
+<span class="param">symlink</span> that points to 
+<span class="param">target</span>. Returns a
+<code>Future</code> which completes to the path to the symlink file.</p>
+<p>If 
+<span class="param">relative</span> is true, creates a symlink with a relative path from the
+symlink to the target. Otherwise, uses the 
+<span class="param">target</span> path unmodified.</p>
+<p>Note that on Windows, only directories may be symlinked to.</p>
+<pre class="source">
+void createSymlink(String target, String symlink,
+   {bool relative: false}) {
+ if (relative) {
+   // Relative junction points are not supported on Windows. Instead, just
+   // make sure we have a clean absolute path because it will interpret a
+   // relative path to be relative to the cwd, not the symlink, and will be
+   // confused by forward slashes.
+   if (Platform.operatingSystem == 'windows') {
+     target = path.normalize(path.absolute(target));
+   } else {
+     target = path.normalize(
+         path.relative(target, from: path.dirname(symlink)));
+   }
+ }
+
+ log.fine("Creating $symlink pointing to $target");
+ new Link(symlink).createSync(target);
+}
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="renameDir">
+<button class="show-code">Code</button>
+void <strong>renameDir</strong>(<a href="http://api.dartlang.org/dart_core/String.html">String</a> from, <a href="http://api.dartlang.org/dart_core/String.html">String</a> to) <a class="anchor-link" href="#renameDir"
+              title="Permalink to renameDir">#</a></h4>
+<div class="doc">
+<p>Renames (i.e. moves) the directory 
+<span class="param">from</span> to 
+<span class="param">to</span>.</p>
+<pre class="source">
+void renameDir(String from, String to) {
+ log.io("Renaming directory $from to $to.");
+ new Directory(from).renameSync(to);
+}
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="cleanDir">
+<button class="show-code">Code</button>
+void <strong>cleanDir</strong>(<a href="http://api.dartlang.org/dart_core/String.html">String</a> dir) <a class="anchor-link" href="#cleanDir"
+              title="Permalink to cleanDir">#</a></h4>
+<div class="doc">
+<p>"Cleans" 
+<span class="param">dir</span>. If that directory already exists, it will be deleted. Then a
+new empty directory will be created.</p>
+<pre class="source">
+void cleanDir(String dir) {
+ if (entryExists(dir)) deleteEntry(dir);
+ createDir(dir);
+}
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="deleteEntry">
+<button class="show-code">Code</button>
+void <strong>deleteEntry</strong>(<a href="http://api.dartlang.org/dart_core/String.html">String</a> path) <a class="anchor-link" href="#deleteEntry"
+              title="Permalink to deleteEntry">#</a></h4>
+<div class="doc">
+<p>Deletes whatever's at 
+<span class="param">path</span>, whether it's a file, directory, or symlink. If
+it's a directory, it will be deleted recursively.</p>
+<pre class="source">
+void deleteEntry(String path) {
+ if (linkExists(path)) {
+   log.io("Deleting link $path.");
+   new Link(path).deleteSync();
+ } else if (dirExists(path)) {
+   log.io("Deleting directory $path.");
+   new Directory(path).deleteSync(recursive: true);
+ } else if (fileExists(path)) {
+   log.io("Deleting file $path.");
+   new File(path).deleteSync();
+ }
+}
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="dirExists">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_core/bool.html">bool</a> <strong>dirExists</strong>(<a href="http://api.dartlang.org/dart_core/String.html">String</a> dir) <a class="anchor-link" href="#dirExists"
+              title="Permalink to dirExists">#</a></h4>
+<div class="doc">
+<p>Returns whether 
+<span class="param">dir</span> exists on the file system. This will return <code>true</code> for
+a symlink only if that symlink is unbroken and points to a directory.</p>
+<pre class="source">
+bool dirExists(String dir) =&gt; new Directory(dir).existsSync();
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="listDir">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_core/List.html">List</a>&lt;<a href="http://api.dartlang.org/dart_core/String.html">String</a>&gt; <strong>listDir</strong>(<a href="http://api.dartlang.org/dart_core/String.html">String</a> dir, {<a href="http://api.dartlang.org/dart_core/bool.html">bool</a> recursive: false, <a href="http://api.dartlang.org/dart_core/bool.html">bool</a> includeHidden: false}) <a class="anchor-link" href="#listDir"
+              title="Permalink to listDir">#</a></h4>
+<div class="doc">
+<p>Lists the contents of 
+<span class="param">dir</span>. If 
+<span class="param">recursive</span> is <code>true</code>, lists subdirectory
+contents (defaults to <code>false</code>). If 
+<span class="param">includeHidden</span> is <code>true</code>, includes files
+and directories beginning with <code>.</code> (defaults to <code>false</code>).</p>
+<p>The returned paths are guaranteed to begin with 
+<span class="param">dir</span>.</p>
+<pre class="source">
+List&lt;String&gt; listDir(String dir, {bool recursive: false,
+   bool includeHidden: false}) {
+ List&lt;String&gt; doList(String dir, Set&lt;String&gt; listedDirectories) {
+   var contents = &lt;String&gt;[];
+
+   // Avoid recursive symlinks.
+   var resolvedPath = new File(dir).fullPathSync();
+   if (listedDirectories.contains(resolvedPath)) return [];
+
+   listedDirectories = new Set&lt;String&gt;.from(listedDirectories);
+   listedDirectories.add(resolvedPath);
+
+   log.io("Listing directory $dir.");
+
+   var children = &lt;String&gt;[];
+   for (var entity in new Directory(dir).listSync()) {
+     if (!includeHidden &amp;&amp; path.basename(entity.path).startsWith('.')) {
+       continue;
+     }
+
+     contents.add(entity.path);
+     if (entity is Directory) {
+       // TODO(nweiz): don't manually recurse once issue 4794 is fixed.
+       // Note that once we remove the manual recursion, we'll need to
+       // explicitly filter out files in hidden directories.
+       if (recursive) {
+         children.addAll(doList(entity.path, listedDirectories));
+       }
+     }
+   }
+
+   log.fine("Listed directory $dir:\n${contents.join('\n')}");
+   contents.addAll(children);
+   return contents;
+ }
+
+ return doList(dir, new Set&lt;String&gt;());
+}
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="createTempDir">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_core/String.html">String</a> <strong>createTempDir</strong>([dir = '']) <a class="anchor-link" href="#createTempDir"
+              title="Permalink to createTempDir">#</a></h4>
+<div class="doc">
+<p>Creates a temp directory whose name will be based on 
+<span class="param">dir</span> with a unique
+suffix appended to it. If 
+<span class="param">dir</span> is not provided, a temp directory will be
+created in a platform-dependent temporary location. Returns the path of the
+created directory.</p>
+<pre class="source">
+String createTempDir([dir = '']) {
+ var tempDir = new Directory(dir).createTempSync();
+ log.io("Created temp directory ${tempDir.path}");
+ return tempDir.path;
+}
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="ensureDir">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_core/String.html">String</a> <strong>ensureDir</strong>(<a href="http://api.dartlang.org/dart_core/String.html">String</a> dirPath) <a class="anchor-link" href="#ensureDir"
+              title="Permalink to ensureDir">#</a></h4>
+<div class="doc">
+<p>Ensures that 
+<span class="param">dirPath</span> and all its parent directories exist. If they don't
+exist, creates them.</p>
+<pre class="source">
+String ensureDir(String dirPath) {
+ log.fine("Ensuring directory $dirPath exists.");
+ var dir = new Directory(dirPath);
+ if (dirPath == '.' || dirExists(dirPath)) return dirPath;
+
+ ensureDir(path.dirname(dirPath));
+
+ try {
+   createDir(dirPath);
+ } on DirectoryIOException catch (ex) {
+   // Error 17 means the directory already exists (or 183 on Windows).
+   if (ex.osError.errorCode == 17 || ex.osError.errorCode == 183) {
+     log.fine("Got 'already exists' error when creating directory.");
+   } else {
+     throw ex;
+   }
+ }
+
+ return dirPath;
+}
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="createDir">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_core/String.html">String</a> <strong>createDir</strong>(<a href="http://api.dartlang.org/dart_core/String.html">String</a> dir) <a class="anchor-link" href="#createDir"
+              title="Permalink to createDir">#</a></h4>
+<div class="doc">
+<p>Creates a directory 
+<span class="param">dir</span>.</p>
+<pre class="source">
+String createDir(String dir) {
+ new Directory(dir).createSync();
+ return dir;
+}
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="createFileFromStream">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_async/Future.html">Future</a>&lt;<a href="http://api.dartlang.org/dart_core/String.html">String</a>&gt; <strong>createFileFromStream</strong>(<a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a>&lt;<a href="http://api.dartlang.org/dart_core/List.html">List</a>&lt;<a href="http://api.dartlang.org/dart_core/int.html">int</a>&gt;&gt; stream, <a href="http://api.dartlang.org/dart_core/String.html">String</a> file) <a class="anchor-link" href="#createFileFromStream"
+              title="Permalink to createFileFromStream">#</a></h4>
+<div class="doc">
+<p>Writes 
+<span class="param">stream</span> to a new file at path 
+<span class="param">file</span>. Will replace any file already
+at that path. Completes when the file is done being written.</p>
+<pre class="source">
+Future&lt;String&gt; createFileFromStream(Stream&lt;List&lt;int&gt;&gt; stream, String file) {
+ log.io("Creating $file from stream.");
+
+ return stream.pipe(new File(file).openWrite()).then((_) {
+   log.fine("Created $file from stream.");
+   return file;
+ });
+}
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="writeBinaryFile">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_core/String.html">String</a> <strong>writeBinaryFile</strong>(<a href="http://api.dartlang.org/dart_core/String.html">String</a> file, <a href="http://api.dartlang.org/dart_core/List.html">List</a>&lt;<a href="http://api.dartlang.org/dart_core/int.html">int</a>&gt; contents) <a class="anchor-link" href="#writeBinaryFile"
+              title="Permalink to writeBinaryFile">#</a></h4>
+<div class="doc">
+<p>Creates 
+<span class="param">file</span> and writes 
+<span class="param">contents</span> to it.</p>
+<pre class="source">
+String writeBinaryFile(String file, List&lt;int&gt; contents) {
+ log.io("Writing ${contents.length} bytes to binary file $file.");
+ new File(file).openSync(mode: FileMode.WRITE)
+     ..writeFromSync(contents)
+     ..closeSync();
+ log.fine("Wrote text file $file.");
+ return file;
+}
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="writeTextFile">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_core/String.html">String</a> <strong>writeTextFile</strong>(<a href="http://api.dartlang.org/dart_core/String.html">String</a> file, <a href="http://api.dartlang.org/dart_core/String.html">String</a> contents, {dontLogContents: false}) <a class="anchor-link" href="#writeTextFile"
+              title="Permalink to writeTextFile">#</a></h4>
+<div class="doc">
+<p>Creates 
+<span class="param">file</span> and writes 
+<span class="param">contents</span> to it.</p>
+<p>If 
+<span class="param">dontLogContents</span> is true, the contents of the file will never be logged.</p>
+<pre class="source">
+String writeTextFile(String file, String contents, {dontLogContents: false}) {
+ // Sanity check: don't spew a huge file.
+ log.io("Writing ${contents.length} characters to text file $file.");
+ if (!dontLogContents &amp;&amp; contents.length &lt; 1024 * 1024) {
+   log.fine("Contents:\n$contents");
+ }
+
+ new File(file).writeAsStringSync(contents);
+ return file;
+}
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="readBinaryFile">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_core/List.html">List</a>&lt;<a href="http://api.dartlang.org/dart_core/int.html">int</a>&gt; <strong>readBinaryFile</strong>(<a href="http://api.dartlang.org/dart_core/String.html">String</a> file) <a class="anchor-link" href="#readBinaryFile"
+              title="Permalink to readBinaryFile">#</a></h4>
+<div class="doc">
+<p>Reads the contents of the binary file 
+<span class="param">file</span>.</p>
+<pre class="source">
+List&lt;int&gt; readBinaryFile(String file) {
+ log.io("Reading binary file $file.");
+ var contents = new File(file).readAsBytesSync();
+ log.io("Read ${contents.length} bytes from $file.");
+ return contents;
+}
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="readTextFile">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_core/String.html">String</a> <strong>readTextFile</strong>(<a href="http://api.dartlang.org/dart_core/String.html">String</a> file) <a class="anchor-link" href="#readTextFile"
+              title="Permalink to readTextFile">#</a></h4>
+<div class="doc">
+<p>Reads the contents of the text file 
+<span class="param">file</span>.</p>
+<pre class="source">
+String readTextFile(String file) =&gt;
+   new File(file).readAsStringSync(encoding: Encoding.UTF_8);
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="fileExists">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_core/bool.html">bool</a> <strong>fileExists</strong>(<a href="http://api.dartlang.org/dart_core/String.html">String</a> file) <a class="anchor-link" href="#fileExists"
+              title="Permalink to fileExists">#</a></h4>
+<div class="doc">
+<p>Returns whether 
+<span class="param">file</span> exists on the file system. This will return <code>true</code>
+for a symlink only if that symlink is unbroken and points to a file.</p>
+<pre class="source">
+bool fileExists(String file) =&gt; new File(file).existsSync();
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="linkExists">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_core/bool.html">bool</a> <strong>linkExists</strong>(<a href="http://api.dartlang.org/dart_core/String.html">String</a> link) <a class="anchor-link" href="#linkExists"
+              title="Permalink to linkExists">#</a></h4>
+<div class="doc">
+<p>Returns whether 
+<span class="param">link</span> exists on the file system. This will return <code>true</code>
+for any symlink, regardless of what it points at or whether it's broken.</p>
+<pre class="source">
+bool linkExists(String link) =&gt; new Link(link).existsSync();
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="entryExists">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_core/bool.html">bool</a> <strong>entryExists</strong>(<a href="http://api.dartlang.org/dart_core/String.html">String</a> path) <a class="anchor-link" href="#entryExists"
+              title="Permalink to entryExists">#</a></h4>
+<div class="doc">
+<p>Determines if a file or directory exists at 
+<span class="param">path</span>.</p>
+<pre class="source">
+bool entryExists(String path) =&gt;
+ dirExists(path) || fileExists(path) || linkExists(path);
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="isBeneath">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_core/bool.html">bool</a> <strong>isBeneath</strong>(<a href="http://api.dartlang.org/dart_core/String.html">String</a> entry, <a href="http://api.dartlang.org/dart_core/String.html">String</a> dir) <a class="anchor-link" href="#isBeneath"
+              title="Permalink to isBeneath">#</a></h4>
+<div class="doc">
+<p>Returns whether or not 
+<span class="param">entry</span> is nested somewhere within 
+<span class="param">dir</span>. This just
+performs a path comparison; it doesn't look at the actual filesystem.</p>
+<pre class="source">
+bool isBeneath(String entry, String dir) {
+ var relative = path.relative(entry, from: dir);
+ return !path.isAbsolute(relative) &amp;&amp; path.split(relative)[0] != '..';
+}
+</pre>
+</div>
+</div>
+</div>
+<div>
+<h3>Classes</h3>
+          <div class="type">
+          <h4>
+            <a href="io/PubProcess.html"><strong>PubProcess</strong></a>
+          </h4>
+          </div>
+          
+          <div class="type">
+          <h4>
+            <a href="io/PubProcessResult.html"><strong>PubProcessResult</strong></a>
+          </h4>
+          </div>
+          
+</div>
+<div>
+<h3>Exceptions</h3>
+          <div class="type">
+          <h4>
+            <a href="io/TimeoutException.html"><strong>TimeoutException</strong></a>
+          </h4>
+          </div>
+          
+</div>
+        </div>
+        <div class="clear"></div>
+        </div>
+        <div class="footer">
+          
+        </div>
+        <script async src="client-live-nav.js"></script>
+        </body></html>
+        

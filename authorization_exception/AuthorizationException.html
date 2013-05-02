@@ -1,0 +1,156 @@
+        <!DOCTYPE html>
+        <html>
+        <head>
+                <meta charset="utf-8">
+        <title>AuthorizationException class / authorization_exception Library / Dart Documentation</title>
+        <link rel="stylesheet" type="text/css"
+            href="../styles.css">
+        <link href="//fonts.googleapis.com/css?family=Open+Sans:400,600,700,800" rel="stylesheet" type="text/css">
+        <link rel="shortcut icon" href="../favicon.ico">
+        
+        </head>
+        <body data-library="authorization_exception" data-type="AuthorizationException">
+        <div class="page">
+        <div class="header">
+          <a href="../index.html"><div class="logo"></div></a>
+          <a href="../index.html">Dart Documentation</a>
+         &rsaquo; <a href="../authorization_exception.html">authorization_exception</a> &rsaquo; <a href="../authorization_exception/AuthorizationException.html">AuthorizationException</a>        <div id="search-box">
+          <input type="search" name="q" id="q" autocomplete="off"
+              class="search-input" placeholder="Search API">
+        </div>
+        
+      </div>
+      <div class="drop-down" id="drop-down"></div>
+      
+        <div class="nav">
+        
+</div>
+<div class="content">
+        <h2><strong>AuthorizationException</strong>
+          class
+        </h2>
+        
+<button id="show-inherited" class="show-inherited">Hide inherited</button>
+<div class="doc">
+<p>An exception raised when OAuth2 authorization fails.</p>
+<pre class="source">
+class AuthorizationException implements Exception {
+ /// The name of the error. Possible names are enumerated in [the spec][].
+ ///
+ /// [the spec]: http://tools.ietf.org/html/draft-ietf-oauth-v2-31#section-5.2
+ final String error;
+
+ /// The description of the error, provided by the server. Defaults to null.
+ final String description;
+
+ /// A URI for a page that describes the error in more detail, provided by the
+ /// server. Defaults to null.
+ final Uri uri;
+
+ /// Creates an AuthorizationException.
+ AuthorizationException(this.error, this.description, this.uri);
+
+ /// Provides a string description of the AuthorizationException.
+ String toString() {
+   var header = 'OAuth authorization error ($error)';
+   if (description != null) {
+     header = '$header: $description';
+   } else if (uri != null) {
+     header = '$header: $uri';
+   }
+   return '$header.';
+ }
+}
+</pre>
+</div>
+<h3>Implements</h3>
+<p>
+<span class="type-box"><span class="icon-exception"></span><a href="../dart_core/Exception.html">Exception</a></span></p>
+<div>
+<h3>Constructors</h3>
+<div class="method"><h4 id="AuthorizationException">
+<button class="show-code">Code</button>
+new <strong>AuthorizationException</strong>(<a href="http://api.dartlang.org/dart_core/String.html">String</a> error, <a href="http://api.dartlang.org/dart_core/String.html">String</a> description, <a href="http://api.dartlang.org/dart_uri/Uri.html">Uri</a> uri) <a class="anchor-link" href="#AuthorizationException"
+              title="Permalink to AuthorizationException.AuthorizationException">#</a></h4>
+<div class="doc">
+<p>Creates an AuthorizationException.</p>
+<pre class="source">
+AuthorizationException(this.error, this.description, this.uri);
+</pre>
+</div>
+</div>
+</div>
+<div>
+<h3>Properties</h3>
+<div class="field"><h4 id="description">
+<button class="show-code">Code</button>
+final <a href="http://api.dartlang.org/dart_core/String.html">String</a>         <strong>description</strong> <a class="anchor-link"
+            href="#description"
+            title="Permalink to AuthorizationException.description">#</a>
+        </h4>
+        <div class="doc">
+<p>The description of the error, provided by the server. Defaults to null.</p>
+<pre class="source">
+final String description
+</pre>
+</div>
+</div>
+<div class="field"><h4 id="error">
+<button class="show-code">Code</button>
+final <a href="http://api.dartlang.org/dart_core/String.html">String</a>         <strong>error</strong> <a class="anchor-link"
+            href="#error"
+            title="Permalink to AuthorizationException.error">#</a>
+        </h4>
+        <div class="doc">
+<p>The name of the error. Possible names are enumerated in <a href="http://tools.ietf.org/html/draft-ietf-oauth-v2-31#section-5.2">the spec</a>.</p>
+<pre class="source">
+final String error
+</pre>
+</div>
+</div>
+<div class="field"><h4 id="uri">
+<button class="show-code">Code</button>
+final <a href="http://api.dartlang.org/dart_uri/Uri.html">Uri</a>         <strong>uri</strong> <a class="anchor-link"
+            href="#uri"
+            title="Permalink to AuthorizationException.uri">#</a>
+        </h4>
+        <div class="doc">
+<p>A URI for a page that describes the error in more detail, provided by the
+server. Defaults to null.</p>
+<pre class="source">
+final Uri uri
+</pre>
+</div>
+</div>
+</div>
+<div>
+<h3>Methods</h3>
+<div class="method"><h4 id="toString">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_core/String.html">String</a> <strong>toString</strong>() <a class="anchor-link" href="#toString"
+              title="Permalink to AuthorizationException.toString">#</a></h4>
+<div class="doc">
+<p>Provides a string description of the AuthorizationException.</p>
+<pre class="source">
+String toString() {
+ var header = 'OAuth authorization error ($error)';
+ if (description != null) {
+   header = '$header: $description';
+ } else if (uri != null) {
+   header = '$header: $uri';
+ }
+ return '$header.';
+}
+</pre>
+</div>
+</div>
+</div>
+        </div>
+        <div class="clear"></div>
+        </div>
+        <div class="footer">
+          
+        </div>
+        <script async src="../client-live-nav.js"></script>
+        </body></html>
+        

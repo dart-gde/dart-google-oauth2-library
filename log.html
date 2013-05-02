@@ -1,0 +1,370 @@
+        <!DOCTYPE html>
+        <html>
+        <head>
+                <meta charset="utf-8">
+        <title>log Library / Dart Documentation</title>
+        <link rel="stylesheet" type="text/css"
+            href="styles.css">
+        <link href="//fonts.googleapis.com/css?family=Open+Sans:400,600,700,800" rel="stylesheet" type="text/css">
+        <link rel="shortcut icon" href="favicon.ico">
+        
+        </head>
+        <body data-library="log">
+        <div class="page">
+        <div class="header">
+          <a href="index.html"><div class="logo"></div></a>
+          <a href="index.html">Dart Documentation</a>
+         &rsaquo; <a href="log.html">log</a>        <div id="search-box">
+          <input type="search" name="q" id="q" autocomplete="off"
+              class="search-input" placeholder="Search API">
+        </div>
+        
+      </div>
+      <div class="drop-down" id="drop-down"></div>
+      
+        <div class="nav">
+        
+</div>
+<div class="content">
+<h2><strong>log</strong> library</h2>
+<div class="doc"><p>Message logging.</p></div>
+<div>
+<h3>Functions</h3>
+<div class="method"><h4 id="showAll">
+<button class="show-code">Code</button>
+void <strong>showAll</strong>() <a class="anchor-link" href="#showAll"
+              title="Permalink to showAll">#</a></h4>
+<div class="doc">
+<p>Sets the verbosity to "all", which logs ALL the things.</p>
+<pre class="source">
+void showAll() {
+ _loggers[Level.ERROR]   = _logToStderrWithLabel;
+ _loggers[Level.WARNING] = _logToStderrWithLabel;
+ _loggers[Level.MESSAGE] = _logToStdoutWithLabel;
+ _loggers[Level.IO]      = _logToStderrWithLabel;
+ _loggers[Level.SOLVER]  = _logToStderrWithLabel;
+ _loggers[Level.FINE]    = _logToStderrWithLabel;
+}
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="showSolver">
+<button class="show-code">Code</button>
+void <strong>showSolver</strong>() <a class="anchor-link" href="#showSolver"
+              title="Permalink to showSolver">#</a></h4>
+<div class="doc">
+<p>Sets the verbosity to "solver", which shows errors, warnings, messages, and
+solver logs.</p>
+<pre class="source">
+void showSolver() {
+ _loggers[Level.ERROR]   = _logToStderr;
+ _loggers[Level.WARNING] = _logToStderr;
+ _loggers[Level.MESSAGE] = _logToStdout;
+ _loggers[Level.IO]      = null;
+ _loggers[Level.SOLVER]  = _logToStdout;
+ _loggers[Level.FINE]    = null;
+}
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="showIO">
+<button class="show-code">Code</button>
+void <strong>showIO</strong>() <a class="anchor-link" href="#showIO"
+              title="Permalink to showIO">#</a></h4>
+<div class="doc">
+<p>Sets the verbosity to "io", which shows errors, warnings, messages, and IO
+event logs.</p>
+<pre class="source">
+void showIO() {
+ _loggers[Level.ERROR]   = _logToStderrWithLabel;
+ _loggers[Level.WARNING] = _logToStderrWithLabel;
+ _loggers[Level.MESSAGE] = _logToStdoutWithLabel;
+ _loggers[Level.IO]      = _logToStderrWithLabel;
+ _loggers[Level.SOLVER]  = null;
+ _loggers[Level.FINE]    = null;
+}
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="showNormal">
+<button class="show-code">Code</button>
+void <strong>showNormal</strong>() <a class="anchor-link" href="#showNormal"
+              title="Permalink to showNormal">#</a></h4>
+<div class="doc">
+<p>Sets the verbosity to "normal", which shows errors, warnings, and messages.</p>
+<pre class="source">
+void showNormal() {
+ _loggers[Level.ERROR]   = _logToStderr;
+ _loggers[Level.WARNING] = _logToStderr;
+ _loggers[Level.MESSAGE] = _logToStdout;
+ _loggers[Level.IO]      = null;
+ _loggers[Level.SOLVER]  = null;
+ _loggers[Level.FINE]    = null;
+}
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="dumpTranscript">
+<button class="show-code">Code</button>
+void <strong>dumpTranscript</strong>() <a class="anchor-link" href="#dumpTranscript"
+              title="Permalink to dumpTranscript">#</a></h4>
+<div class="doc">
+<p>If <code>recordTranscript()</code> was called, then prints the previously recorded log
+transcript to stderr.</p>
+<pre class="source">
+void dumpTranscript() {
+ if (_transcript == null) return;
+
+ stderr.writeln('---- Log transcript ----');
+ for (var entry in _transcript) {
+   _logToStderrWithLabel(entry);
+ }
+ stderr.writeln('---- End log transcript ----');
+}
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="recordTranscript">
+<button class="show-code">Code</button>
+void <strong>recordTranscript</strong>() <a class="anchor-link" href="#recordTranscript"
+              title="Permalink to recordTranscript">#</a></h4>
+<div class="doc">
+<p>Enables recording of log entries.</p>
+<pre class="source">
+void recordTranscript() {
+ _transcript = &lt;Entry&gt;[];
+}
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="processResult">
+<button class="show-code">Code</button>
+void <strong>processResult</strong>(<a href="http://api.dartlang.org/dart_core/String.html">String</a> executable, <a href="io/PubProcessResult.html">PubProcessResult</a> result) <a class="anchor-link" href="#processResult"
+              title="Permalink to processResult">#</a></h4>
+<div class="doc">
+<p>Logs the results of running 
+<span class="param">executable</span>.</p>
+<pre class="source">
+void processResult(String executable, PubProcessResult result) {
+ // Log it all as one message so that it shows up as a single unit in the logs.
+ var buffer = new StringBuffer();
+ buffer.write("Finished $executable. Exit code ${result.exitCode}.");
+
+ dumpOutput(String name, List&lt;String&gt; output) {
+   if (output.length == 0) {
+     buffer.write("Nothing output on $name.");
+   } else {
+     buffer.write("$name:");
+     var numLines = 0;
+     for (var line in output) {
+       if (++numLines &gt; 1000) {
+         buffer.write('[${output.length - 1000}] more lines of output '
+             'truncated...]');
+         break;
+       }
+
+       buffer.write(line);
+     }
+   }
+ }
+
+ dumpOutput("stdout", result.stdout);
+ dumpOutput("stderr", result.stderr);
+
+ io(buffer.toString());
+}
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="process">
+<button class="show-code">Code</button>
+void <strong>process</strong>(<a href="http://api.dartlang.org/dart_core/String.html">String</a> executable, <a href="http://api.dartlang.org/dart_core/List.html">List</a>&lt;<a href="http://api.dartlang.org/dart_core/String.html">String</a>&gt; arguments) <a class="anchor-link" href="#process"
+              title="Permalink to process">#</a></h4>
+<div class="doc">
+<p>Logs the spawning of an 
+<span class="param">executable</span> process with 
+<span class="param">arguments</span> at <code>IO</code>
+level.</p>
+<pre class="source">
+void process(String executable, List&lt;String&gt; arguments) {
+ io("Spawning $executable ${arguments.join(' ')}");
+}
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="ioAsync">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_async/Future.html">Future</a> <strong>ioAsync</strong>(<a href="http://api.dartlang.org/dart_core/String.html">String</a> startMessage, <a href="http://api.dartlang.org/dart_async/Future.html">Future</a> operation, [<a href="http://api.dartlang.org/dart_core/String.html">String</a> endMessage(value)]) <a class="anchor-link" href="#ioAsync"
+              title="Permalink to ioAsync">#</a></h4>
+<div class="doc">
+<p>Logs an asynchronous IO operation. Logs 
+<span class="param">startMessage</span> before the operation
+starts, then when 
+<span class="param">operation</span> completes, invokes 
+<span class="param">endMessage</span> with the
+completion value and logs the result of that. Returns a future that
+completes after the logging is done.</p>
+<p>If 
+<span class="param">endMessage</span> is omitted, then logs "Begin 
+<span class="param">startMessage</span>" before the
+operation and "End 
+<span class="param">startMessage</span>" after it.</p>
+<pre class="source">
+Future ioAsync(String startMessage, Future operation,
+              [String endMessage(value)]) {
+ if (endMessage == null) {
+   io("Begin $startMessage.");
+ } else {
+   io(startMessage);
+ }
+
+ return operation.then((result) {
+   if (endMessage == null) {
+     io("End $startMessage.");
+   } else {
+     io(endMessage(result));
+   }
+   return result;
+ });
+}
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="write">
+<button class="show-code">Code</button>
+void <strong>write</strong>(<a href="log/Level.html">Level</a> level, message) <a class="anchor-link" href="#write"
+              title="Permalink to write">#</a></h4>
+<div class="doc">
+<p>Logs 
+<span class="param">message</span> at 
+<span class="param">level</span>.</p>
+<pre class="source">
+void write(Level level, message) {
+ if (_loggers.isEmpty) showNormal();
+
+ var lines = splitLines(message.toString());
+ var entry = new Entry(level, lines);
+
+ var logFn = _loggers[level];
+ if (logFn != null) logFn(entry);
+
+ if (_transcript != null) _transcript.add(entry);
+}
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="fine">
+<button class="show-code">Code</button>
+void <strong>fine</strong>(message) <a class="anchor-link" href="#fine"
+              title="Permalink to fine">#</a></h4>
+<div class="doc">
+<p>Logs 
+<span class="param">message</span> at <a class="crossref" href="log/Level.html#FINE">Level.FINE</a>.</p>
+<pre class="source">
+void fine(message) =&gt; write(Level.FINE, message);
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="solver">
+<button class="show-code">Code</button>
+void <strong>solver</strong>(message) <a class="anchor-link" href="#solver"
+              title="Permalink to solver">#</a></h4>
+<div class="doc">
+<p>Logs 
+<span class="param">message</span> at <a class="crossref" href="log/Level.html#SOLVER">Level.SOLVER</a>.</p>
+<pre class="source">
+void solver(message) =&gt; write(Level.SOLVER, message);
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="io">
+<button class="show-code">Code</button>
+void <strong>io</strong>(message) <a class="anchor-link" href="#io"
+              title="Permalink to io">#</a></h4>
+<div class="doc">
+<p>Logs 
+<span class="param">message</span> at <a class="crossref" href="log/Level.html#IO">Level.IO</a>.</p>
+<pre class="source">
+void io(message) =&gt; write(Level.IO, message);
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="message">
+<button class="show-code">Code</button>
+void <strong>message</strong>(message) <a class="anchor-link" href="#message"
+              title="Permalink to message">#</a></h4>
+<div class="doc">
+<p>Logs 
+<span class="param">message</span> at <a class="crossref" href="log/Level.html#MESSAGE">Level.MESSAGE</a>.</p>
+<pre class="source">
+void message(message) =&gt; write(Level.MESSAGE, message);
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="warning">
+<button class="show-code">Code</button>
+void <strong>warning</strong>(message) <a class="anchor-link" href="#warning"
+              title="Permalink to warning">#</a></h4>
+<div class="doc">
+<p>Logs 
+<span class="param">message</span> at <a class="crossref" href="log/Level.html#WARNING">Level.WARNING</a>.</p>
+<pre class="source">
+void warning(message) =&gt; write(Level.WARNING, message);
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="error">
+<button class="show-code">Code</button>
+void <strong>error</strong>(message, [error]) <a class="anchor-link" href="#error"
+              title="Permalink to error">#</a></h4>
+<div class="doc">
+<p>Logs 
+<span class="param">message</span> at <a class="crossref" href="log/Level.html#ERROR">Level.ERROR</a>.</p>
+<pre class="source">
+void error(message, [error]) {
+ if (error != null) {
+   message = "$message: $error";
+   var trace = getAttachedStackTrace(error);
+   if (trace != null) {
+     message = "$message\nStackTrace: $trace";
+   }
+ }
+ write(Level.ERROR, message);
+}
+</pre>
+</div>
+</div>
+</div>
+<div>
+<h3>Classes</h3>
+          <div class="type">
+          <h4>
+            <a href="log/Entry.html"><strong>Entry</strong></a>
+          </h4>
+          </div>
+          
+          <div class="type">
+          <h4>
+            <a href="log/Level.html"><strong>Level</strong></a>
+          </h4>
+          </div>
+          
+</div>
+<div>
+<h3>Typedefs</h3>
+          <div class="type">
+          <h4>
+            <a href="log/LogFn.html"><strong>LogFn</strong></a>
+          </h4>
+          </div>
+          
+</div>
+        </div>
+        <div class="clear"></div>
+        </div>
+        <div class="footer">
+          
+        </div>
+        <script async src="client-live-nav.js"></script>
+        </body></html>
+        
