@@ -50,7 +50,7 @@ class _ProxyChannel {
 
   /// Computes the javascript origin of an absolute URI.
   String _origin(String uriString) {
-    final uri = new Uri.fromString(uriString);
+    final uri = Uri.parse(uriString);
     final portPart = (uri.port != 0) ? ":${uri.port}" : "";
     return "${uri.scheme}://${uri.domain}$portPart";
   }
@@ -59,7 +59,7 @@ class _ProxyChannel {
     Map<String, String> proxyParams = {"parent": window.location.origin};
     String proxyUrl = new UrlPattern("${_provider}postmessageRelay")
         .generate({}, proxyParams);
-    return new Uri.fromString(proxyUrl)
+    return Uri.parse(proxyUrl)
         .resolve("#rpctoken=$_nonce&forcesecure=1").toString();
   }
 }
