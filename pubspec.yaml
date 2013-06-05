@@ -12,5 +12,6 @@ dependencies:
   http: '>=0.4.7+1'
   pathos: '>=0.4.7+1'
   hop: '>=0.21.0'
+  crypto: any
 dev_dependencies:
   browser: '>=0.4.3+1'
