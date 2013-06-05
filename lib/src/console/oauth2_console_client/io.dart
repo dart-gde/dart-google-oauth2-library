@@ -9,7 +9,6 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:isolate';
 import 'dart:json';
-import 'dart:uri';
 
 import 'package:pathos/path.dart' as path;
 import 'package:http/http.dart' show ByteStream;
@@ -465,19 +464,18 @@ Future _doProcess(Function fn, String executable, List<String> args,
     executable = "cmd";
   }
 
-  final options = new ProcessOptions();
-  if (workingDir != null) {
-    options.workingDirectory = workingDir;
-  }
-
+  var env = null;
   if (environment != null) {
-    options.environment = new Map.from(Platform.environment);
-    environment.forEach((key, value) => options.environment[key] = value);
+    env = new Map.from(Platform.environment);
+    environment.forEach((key, value) => env[key] = value);
   }
 
   log.process(executable, args);
 
-  return fn(executable, args, options);
+  return fn(executable,
+      args,
+      workingDirectory: workingDir,
+      environment: env);
 }
 
 /// Wraps [input] to provide a timeout. If [input] completes before

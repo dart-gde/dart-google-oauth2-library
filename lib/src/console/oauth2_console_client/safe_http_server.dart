@@ -6,7 +6,6 @@ library safe_http_server;
 
 import 'dart:async';
 import 'dart:io';
-import 'dart:uri';
 
 // TODO(nweiz): remove this when issue 9140 is fixed.
 /// A wrapper around [HttpServer] that swallows errors caused by requests
@@ -23,7 +22,7 @@ class SafeHttpServer extends StreamView<HttpRequest> implements HttpServer {
 
   static Future<SafeHttpServer> bind([String host = "127.0.0.1",
       int port = 0, int backlog = 0]) {
-    return HttpServer.bind(host, port, backlog)
+    return HttpServer.bind(host, port, backlog: backlog)
         .then((server) => new SafeHttpServer(server));
   }
 
@@ -77,7 +76,7 @@ class _HttpRequestWrapper extends StreamView<List<int>> implements HttpRequest {
   int get contentLength => _inner.contentLength;
   String get method => _inner.method;
   Uri get uri => _inner.uri;
-  Map<String, String> get queryParameters => _inner.queryParameters;
+  Map<String, String> get queryParameters => _inner.uri.queryParameters;
   HttpHeaders get headers => _inner.headers;
   List<Cookie> get cookies => _inner.cookies;
   bool get persistentConnection => _inner.persistentConnection;

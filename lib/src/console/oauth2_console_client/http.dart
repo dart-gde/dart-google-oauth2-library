@@ -8,7 +8,6 @@ library pub.http;
 import 'dart:async';
 import 'dart:io';
 import 'dart:json' as json;
-import 'dart:uri';
 
 import 'package:http/http.dart' as http;
 
@@ -91,7 +90,7 @@ class PubHttpClient extends http.BaseClient {
     if (request.method == 'POST') {
       var contentTypeString = request.headers[HttpHeaders.CONTENT_TYPE];
       if (contentTypeString == null) contentTypeString = '';
-      var contentType = new ContentType.fromString(contentTypeString);
+      var contentType = ContentType.parse(contentTypeString);
       if (request is http.MultipartRequest) {
         requestLog.writeln();
         requestLog.writeln("Body fields:");

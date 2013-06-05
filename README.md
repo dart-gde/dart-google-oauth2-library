@@ -18,7 +18,7 @@ Add this dependency to your pubspec.yaml
 
 ```
   dependencies:
-    google_oauth2_client: '>=0.2.2'
+    google_oauth2_client: '>=0.2.14'
 ```
 
 ### Web applications

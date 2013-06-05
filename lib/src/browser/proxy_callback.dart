@@ -52,7 +52,7 @@ class _ProxyChannel {
   String _origin(String uriString) {
     final uri = Uri.parse(uriString);
     final portPart = (uri.port != 0) ? ":${uri.port}" : "";
-    return "${uri.scheme}://${uri.domain}$portPart";
+    return "${uri.scheme}://${uri.host}$portPart";
   }
 
   String _getProxyUrl() {
