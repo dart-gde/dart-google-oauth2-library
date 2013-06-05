@@ -22,7 +22,7 @@ import "dart:json" as JSON;
 import "dart:html";
 import "dart:typed_data";
 import "dart:math";
-import "dart:uri";
+
 import "dart:async";
 import "src/common/url_pattern.dart";
 export "src/common/url_pattern.dart";

@@ -1,6 +1,5 @@
 library url_pattern;
 
-import "dart:uri";
 
 /** Produces part of a URL, when the template parameters are provided. */
 typedef String _UrlPatternToken(Map<String, Object> params);
@@ -30,7 +29,7 @@ class UrlPattern {
         String variable = pattern.substring(open + 1, close);
         _tokens.add((params) => (params[variable] == null)
             ? 'null'
-            : encodeUriComponent(params[variable].toString()));
+            : Uri.encodeComponent(params[variable].toString()));
         cursor = close + 1;
       }
     }
@@ -44,9 +43,9 @@ class UrlPattern {
       if (value == null) return;
       buffer.write(first ? '?' : '&');
       if (first) first = false;
-      buffer.write(encodeUriComponent(key.toString()));
+      buffer.write(Uri.encodeComponent(key.toString()));
       buffer.write('=');
-      buffer.write(encodeUriComponent(value.toString()));
+      buffer.write(Uri.encodeComponent(value.toString()));
     });
     return buffer.toString();
   }
