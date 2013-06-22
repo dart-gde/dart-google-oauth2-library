@@ -9,7 +9,7 @@ void main() {
   
   addTask('docs', createDartDocTask(libList, linkApi: true));
   
-  addTask('analyze_libs', createDartAnalyzerTask(libList));
+  addTask('analyze_libs', createAnalyzerTask(libList));
  
   runHop();
 }
