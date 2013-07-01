@@ -41,11 +41,21 @@ class UrlPattern {
     var first = true;
     queryParams.forEach((key, value) {
       if (value == null) return;
-      buffer.write(first ? '?' : '&');
-      if (first) first = false;
-      buffer.write(Uri.encodeComponent(key.toString()));
-      buffer.write('=');
-      buffer.write(Uri.encodeComponent(value.toString()));
+      if (value is List) {
+        value.forEach((listValue) {
+          buffer.write(first ? '?' : '&');
+          if (first) first = false;
+          buffer.write(Uri.encodeComponent(key.toString()));
+          buffer.write('=');
+          buffer.write(Uri.encodeComponent(listValue.toString()));
+        }); 
+      } else {
+        buffer.write(first ? '?' : '&');
+        if (first) first = false;
+        buffer.write(Uri.encodeComponent(key.toString()));
+        buffer.write('=');
+        buffer.write(Uri.encodeComponent(value.toString()));
+      }
     });
     return buffer.toString();
   }
