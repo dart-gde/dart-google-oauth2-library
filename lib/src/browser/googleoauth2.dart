@@ -2,11 +2,11 @@ part of google_oauth2_browser;
 
 /// An OAuth2 authentication context.
 class GoogleOAuth2 extends OAuth2 {
-  String _clientId;
-  List<String> _scopes;
-  List<String> _request_visible_actions;
-  String _provider;
-  Function _tokenLoaded;
+  final String _clientId;
+  final List<String> _scopes;
+  final List<String> _request_visible_actions;
+  final String _provider;
+  final Function _tokenLoaded;
 
   Future<_ProxyChannel> _channel;
 
