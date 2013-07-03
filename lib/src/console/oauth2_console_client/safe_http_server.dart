@@ -2,7 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library safe_http_server;
+library pub.safe_http_server;
 
 import 'dart:async';
 import 'dart:io';
@@ -20,7 +20,7 @@ import 'dart:io';
 class SafeHttpServer extends StreamView<HttpRequest> implements HttpServer {
   final HttpServer _inner;
 
-  static Future<SafeHttpServer> bind([String host = "127.0.0.1",
+  static Future<SafeHttpServer> bind([String host = "localhost",
       int port = 0, int backlog = 0]) {
     return HttpServer.bind(host, port, backlog: backlog)
         .then((server) => new SafeHttpServer(server));
@@ -76,7 +76,6 @@ class _HttpRequestWrapper extends StreamView<List<int>> implements HttpRequest {
   int get contentLength => _inner.contentLength;
   String get method => _inner.method;
   Uri get uri => _inner.uri;
-  Map<String, String> get queryParameters => _inner.uri.queryParameters;
   HttpHeaders get headers => _inner.headers;
   List<Cookie> get cookies => _inner.cookies;
   bool get persistentConnection => _inner.persistentConnection;
@@ -134,8 +133,9 @@ class _HttpResponseWrapper implements HttpResponse {
     _inner.addStream(stream);
   Future close() => _inner.close();
   void write(Object obj) => _inner.write(obj);
-  void writeAll(Iterable objects, [String separator = ""]) => _inner.writeAll(objects, separator);
+  void writeAll(Iterable objects, [String separator = ""]) =>
+    _inner.writeAll(objects, separator);
   void writeCharCode(int charCode) => _inner.writeCharCode(charCode);
   void writeln([Object obj = ""]) => _inner.writeln(obj);
-  void addError(dynamic error) => _inner.addError(error);
+  void addError(error) => _inner.addError(error);
 }
