@@ -63,7 +63,7 @@ class PubHttpClient extends http.BaseClient {
         throw new PubHttpException(response);
       });
     }).catchError((error) {
-      if (error is SocketIOException &&
+      if (error is SocketException &&
           error.osError != null) {
         if (error.osError.errorCode == 8 ||
             error.osError.errorCode == -2 ||
