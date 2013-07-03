@@ -1,11 +1,12 @@
 library url_pattern;
 
-
 /** Produces part of a URL, when the template parameters are provided. */
 typedef String _UrlPatternToken(Map<String, Object> params);
+
 /** URL template with placeholders that can be filled in to produce a URL. */
 class UrlPattern {
-  List<_UrlPatternToken> _tokens;
+  final List<_UrlPatternToken> _tokens;
+
   /**
    * Creates a UrlPattern from the specification [:pattern:].
    * See http://tools.ietf.org/html/draft-gregorio-uritemplate-07
@@ -34,6 +35,7 @@ class UrlPattern {
       }
     }
   }
+
   /** Generate a URL with the specified list of URL and query parameters. */
   String generate(Map<String, Object> urlParams, Map<String, Object> queryParams) {
     final buffer = new StringBuffer();
@@ -48,7 +50,7 @@ class UrlPattern {
           buffer.write(Uri.encodeComponent(key.toString()));
           buffer.write('=');
           buffer.write(Uri.encodeComponent(listValue.toString()));
-        }); 
+        });
       } else {
         buffer.write(first ? '?' : '&');
         if (first) first = false;
@@ -58,5 +60,11 @@ class UrlPattern {
       }
     });
     return buffer.toString();
+  }
+
+  static String generatePattern(String pattern, Map<String, Object> urlParams,
+                                Map<String, Object> queryParams) {
+    var urlPattern = new UrlPattern(pattern);
+    return urlPattern.generate(urlParams, queryParams);
   }
 }

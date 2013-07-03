@@ -57,8 +57,8 @@ class _ProxyChannel {
 
   String _getProxyUrl() {
     Map<String, String> proxyParams = {"parent": window.location.origin};
-    String proxyUrl = new UrlPattern("${_provider}postmessageRelay")
-        .generate({}, proxyParams);
+    String proxyUrl = UrlPattern.generatePattern("${_provider}postmessageRelay",
+        {}, proxyParams);
     return Uri.parse(proxyUrl)
         .resolve("#rpctoken=$_nonce&forcesecure=1").toString();
   }
