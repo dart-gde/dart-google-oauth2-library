@@ -33,5 +33,3 @@ part "src/browser/simpleoauth2.dart";
 part "src/browser/proxy_callback.dart";
 part "src/browser/token.dart";
 part "src/browser/utils.dart";
-
-

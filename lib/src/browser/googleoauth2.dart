@@ -2,11 +2,11 @@ part of google_oauth2_browser;
 
 /// An OAuth2 authentication context.
 class GoogleOAuth2 extends OAuth2 {
-  String _clientId;
-  List<String> _scopes;
-  List<String> _request_visible_actions;
-  String _provider;
-  Function _tokenLoaded;
+  final String _clientId;
+  final List<String> _scopes;
+  final List<String> _request_visible_actions;
+  final String _provider;
+  final Function _tokenLoaded;
 
   Future<_ProxyChannel> _channel;
 
@@ -80,11 +80,11 @@ class GoogleOAuth2 extends OAuth2 {
     if (_request_visible_actions != null && _request_visible_actions.length > 0) {
       queryParams["request_visible_actions"] = _request_visible_actions.join(" ");
     }
-    return new UrlPattern("${_provider}auth").generate({}, queryParams);
+    return UrlPattern.generatePattern("${_provider}auth", {}, queryParams);
   }
 
   /// Deletes the stored token
-  logout() {
+  void logout() {
     _token = null;
   }
 
@@ -95,7 +95,7 @@ class GoogleOAuth2 extends OAuth2 {
   /// If you have no token, a popup prompt will be displayed.
   /// If the user declines, closes the popup, or the service returns a token
   /// that cannot be validated, an exception will be delivered.
-  Future<Token> login({immediate: null}) {
+  Future<Token> login({bool immediate: null}) {
     if (token != null) {
       if (token.expired) {
         if (immediate == null) {

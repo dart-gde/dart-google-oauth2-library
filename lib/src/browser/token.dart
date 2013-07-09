@@ -36,7 +36,7 @@ class Token {
   /// Query whether this token is still valid.
   Future<bool> validate(String clientId,
       {String service: "https://www.googleapis.com/oauth2/v1/tokeninfo"}) {
-    String url = new UrlPattern(service).generate({}, {"access_token": data});
+    String url = UrlPattern.generatePattern(service, {}, {"access_token": data});
     var completer = new Completer();
     var request = new HttpRequest();
     request.onLoadEnd.listen((Event e) {
