@@ -37,9 +37,9 @@ connections across multiple requests to the same server. If you only need to
 send a single request, it's usually easier to use <a class="crossref" href="../client/Client.html#head">head</a>, <a class="crossref" href="../client/Client.html#get">get</a>, <a class="crossref" href="../client/Client.html#post">post</a>,
 <a class="crossref" href="../client/Client.html#put">put</a>, or <a class="crossref" href="../client/Client.html#delete">delete</a> instead.</p>
 <p>When creating an HTTP client class with additional functionality, you must
-extend <code>BaseClient</code> rather than <a class="crossref" href="../client/Client.html#Client">Client</a>. In most cases, you can wrap
-another instance of <a class="crossref" href="../client/Client.html#Client">Client</a> and add functionality on top of that. This
-allows all classes implementing <a class="crossref" href="../client/Client.html#Client">Client</a> to be mutually composable.</p>
+extend <a class="crossref" href="../base_client/BaseClient.html">BaseClient</a> rather than <a class="crossref" href="../client/Client.html">Client</a>. In most cases, you can wrap
+another instance of <a class="crossref" href="../client/Client.html">Client</a> and add functionality on top of that. This
+allows all classes implementing <a class="crossref" href="../client/Client.html">Client</a> to be mutually composable.</p>
 <pre class="source">
 abstract class Client {
  /// Creates a new Client using the default implementation. This implementation
@@ -121,13 +121,13 @@ abstract class Client {
 <span class="type-box"><span class="icon-class"></span><a href="../base_client/BaseClient.html">BaseClient</a></span></p>
 <div>
 <h3>Constructors</h3>
-<div class="method"><h4 id="Client">
+<div class="method"><h4 id="">
 <button class="show-code">Code</button>
-factory <strong>Client</strong>() <a class="anchor-link" href="#Client"
+factory <strong>Client</strong>() <a class="anchor-link" href="#"
               title="Permalink to Client.Client">#</a></h4>
 <div class="doc">
 <p>Creates a new Client using the default implementation. This implementation
-uses an underlying <code>dart:io</code> <code>HttpClient</code> to make requests.</p>
+uses an underlying <code>dart:io</code> <a class="crossref" href="../dart_io/HttpClient.html">HttpClient</a> to make requests.</p>
 <pre class="source">
 factory Client() =&gt; new IOClient();
 </pre>
@@ -150,7 +150,7 @@ abstract <a href="http://api.dartlang.org/dart_async/Future.html">Future</a>&lt;
               title="Permalink to Client.delete">#</a></h4>
 <div class="doc">
 <p>Sends an HTTP DELETE request with the given headers to the given URL,
-which can be a <code>Uri</code> or a <code>String</code>.</p>
+which can be a <a class="crossref" href="../dart_core/Uri.html">Uri</a> or a <a class="crossref" href="../dart_core/String.html">String</a>.</p>
 <p>For more fine-grained control over the request, use <a class="crossref" href="../client/Client.html#send">send</a> instead.</p>
 </div>
 </div>
@@ -159,7 +159,7 @@ abstract <a href="http://api.dartlang.org/dart_async/Future.html">Future</a>&lt;
               title="Permalink to Client.get">#</a></h4>
 <div class="doc">
 <p>Sends an HTTP GET request with the given headers to the given URL, which
-can be a <code>Uri</code> or a <code>String</code>.</p>
+can be a <a class="crossref" href="../dart_core/Uri.html">Uri</a> or a <a class="crossref" href="../dart_core/String.html">String</a>.</p>
 <p>For more fine-grained control over the request, use <a class="crossref" href="../client/Client.html#send">send</a> instead.</p>
 </div>
 </div>
@@ -168,7 +168,7 @@ abstract <a href="http://api.dartlang.org/dart_async/Future.html">Future</a>&lt;
               title="Permalink to Client.head">#</a></h4>
 <div class="doc">
 <p>Sends an HTTP HEAD request with the given headers to the given URL, which
-can be a <code>Uri</code> or a <code>String</code>.</p>
+can be a <a class="crossref" href="../dart_core/Uri.html">Uri</a> or a <a class="crossref" href="../dart_core/String.html">String</a>.</p>
 <p>For more fine-grained control over the request, use <a class="crossref" href="../client/Client.html#send">send</a> instead.</p>
 </div>
 </div>
@@ -177,7 +177,7 @@ abstract <a href="http://api.dartlang.org/dart_async/Future.html">Future</a>&lt;
               title="Permalink to Client.post">#</a></h4>
 <div class="doc">
 <p>Sends an HTTP POST request with the given headers and fields to the given
-URL, which can be a <code>Uri</code> or a <code>String</code>. If any fields are specified, the
+URL, which can be a <a class="crossref" href="../dart_core/Uri.html">Uri</a> or a <a class="crossref" href="../dart_core/String.html">String</a>. If any fields are specified, the
 content-type is automatically set to
 <code>"application/x-www-form-urlencoded"</code>.</p>
 <p>For more fine-grained control over the request, use <a class="crossref" href="../client/Client.html#send">send</a> instead.</p>
@@ -188,7 +188,7 @@ abstract <a href="http://api.dartlang.org/dart_async/Future.html">Future</a>&lt;
               title="Permalink to Client.put">#</a></h4>
 <div class="doc">
 <p>Sends an HTTP PUT request with the given headers and fields to the given
-URL, which can be a <code>Uri</code> or a <code>String</code>. If any fields are specified, the
+URL, which can be a <a class="crossref" href="../dart_core/Uri.html">Uri</a> or a <a class="crossref" href="../dart_core/String.html">String</a>. If any fields are specified, the
 content-type is automatically set to
 <code>"application/x-www-form-urlencoded"</code>.</p>
 <p>For more fine-grained control over the request, use <a class="crossref" href="../client/Client.html#send">send</a> instead.</p>
@@ -199,9 +199,9 @@ abstract <a href="http://api.dartlang.org/dart_async/Future.html">Future</a>&lt;
               title="Permalink to Client.read">#</a></h4>
 <div class="doc">
 <p>Sends an HTTP GET request with the given headers to the given URL, which
-can be a <code>Uri</code> or a <code>String</code>, and returns a Future that completes to the
+can be a <a class="crossref" href="../dart_core/Uri.html">Uri</a> or a <a class="crossref" href="../dart_core/String.html">String</a>, and returns a Future that completes to the
 body of the response as a String.</p>
-<p>The Future will emit an <code>HttpException</code> if the response doesn't have a
+<p>The Future will emit an <a class="crossref" href="../dart_io/HttpException.html">HttpException</a> if the response doesn't have a
 success status code.</p>
 <p>For more fine-grained control over the request and response, use <a class="crossref" href="../client/Client.html#send">send</a> or
 <a class="crossref" href="../client/Client.html#get">get</a> instead.</p>
@@ -212,9 +212,9 @@ abstract <a href="http://api.dartlang.org/dart_async/Future.html">Future</a>&lt;
               title="Permalink to Client.readBytes">#</a></h4>
 <div class="doc">
 <p>Sends an HTTP GET request with the given headers to the given URL, which
-can be a <code>Uri</code> or a <code>String</code>, and returns a Future that completes to the
+can be a <a class="crossref" href="../dart_core/Uri.html">Uri</a> or a <a class="crossref" href="../dart_core/String.html">String</a>, and returns a Future that completes to the
 body of the response as a list of bytes.</p>
-<p>The Future will emit an <code>HttpException</code> if the response doesn't have a
+<p>The Future will emit an <a class="crossref" href="../dart_io/HttpException.html">HttpException</a> if the response doesn't have a
 success status code.</p>
 <p>For more fine-grained control over the request and response, use <a class="crossref" href="../client/Client.html#send">send</a> or
 <a class="crossref" href="../client/Client.html#get">get</a> instead.</p>

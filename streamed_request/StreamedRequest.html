@@ -54,7 +54,7 @@ class StreamedRequest extends BaseRequest {
  /// Creates a new streaming request.
  StreamedRequest(String method, Uri url)
    : super(method, url),
-     _controller = new StreamController&lt;List&lt;int&gt;&gt;();
+     _controller = new StreamController&lt;List&lt;int&gt;&gt;(sync: true);
 
  /// Freezes all mutable fields other than [stream] and returns a
  /// single-subscription [ByteStream] that emits the data being written to
@@ -71,16 +71,16 @@ class StreamedRequest extends BaseRequest {
 <span class="type-box"><span class="icon-class"></span><a href="../base_request/BaseRequest.html">BaseRequest</a></span>&nbsp;&gt;&nbsp;<span class="type-box"><span class="icon-class"></span><strong>StreamedRequest</strong></span></p>
 <div>
 <h3>Constructors</h3>
-<div class="method"><h4 id="StreamedRequest">
+<div class="method"><h4 id="">
 <button class="show-code">Code</button>
-new <strong>StreamedRequest</strong>(<a href="http://api.dartlang.org/dart_core/String.html">String</a> method, <a href="http://api.dartlang.org/dart_uri/Uri.html">Uri</a> url) <a class="anchor-link" href="#StreamedRequest"
+new <strong>StreamedRequest</strong>(<a href="http://api.dartlang.org/dart_core/String.html">String</a> method, <a href="http://api.dartlang.org/dart_core/Uri.html">Uri</a> url) <a class="anchor-link" href="#"
               title="Permalink to StreamedRequest.StreamedRequest">#</a></h4>
 <div class="doc">
 <p>Creates a new streaming request.</p>
 <pre class="source">
 StreamedRequest(String method, Uri url)
  : super(method, url),
-   _controller = new StreamController&lt;List&lt;int&gt;&gt;();
+   _controller = new StreamController&lt;List&lt;int&gt;&gt;(sync: true);
 </pre>
 </div>
 </div>
@@ -160,9 +160,9 @@ final Map&lt;String, String&gt; headers
             title="Permalink to StreamedRequest.maxRedirects">#</a>
         </h4>
         <div class="inherited-from">inherited from <a href="../base_request/BaseRequest.html">BaseRequest</a> </div><div class="doc">
-<p>The maximum number of redirects to follow when <code>followRedirects</code> is true.
+<p>The maximum number of redirects to follow when <a class="crossref" href="../base_request/BaseRequest.html#followRedirects">followRedirects</a> is true.
 If this number is exceeded the <code>BaseResponse</code> future will signal a
-<code>RedirectLimitExceeded</code> exception. Defaults to 5.</p>
+<a class="crossref" href="../dart_io/RedirectException.html">RedirectException</a>. Defaults to 5.</p>
 <pre class="source">
 int get maxRedirects =&gt; _maxRedirects;
 </pre>
@@ -227,7 +227,7 @@ EventSink&lt;List&lt;int&gt;&gt; get sink =&gt; _controller.sink;
 </div>
 <div class="field inherited"><h4 id="url">
 <button class="show-code">Code</button>
-final <a href="http://api.dartlang.org/dart_uri/Uri.html">Uri</a>         <strong>url</strong> <a class="anchor-link"
+final <a href="http://api.dartlang.org/dart_core/Uri.html">Uri</a>         <strong>url</strong> <a class="anchor-link"
             href="#url"
             title="Permalink to StreamedRequest.url">#</a>
         </h4>
@@ -247,7 +247,7 @@ final Uri url
               title="Permalink to StreamedRequest.finalize">#</a></h4>
 <div class="doc">
 <p>Freezes all mutable fields other than <code>stream</code> and returns a
-single-subscription <code>ByteStream</code> that emits the data being written to
+single-subscription <a class="crossref" href="../byte_stream/ByteStream.html">ByteStream</a> that emits the data being written to
 <a class="crossref" href="../streamed_request/StreamedRequest.html#sink">sink</a>.</p>
 <pre class="source">
 ByteStream finalize() {
@@ -263,9 +263,9 @@ ByteStream finalize() {
               title="Permalink to StreamedRequest.send">#</a></h4>
 <div class="inherited-from">inherited from <a href="../base_request/BaseRequest.html">BaseRequest</a> </div><div class="doc">
 <p>Sends this request.</p>
-<p>This automatically initializes a new <code>Client</code> and closes that client once
+<p>This automatically initializes a new <a class="crossref" href="../client/Client.html">Client</a> and closes that client once
 the request is complete. If you're planning on making multiple requests to
-the same server, you should use a single <code>Client</code> for all of those
+the same server, you should use a single <a class="crossref" href="../client/Client.html">Client</a> for all of those
 requests.</p>
 <pre class="source">
 Future&lt;StreamedResponse&gt; send() {

@@ -32,7 +32,7 @@
         
 <button id="show-inherited" class="show-inherited">Hide inherited</button>
 <div class="doc">
-<p>A wrapper around <code>Process</code> that exposes <code>dart:async</code>-style APIs.</p>
+<p>A wrapper around <a class="crossref" href="../dart_io/Process.html">Process</a> that exposes <code>dart:async</code>-style APIs.</p>
 <pre class="source">
 class PubProcess {
  /// The underlying `dart:io` [Process].
@@ -119,12 +119,12 @@ class PubProcess {
 </div>
 <div>
 <h3>Constructors</h3>
-<div class="method"><h4 id="PubProcess">
+<div class="method"><h4 id="">
 <button class="show-code">Code</button>
-new <strong>PubProcess</strong>(<a href="http://api.dartlang.org/dart_io/Process.html">Process</a> process) <a class="anchor-link" href="#PubProcess"
+new <strong>PubProcess</strong>(<a href="http://api.dartlang.org/dart_io/Process.html">Process</a> process) <a class="anchor-link" href="#"
               title="Permalink to PubProcess.PubProcess">#</a></h4>
 <div class="doc">
-<p>Creates a new <a class="crossref" href="../io/PubProcess.html#PubProcess">PubProcess</a> wrapping 
+<p>Creates a new <a class="crossref" href="../io/PubProcess.html">PubProcess</a> wrapping 
 <span class="param">process</span>.</p>
 <pre class="source">
 PubProcess(Process process)
@@ -157,9 +157,9 @@ final <a href="http://api.dartlang.org/dart_async/Future.html">Future</a>&lt;<a 
             title="Permalink to PubProcess.exitCode">#</a>
         </h4>
         <div class="doc">
-<p>A <code>Future</code> that will complete to the process's exit code once the process
+<p>A <a class="crossref" href="../dart_async/Future.html">Future</a> that will complete to the process's exit code once the process
 has finished running.</p>
-<p>This is in an <code>ErrorGroup</code> with <a class="crossref" href="../io/PubProcess.html#stdinClosed">stdinClosed</a>, <a class="crossref" href="../io/PubProcess.html#stdout">stdout</a>, and <a class="crossref" href="../io/PubProcess.html#stderr">stderr</a>, so
+<p>This is in an <a class="crossref" href="../error_group/ErrorGroup.html">ErrorGroup</a> with <a class="crossref" href="../io/PubProcess.html#stdinClosed">stdinClosed</a>, <a class="crossref" href="../io/PubProcess.html#stdout">stdout</a>, and <a class="crossref" href="../io/PubProcess.html#stderr">stderr</a>, so
 any error in process will be passed to it, but won't reach the top-level
 error handler unless nothing has handled it.</p>
 <pre class="source">
@@ -175,7 +175,7 @@ final <a href="../byte_stream/ByteStream.html">ByteStream</a>         <strong>st
         </h4>
         <div class="doc">
 <p>The process's standard error stream.</p>
-<p>This is in an <code>ErrorGroup</code> with <a class="crossref" href="../io/PubProcess.html#stdinClosed">stdinClosed</a>, <a class="crossref" href="../io/PubProcess.html#stdout">stdout</a>, and <a class="crossref" href="../io/PubProcess.html#exitCode">exitCode</a>,
+<p>This is in an <a class="crossref" href="../error_group/ErrorGroup.html">ErrorGroup</a> with <a class="crossref" href="../io/PubProcess.html#stdinClosed">stdinClosed</a>, <a class="crossref" href="../io/PubProcess.html#stdout">stdout</a>, and <a class="crossref" href="../io/PubProcess.html#exitCode">exitCode</a>,
 so any error in process will be passed to it, but won't reach the
 top-level error handler unless nothing has handled it.</p>
 <pre class="source">
@@ -192,7 +192,7 @@ final <a href="http://api.dartlang.org/dart_async/EventSink.html">EventSink</a>&
         <div class="doc">
 <p>The sink used for passing data to the process's standard input stream.
 Errors on this stream are surfaced through <a class="crossref" href="../io/PubProcess.html#stdinClosed">stdinClosed</a>, <a class="crossref" href="../io/PubProcess.html#stdout">stdout</a>,
-<a class="crossref" href="../io/PubProcess.html#stderr">stderr</a>, and <a class="crossref" href="../io/PubProcess.html#exitCode">exitCode</a>, which are all members of an <code>ErrorGroup</code>.</p>
+<a class="crossref" href="../io/PubProcess.html#stderr">stderr</a>, and <a class="crossref" href="../io/PubProcess.html#exitCode">exitCode</a>, which are all members of an <a class="crossref" href="../error_group/ErrorGroup.html">ErrorGroup</a>.</p>
 <pre class="source">
 EventSink&lt;List&lt;int&gt;&gt; get stdin =&gt; _stdin;
 </pre>
@@ -205,9 +205,9 @@ final <a href="http://api.dartlang.org/dart_async/Future.html">Future</a>       
             title="Permalink to PubProcess.stdinClosed">#</a>
         </h4>
         <div class="doc">
-<p>A <code>Future</code> that completes when <a class="crossref" href="../io/PubProcess.html#stdin">stdin</a> is closed, either by the user or by
+<p>A <a class="crossref" href="../dart_async/Future.html">Future</a> that completes when <a class="crossref" href="../io/PubProcess.html#stdin">stdin</a> is closed, either by the user or by
 the process itself.</p>
-<p>This is in an <code>ErrorGroup</code> with <a class="crossref" href="../io/PubProcess.html#stdout">stdout</a>, <a class="crossref" href="../io/PubProcess.html#stderr">stderr</a>, and <a class="crossref" href="../io/PubProcess.html#exitCode">exitCode</a>, so any
+<p>This is in an <a class="crossref" href="../error_group/ErrorGroup.html">ErrorGroup</a> with <a class="crossref" href="../io/PubProcess.html#stdout">stdout</a>, <a class="crossref" href="../io/PubProcess.html#stderr">stderr</a>, and <a class="crossref" href="../io/PubProcess.html#exitCode">exitCode</a>, so any
 error in process will be passed to it, but won't reach the top-level error
 handler unless nothing has handled it.</p>
 <pre class="source">
@@ -223,7 +223,7 @@ final <a href="../byte_stream/ByteStream.html">ByteStream</a>         <strong>st
         </h4>
         <div class="doc">
 <p>The process's standard output stream.</p>
-<p>This is in an <code>ErrorGroup</code> with <a class="crossref" href="../io/PubProcess.html#stdinClosed">stdinClosed</a>, <a class="crossref" href="../io/PubProcess.html#stderr">stderr</a>, and <a class="crossref" href="../io/PubProcess.html#exitCode">exitCode</a>,
+<p>This is in an <a class="crossref" href="../error_group/ErrorGroup.html">ErrorGroup</a> with <a class="crossref" href="../io/PubProcess.html#stdinClosed">stdinClosed</a>, <a class="crossref" href="../io/PubProcess.html#stderr">stderr</a>, and <a class="crossref" href="../io/PubProcess.html#exitCode">exitCode</a>,
 so any error in process will be passed to it, but won't reach the
 top-level error handler unless nothing has handled it.</p>
 <pre class="source">

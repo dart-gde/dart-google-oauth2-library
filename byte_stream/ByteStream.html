@@ -58,7 +58,7 @@ class ByteStream extends StreamView&lt;List&lt;int&gt;&gt; {
      toBytes().then((bytes) =&gt; decodeString(bytes, encoding));
 
  Stream&lt;String&gt; toStringStream([Encoding encoding=Encoding.UTF_8]) =&gt;
-     map((bytes) =&gt; decodeString(bytes, encoding));
+   transform(new StringDecoder(encoding));
 }
 </pre>
 </div>
@@ -67,20 +67,26 @@ class ByteStream extends StreamView&lt;List&lt;int&gt;&gt; {
 <span class="type-box"><span class="icon-class"></span><a href="../dart_async/Stream.html">Stream&lt;T&gt;</a></span>&nbsp;&gt;&nbsp;<span class="type-box"><span class="icon-class"></span><a href="../dart_async/StreamView.html">StreamView&lt;List&lt;int&gt;&gt;</a></span>&nbsp;&gt;&nbsp;<span class="type-box"><span class="icon-class"></span><strong>ByteStream</strong></span></p>
 <div>
 <h3>Constructors</h3>
-<div class="method"><h4 id="ByteStream">
+<div class="method"><h4 id="">
 <button class="show-code">Code</button>
-new <strong>ByteStream</strong>(<a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a>&lt;<a href="http://api.dartlang.org/dart_core/List.html">List</a>&lt;<a href="http://api.dartlang.org/dart_core/int.html">int</a>&gt;&gt; stream) <a class="anchor-link" href="#ByteStream"
+new <strong>ByteStream</strong>(<a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a>&lt;<a href="http://api.dartlang.org/dart_core/List.html">List</a>&lt;<a href="http://api.dartlang.org/dart_core/int.html">int</a>&gt;&gt; stream) <a class="anchor-link" href="#"
               title="Permalink to ByteStream.ByteStream">#</a></h4>
 <div class="doc">
+<div class="inherited">
+<p>Creates a new <a class="crossref" href="../dart_core/Object.html">Object</a> instance.</p>
+<p><a class="crossref" href="../dart_core/Object.html">Object</a> instances have no meaningful state, and are only useful
+through their identity. An <a class="crossref" href="../dart_core/Object.html">Object</a> instance is equal to itself
+only.</p>
+<div class="docs-inherited-from">docs inherited from <a href="http://api.dartlang.org/dart_core/Object.html">Object</a> </div></div>
 <pre class="source">
 ByteStream(Stream&lt;List&lt;int&gt;&gt; stream)
  : super(stream);
 </pre>
 </div>
 </div>
-<div class="method"><h4 id="ByteStream.fromBytes">
+<div class="method"><h4 id="fromBytes">
 <button class="show-code">Code</button>
-factory <strong>ByteStream.fromBytes</strong>(<a href="http://api.dartlang.org/dart_core/List.html">List</a>&lt;<a href="http://api.dartlang.org/dart_core/int.html">int</a>&gt; bytes) <a class="anchor-link" href="#ByteStream.fromBytes"
+factory <strong>ByteStream.fromBytes</strong>(<a href="http://api.dartlang.org/dart_core/List.html">List</a>&lt;<a href="http://api.dartlang.org/dart_core/int.html">int</a>&gt; bytes) <a class="anchor-link" href="#fromBytes"
               title="Permalink to ByteStream.ByteStream.fromBytes">#</a></h4>
 <div class="doc">
 <p>Returns a single-subscription byte stream that will emit the given bytes
@@ -102,16 +108,14 @@ final <a href="http://api.dartlang.org/dart_async/Future.html">Future</a>&lt;<a 
         </h4>
         <div class="inherited-from">inherited from <a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a> </div><div class="doc">
 <p>Returns the first element.</p>
-<p>If <code>this</code> is empty throws a <code>StateError</code>. Otherwise this method is
+<p>If <code>this</code> is empty throws a <a class="crossref" href="../dart_core/StateError.html">StateError</a>. Otherwise this method is
 equivalent to <code>this.elementAt(0)</code></p>
 <pre class="source">
 Future&lt;T&gt; get first {
  _FutureImpl&lt;T&gt; future = new _FutureImpl&lt;T&gt;();
  StreamSubscription subscription;
  subscription = this.listen(
-   // TODO(ahe): Restore type when feature is implemented in dart2js
-   // checked mode. http://dartbug.com/7733
-   (/*T*/ value) {
+   (T value) {
      subscription.cancel();
      future._setValue(value);
      return;
@@ -176,7 +180,7 @@ final <a href="http://api.dartlang.org/dart_async/Future.html">Future</a>&lt;<a 
         </h4>
         <div class="inherited-from">inherited from <a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a> </div><div class="doc">
 <p>Returns the last element.</p>
-<p>If <code>this</code> is empty throws a <code>StateError</code>.</p>
+<p>If <code>this</code> is empty throws a <a class="crossref" href="../dart_core/StateError.html">StateError</a>.</p>
 <pre class="source">
 Future&lt;T&gt; get last {
  _FutureImpl&lt;T&gt; future = new _FutureImpl&lt;T&gt;();
@@ -184,9 +188,7 @@ Future&lt;T&gt; get last {
  bool foundResult = false;
  StreamSubscription subscription;
  subscription = this.listen(
-   // TODO(ahe): Restore type when feature is implemented in dart2js
-   // checked mode. http://dartbug.com/7733
-   (/*T*/ value) {
+   (T value) {
      foundResult = true;
      result = value;
    },
@@ -236,7 +238,7 @@ final <a href="http://api.dartlang.org/dart_async/Future.html">Future</a>&lt;<a 
         </h4>
         <div class="inherited-from">inherited from <a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a> </div><div class="doc">
 <p>Returns the single element.</p>
-<p>If <code>this</code> is empty or has more than one element throws a <code>StateError</code>.</p>
+<p>If <code>this</code> is empty or has more than one element throws a <a class="crossref" href="../dart_core/StateError.html">StateError</a>.</p>
 <pre class="source">
 Future&lt;T&gt; get single {
  _FutureImpl&lt;T&gt; future = new _FutureImpl&lt;T&gt;();
@@ -244,9 +246,7 @@ Future&lt;T&gt; get single {
  bool foundResult = false;
  StreamSubscription subscription;
  subscription = this.listen(
-   // TODO(ahe): Restore type when feature is implemented in dart2js
-   // checked mode. http://dartbug.com/7733
-   (/*T*/ value) {
+   (T value) {
      if (foundResult) {
        subscription.cancel();
        // This is the second element we get.
@@ -281,16 +281,14 @@ Future&lt;T&gt; get single {
 <div class="inherited-from">inherited from <a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a> </div><div class="doc">
 <p>Checks whether 
 <span class="param">test</span> accepts any element provided by this stream.</p>
-<p>Completes the <code>Future</code> when the answer is known.
-If this stream reports an error, the <code>Future</code> will report that error.</p>
+<p>Completes the <a class="crossref" href="../dart_async/Future.html">Future</a> when the answer is known.
+If this stream reports an error, the <a class="crossref" href="../dart_async/Future.html">Future</a> will report that error.</p>
 <pre class="source">
 Future&lt;bool&gt; any(bool test(T element)) {
  _FutureImpl&lt;bool&gt; future = new _FutureImpl&lt;bool&gt;();
  StreamSubscription subscription;
  subscription = this.listen(
-     // TODO(ahe): Restore type when feature is implemented in dart2js
-     // checked mode. http://dartbug.com/7733
-     (/*T*/ element) {
+     (T element) {
        _runUserCode(
          () =&gt; test(element),
          (bool isMatch) {
@@ -314,19 +312,37 @@ Future&lt;bool&gt; any(bool test(T element)) {
 </div>
 <div class="method inherited"><h4 id="asBroadcastStream">
 <button class="show-code">Code</button>
-<a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a>&lt;<a href="../byte_stream/ByteStream.html">T</a>&gt; <strong>asBroadcastStream</strong>() <a class="anchor-link" href="#asBroadcastStream"
+<a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a>&lt;<a href="../byte_stream/ByteStream.html">T</a>&gt; <strong>asBroadcastStream</strong>({void onListen(<a href="http://api.dartlang.org/dart_async/StreamSubscription.html">StreamSubscription</a> subscription), void onCancel(<a href="http://api.dartlang.org/dart_async/StreamSubscription.html">StreamSubscription</a> subscription)}) <a class="anchor-link" href="#asBroadcastStream"
               title="Permalink to ByteStream.asBroadcastStream">#</a></h4>
 <div class="inherited-from">inherited from <a href="http://api.dartlang.org/dart_async/StreamView.html">StreamView</a> </div><div class="doc">
 <div class="inherited">
 <p>Returns a multi-subscription stream that produces the same events as this.</p>
+<p>If this stream is already a broadcast stream, it is returned unmodified.</p>
 <p>If this stream is single-subscription, return a new stream that allows
 multiple subscribers. It will subscribe to this stream when its first
-subscriber is added, and unsubscribe again when the last subscription is
-cancelled.</p>
-<p>If this stream is already a broadcast stream, it is returned unmodified.</p>
+subscriber is added, and will stay subscribed until this stream ends,
+or a callback cancels the subscription.</p>
+<p>If 
+<span class="param">onListen</span> is provided, it is called with a subscription-like object
+that represents the underlying subscription to this stream. It is
+possible to pause, resume or cancel the subscription during the call
+to 
+<span class="param">onListen</span>. It is not possible to change the event handlers, including
+using <a class="crossref" href="../dart_async/StreamSubscription.html#asFuture">StreamSubscription.asFuture</a>.</p>
+<p>If 
+<span class="param">onCancel</span> is provided, it is called in a similar way to 
+<span class="param">onListen</span>
+when the returned stream stops having listener. If it later gets
+a new listener, the 
+<span class="param">onListen</span> function is called again.</p>
+<p>Use the callbacks, for example, for pausing the underlying subscription
+while having no subscribers to prevent losing events, or canceling the
+subscription when there are no listeners.</p>
 <div class="docs-inherited-from">docs inherited from <a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a>&lt;<a href="../byte_stream/ByteStream.html">T</a>&gt; </div></div>
 <pre class="source">
-Stream&lt;T&gt; asBroadcastStream() =&gt; _stream.asBroadcastStream();
+Stream&lt;T&gt; asBroadcastStream({void onListen(StreamSubscription subscription),
+                            void onCancel(StreamSubscription subscription)})
+   =&gt; _stream.asBroadcastStream(onListen: onListen, onCancel: onCancel);
 </pre>
 </div>
 </div>
@@ -335,7 +351,7 @@ Stream&lt;T&gt; asBroadcastStream() =&gt; _stream.asBroadcastStream();
 <a href="http://api.dartlang.org/dart_async/Future.html">Future</a>&lt;<a href="http://api.dartlang.org/dart_core/String.html">String</a>&gt; <strong>bytesToString</strong>([<a href="http://api.dartlang.org/dart_io/Encoding.html">Encoding</a> encoding = Encoding.UTF_8]) <a class="anchor-link" href="#bytesToString"
               title="Permalink to ByteStream.bytesToString">#</a></h4>
 <div class="doc">
-<p>Collect the data of this stream in a <code>String</code>, decoded according to
+<p>Collect the data of this stream in a <a class="crossref" href="../dart_core/String.html">String</a>, decoded according to
 
 <span class="param">encoding</span>, which defaults to <code>Encoding.UTF_8</code>.</p>
 <pre class="source">
@@ -346,23 +362,21 @@ Future&lt;String&gt; bytesToString([Encoding encoding=Encoding.UTF_8]) =&gt;
 </div>
 <div class="method inherited"><h4 id="contains">
 <button class="show-code">Code</button>
-<a href="http://api.dartlang.org/dart_async/Future.html">Future</a>&lt;<a href="http://api.dartlang.org/dart_core/bool.html">bool</a>&gt; <strong>contains</strong>(<a href="../byte_stream/ByteStream.html">T</a> match) <a class="anchor-link" href="#contains"
+<a href="http://api.dartlang.org/dart_async/Future.html">Future</a>&lt;<a href="http://api.dartlang.org/dart_core/bool.html">bool</a>&gt; <strong>contains</strong>(<a href="http://api.dartlang.org/dart_core/Object.html">Object</a> needle) <a class="anchor-link" href="#contains"
               title="Permalink to ByteStream.contains">#</a></h4>
 <div class="inherited-from">inherited from <a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a> </div><div class="doc">
 <p>Checks whether 
-<span class="param">match</span> occurs in the elements provided by this stream.</p>
-<p>Completes the <code>Future</code> when the answer is known.
-If this stream reports an error, the <code>Future</code> will report that error.</p>
+<span class="param">needle</span> occurs in the elements provided by this stream.</p>
+<p>Completes the <a class="crossref" href="../dart_async/Future.html">Future</a> when the answer is known.
+If this stream reports an error, the <a class="crossref" href="../dart_async/Future.html">Future</a> will report that error.</p>
 <pre class="source">
-Future&lt;bool&gt; contains(T match) {
+Future&lt;bool&gt; contains(Object needle) {
  _FutureImpl&lt;bool&gt; future = new _FutureImpl&lt;bool&gt;();
  StreamSubscription subscription;
  subscription = this.listen(
-     // TODO(ahe): Restore type when feature is implemented in dart2js
-     // checked mode. http://dartbug.com/7733
-     (/*T*/ element) {
+     (T element) {
        _runUserCode(
-         () =&gt; (element == match),
+         () =&gt; (element == needle),
          (bool isMatch) {
            if (isMatch) {
              subscription.cancel();
@@ -400,6 +414,25 @@ Stream&lt;T&gt; distinct([bool equals(T previous, T next)]) {
 </pre>
 </div>
 </div>
+<div class="method inherited"><h4 id="drain">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_async/Future.html">Future</a> <strong>drain</strong>([futureValue]) <a class="anchor-link" href="#drain"
+              title="Permalink to ByteStream.drain">#</a></h4>
+<div class="inherited-from">inherited from <a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a> </div><div class="doc">
+<p>Discards all data on the stream, but signals when it's done or an error
+occured.</p>
+<p>When subscribing using <a class="crossref" href="../dart_async/Stream.html#drain">drain</a>, cancelOnError will be true. This means
+that the future will complete with the first error on the stream and then
+cancel the subscription.</p>
+<p>In case of a <code>done</code> event the future completes with the given
+
+<span class="param">futureValue</span>.</p>
+<pre class="source">
+Future drain([var futureValue]) =&gt; listen(null, cancelOnError: true)
+   .asFuture(futureValue);
+</pre>
+</div>
+</div>
 <div class="method inherited"><h4 id="elementAt">
 <button class="show-code">Code</button>
 <a href="http://api.dartlang.org/dart_async/Future.html">Future</a>&lt;<a href="../byte_stream/ByteStream.html">T</a>&gt; <strong>elementAt</strong>(<a href="http://api.dartlang.org/dart_core/int.html">int</a> index) <a class="anchor-link" href="#elementAt"
@@ -417,9 +450,7 @@ Future&lt;T&gt; elementAt(int index) {
  _FutureImpl&lt;T&gt; future = new _FutureImpl&lt;T&gt;();
  StreamSubscription subscription;
  subscription = this.listen(
-   // TODO(ahe): Restore type when feature is implemented in dart2js
-   // checked mode. http://dartbug.com/7733
-   (/*T*/ value) {
+   (T value) {
      if (index == 0) {
        subscription.cancel();
        future._setValue(value);
@@ -444,16 +475,14 @@ Future&lt;T&gt; elementAt(int index) {
 <div class="inherited-from">inherited from <a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a> </div><div class="doc">
 <p>Checks whether 
 <span class="param">test</span> accepts all elements provided by this stream.</p>
-<p>Completes the <code>Future</code> when the answer is known.
-If this stream reports an error, the <code>Future</code> will report that error.</p>
+<p>Completes the <a class="crossref" href="../dart_async/Future.html">Future</a> when the answer is known.
+If this stream reports an error, the <a class="crossref" href="../dart_async/Future.html">Future</a> will report that error.</p>
 <pre class="source">
 Future&lt;bool&gt; every(bool test(T element)) {
  _FutureImpl&lt;bool&gt; future = new _FutureImpl&lt;bool&gt;();
  StreamSubscription subscription;
  subscription = this.listen(
-     // TODO(ahe): Restore type when feature is implemented in dart2js
-     // checked mode. http://dartbug.com/7733
-     (/*T*/ element) {
+     (T element) {
        _runUserCode(
          () =&gt; test(element),
          (bool isMatch) {
@@ -482,7 +511,7 @@ Future&lt;bool&gt; every(bool test(T element)) {
 <div class="inherited-from">inherited from <a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a> </div><div class="doc">
 <p>Creates a new stream from this stream that converts each element
 into zero or more events.</p>
-<p>Each incoming event is converted to an <code>Iterable</code> of new events,
+<p>Each incoming event is converted to an <a class="crossref" href="../dart_core/Iterable.html">Iterable</a> of new events,
 and each of these new events are then sent by the returned stream
 in order.</p>
 <pre class="source">
@@ -494,7 +523,7 @@ Stream expand(Iterable convert(T value)) {
 </div>
 <div class="method inherited"><h4 id="firstWhere">
 <button class="show-code">Code</button>
-<a href="http://api.dartlang.org/dart_async/Future.html">Future</a>&lt;<a href="../byte_stream/ByteStream.html">T</a>&gt; <strong>firstWhere</strong>(<a href="http://api.dartlang.org/dart_core/bool.html">bool</a> test(<a href="../byte_stream/ByteStream.html">T</a> value), {<a href="../byte_stream/ByteStream.html">T</a> defaultValue()}) <a class="anchor-link" href="#firstWhere"
+<a href="http://api.dartlang.org/dart_async/Future.html">Future</a>&lt;dynamic&gt; <strong>firstWhere</strong>(<a href="http://api.dartlang.org/dart_core/bool.html">bool</a> test(<a href="../byte_stream/ByteStream.html">T</a> element), {<a href="http://api.dartlang.org/dart_core/Object.html">Object</a> defaultValue()}) <a class="anchor-link" href="#firstWhere"
               title="Permalink to ByteStream.firstWhere">#</a></h4>
 <div class="inherited-from">inherited from <a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a> </div><div class="doc">
 <p>Finds the first element of this stream matching 
@@ -512,13 +541,11 @@ with no
 <span class="param">defaultValue</span> function provided, the future will receive an
 error.</p>
 <pre class="source">
-Future&lt;T&gt; firstWhere(bool test(T value), {T defaultValue()}) {
- _FutureImpl&lt;T&gt; future = new _FutureImpl&lt;T&gt;();
+Future&lt;dynamic&gt; firstWhere(bool test(T element), {Object defaultValue()}) {
+ _FutureImpl&lt;dynamic&gt; future = new _FutureImpl();
  StreamSubscription subscription;
  subscription = this.listen(
-   // TODO(ahe): Restore type when feature is implemented in dart2js
-   // checked mode. http://dartbug.com/7733
-   (/*T*/ value) {
+   (T value) {
      _runUserCode(
        () =&gt; test(value),
        (bool isMatch) {
@@ -557,9 +584,7 @@ Future fold(var initialValue, combine(var previous, T element)) {
  var value = initialValue;
  StreamSubscription subscription;
  subscription = this.listen(
-   // TODO(ahe): Restore type when feature is implemented in dart2js
-   // checked mode. http://dartbug.com/7733
-   (/*T*/ element) {
+   (T element) {
      _runUserCode(
        () =&gt; combine(value, element),
        (newValue) { value = newValue; },
@@ -585,7 +610,7 @@ Future fold(var initialValue, combine(var previous, T element)) {
 <div class="inherited-from">inherited from <a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a> </div><div class="doc">
 <p>Executes 
 <span class="param">action</span> on each data event of the stream.</p>
-<p>Completes the returned <code>Future</code> when all events of the stream
+<p>Completes the returned <a class="crossref" href="../dart_async/Future.html">Future</a> when all events of the stream
 have been processed. Completes the future with an error if the
 stream has an error event, or if 
 <span class="param">action</span> throws.</p>
@@ -594,9 +619,7 @@ Future forEach(void action(T element)) {
  _FutureImpl future = new _FutureImpl();
  StreamSubscription subscription;
  subscription = this.listen(
-     // TODO(ahe): Restore type when feature is implemented in dart2js
-     // checked mode. http://dartbug.com/7733
-     (/*T*/ element) {
+     (T element) {
        _runUserCode(
          () =&gt; action(element),
          (_) {},
@@ -640,26 +663,67 @@ Stream&lt;T&gt; handleError(void handle( error), { bool test(error) }) {
 </pre>
 </div>
 </div>
+<div class="method inherited"><h4 id="join">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_async/Future.html">Future</a>&lt;<a href="http://api.dartlang.org/dart_core/String.html">String</a>&gt; <strong>join</strong>([<a href="http://api.dartlang.org/dart_core/String.html">String</a> separator = ""]) <a class="anchor-link" href="#join"
+              title="Permalink to ByteStream.join">#</a></h4>
+<div class="inherited-from">inherited from <a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a> </div><div class="doc">
+<p>Collects string of data events' string representations.</p>
+<p>If 
+<span class="param">separator</span> is provided, it is inserted between any two
+elements.</p>
+<p>Any error in the stream causes the future to complete with that
+error. Otherwise it completes with the collected string when
+the "done" event arrives.</p>
+<pre class="source">
+Future&lt;String&gt; join([String separator = ""]) {
+ _FutureImpl&lt;String&gt; result = new _FutureImpl&lt;String&gt;();
+ StringBuffer buffer = new StringBuffer();
+ StreamSubscription subscription;
+ bool first = true;
+ subscription = this.listen(
+   (T element) {
+     if (!first) {
+       buffer.write(separator);
+     }
+     first = false;
+     try {
+       buffer.write(element);
+     } catch (e, s) {
+       subscription.cancel();
+       result._setError(_asyncError(e, s));
+     }
+   },
+   onError: (e) {
+     result._setError(e);
+   },
+   onDone: () {
+     result._setValue(buffer.toString());
+   },
+   cancelOnError: true);
+ return result;
+}
+</pre>
+</div>
+</div>
 <div class="method inherited"><h4 id="lastWhere">
 <button class="show-code">Code</button>
-<a href="http://api.dartlang.org/dart_async/Future.html">Future</a>&lt;<a href="../byte_stream/ByteStream.html">T</a>&gt; <strong>lastWhere</strong>(<a href="http://api.dartlang.org/dart_core/bool.html">bool</a> test(<a href="../byte_stream/ByteStream.html">T</a> value), {<a href="../byte_stream/ByteStream.html">T</a> defaultValue()}) <a class="anchor-link" href="#lastWhere"
+<a href="http://api.dartlang.org/dart_async/Future.html">Future</a>&lt;dynamic&gt; <strong>lastWhere</strong>(<a href="http://api.dartlang.org/dart_core/bool.html">bool</a> test(<a href="../byte_stream/ByteStream.html">T</a> element), {<a href="http://api.dartlang.org/dart_core/Object.html">Object</a> defaultValue()}) <a class="anchor-link" href="#lastWhere"
               title="Permalink to ByteStream.lastWhere">#</a></h4>
 <div class="inherited-from">inherited from <a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a> </div><div class="doc">
 <p>Finds the last element in this stream matching 
 <span class="param">test</span>.</p>
-<p>As <code>firstWhere</code>, except that the last matching element is found.
+<p>As <a class="crossref" href="../dart_async/Stream.html#firstWhere">firstWhere</a>, except that the last matching element is found.
 That means that the result cannot be provided before this stream
 is done.</p>
 <pre class="source">
-Future&lt;T&gt; lastWhere(bool test(T value), {T defaultValue()}) {
- _FutureImpl&lt;T&gt; future = new _FutureImpl&lt;T&gt;();
+Future&lt;dynamic&gt; lastWhere(bool test(T element), {Object defaultValue()}) {
+ _FutureImpl&lt;dynamic&gt; future = new _FutureImpl();
  T result = null;
  bool foundResult = false;
  StreamSubscription subscription;
  subscription = this.listen(
-   // TODO(ahe): Restore type when feature is implemented in dart2js
-   // checked mode. http://dartbug.com/7733
-   (/*T*/ value) {
+   (T value) {
      _runUserCode(
        () =&gt; true == test(value),
        (bool isMatch) {
@@ -740,7 +804,7 @@ Stream map(convert(T event)) {
 <a href="http://api.dartlang.org/dart_async/Future.html">Future</a> <strong>pipe</strong>(<a href="http://api.dartlang.org/dart_async/StreamConsumer.html">StreamConsumer</a>&lt;<a href="../byte_stream/ByteStream.html">T</a>&gt; streamConsumer) <a class="anchor-link" href="#pipe"
               title="Permalink to ByteStream.pipe">#</a></h4>
 <div class="inherited-from">inherited from <a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a> </div><div class="doc">
-<p>Binds this stream as the input of the provided <code>StreamConsumer</code>.</p>
+<p>Binds this stream as the input of the provided <a class="crossref" href="../dart_async/StreamConsumer.html">StreamConsumer</a>.</p>
 <pre class="source">
 Future pipe(StreamConsumer&lt;T&gt; streamConsumer) {
  return streamConsumer.addStream(this).then((_) =&gt; streamConsumer.close());
@@ -762,9 +826,7 @@ Future&lt;T&gt; reduce(T combine(T previous, T element)) {
  T value;
  StreamSubscription subscription;
  subscription = this.listen(
-   // TODO(ahe): Restore type when feature is implemented in dart2js
-   // checked mode. http://dartbug.com/7733
-   (/* T */ element) {
+   (T element) {
      if (seenFirst) {
        _runUserCode(() =&gt; combine(value, element),
                     (T newValue) { value = newValue; },
@@ -791,7 +853,7 @@ Future&lt;T&gt; reduce(T combine(T previous, T element)) {
 </div>
 <div class="method inherited"><h4 id="singleWhere">
 <button class="show-code">Code</button>
-<a href="http://api.dartlang.org/dart_async/Future.html">Future</a>&lt;<a href="../byte_stream/ByteStream.html">T</a>&gt; <strong>singleWhere</strong>(<a href="http://api.dartlang.org/dart_core/bool.html">bool</a> test(<a href="../byte_stream/ByteStream.html">T</a> value)) <a class="anchor-link" href="#singleWhere"
+<a href="http://api.dartlang.org/dart_async/Future.html">Future</a>&lt;<a href="../byte_stream/ByteStream.html">T</a>&gt; <strong>singleWhere</strong>(<a href="http://api.dartlang.org/dart_core/bool.html">bool</a> test(<a href="../byte_stream/ByteStream.html">T</a> element)) <a class="anchor-link" href="#singleWhere"
               title="Permalink to ByteStream.singleWhere">#</a></h4>
 <div class="inherited-from">inherited from <a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a> </div><div class="doc">
 <p>Finds the single element in this stream matching 
@@ -799,15 +861,13 @@ Future&lt;T&gt; reduce(T combine(T previous, T element)) {
 <p>Like <code>lastMatch</code>, except that it is an error if more than one
 matching element occurs in the stream.</p>
 <pre class="source">
-Future&lt;T&gt; singleWhere(bool test(T value)) {
+Future&lt;T&gt; singleWhere(bool test(T element)) {
  _FutureImpl&lt;T&gt; future = new _FutureImpl&lt;T&gt;();
  T result = null;
  bool foundResult = false;
  StreamSubscription subscription;
  subscription = this.listen(
-   // TODO(ahe): Restore type when feature is implemented in dart2js
-   // checked mode. http://dartbug.com/7733
-   (/*T*/ value) {
+   (T value) {
      _runUserCode(
        () =&gt; true == test(value),
        (bool isMatch) {
@@ -855,7 +915,7 @@ Stream&lt;T&gt; skip(int count) {
 </div>
 <div class="method inherited"><h4 id="skipWhile">
 <button class="show-code">Code</button>
-<a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a>&lt;<a href="../byte_stream/ByteStream.html">T</a>&gt; <strong>skipWhile</strong>(<a href="http://api.dartlang.org/dart_core/bool.html">bool</a> test(<a href="../byte_stream/ByteStream.html">T</a> value)) <a class="anchor-link" href="#skipWhile"
+<a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a>&lt;<a href="../byte_stream/ByteStream.html">T</a>&gt; <strong>skipWhile</strong>(<a href="http://api.dartlang.org/dart_core/bool.html">bool</a> test(<a href="../byte_stream/ByteStream.html">T</a> element)) <a class="anchor-link" href="#skipWhile"
               title="Permalink to ByteStream.skipWhile">#</a></h4>
 <div class="inherited-from">inherited from <a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a> </div><div class="doc">
 <p>Skip data events from this stream while they are matched by 
@@ -865,7 +925,7 @@ Stream&lt;T&gt; skip(int count) {
 <span class="param">test</span> returns true for the
 event data, the returned stream will have the same events as this stream.</p>
 <pre class="source">
-Stream&lt;T&gt; skipWhile(bool test(T value)) {
+Stream&lt;T&gt; skipWhile(bool test(T element)) {
  return new _SkipWhileStream(this, test);
 }
 </pre>
@@ -891,7 +951,7 @@ Stream&lt;T&gt; take(int count) {
 </div>
 <div class="method inherited"><h4 id="takeWhile">
 <button class="show-code">Code</button>
-<a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a>&lt;<a href="../byte_stream/ByteStream.html">T</a>&gt; <strong>takeWhile</strong>(<a href="http://api.dartlang.org/dart_core/bool.html">bool</a> test(<a href="../byte_stream/ByteStream.html">T</a> value)) <a class="anchor-link" href="#takeWhile"
+<a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a>&lt;<a href="../byte_stream/ByteStream.html">T</a>&gt; <strong>takeWhile</strong>(<a href="http://api.dartlang.org/dart_core/bool.html">bool</a> test(<a href="../byte_stream/ByteStream.html">T</a> element)) <a class="anchor-link" href="#takeWhile"
               title="Permalink to ByteStream.takeWhile">#</a></h4>
 <div class="inherited-from">inherited from <a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a> </div><div class="doc">
 <p>Forwards data events while 
@@ -903,7 +963,7 @@ when either this stream is done, or when this stream first provides
 a value that 
 <span class="param">test</span> doesn't accept.</p>
 <pre class="source">
-Stream&lt;T&gt; takeWhile(bool test(T value)) {
+Stream&lt;T&gt; takeWhile(bool test(T element)) {
  return new _TakeWhileStream(this, test);
 }
 </pre>
@@ -914,7 +974,7 @@ Stream&lt;T&gt; takeWhile(bool test(T value)) {
 <a href="http://api.dartlang.org/dart_async/Future.html">Future</a>&lt;<a href="http://api.dartlang.org/dart_typed_data/Uint8List.html">Uint8List</a>&gt; <strong>toBytes</strong>() <a class="anchor-link" href="#toBytes"
               title="Permalink to ByteStream.toBytes">#</a></h4>
 <div class="doc">
-<p>Collects the data of this stream in a <code>Uint8List</code>.</p>
+<p>Collects the data of this stream in a <a class="crossref" href="../dart_typed_data/Uint8List.html">Uint8List</a>.</p>
 <pre class="source">
 Future&lt;Uint8List&gt; toBytes() {
  /// TODO(nweiz): use BufferList when issue 6409 is fixed.
@@ -931,15 +991,13 @@ Future&lt;Uint8List&gt; toBytes() {
 <a href="http://api.dartlang.org/dart_async/Future.html">Future</a>&lt;<a href="http://api.dartlang.org/dart_core/List.html">List</a>&lt;<a href="../byte_stream/ByteStream.html">T</a>&gt;&gt; <strong>toList</strong>() <a class="anchor-link" href="#toList"
               title="Permalink to ByteStream.toList">#</a></h4>
 <div class="inherited-from">inherited from <a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a> </div><div class="doc">
-<p>Collects the data of this stream in a <code>List</code>. </p>
+<p>Collects the data of this stream in a <a class="crossref" href="../dart_core/List.html">List</a>. </p>
 <pre class="source">
 Future&lt;List&lt;T&gt;&gt; toList() {
  List&lt;T&gt; result = &lt;T&gt;[];
  _FutureImpl&lt;List&lt;T&gt;&gt; future = new _FutureImpl&lt;List&lt;T&gt;&gt;();
  this.listen(
-   // TODO(ahe): Restore type when feature is implemented in dart2js
-   // checked mode. http://dartbug.com/7733
-   (/*T*/ data) {
+   (T data) {
      result.add(data);
    },
    onError: future._setError,
@@ -957,15 +1015,13 @@ Future&lt;List&lt;T&gt;&gt; toList() {
 <a href="http://api.dartlang.org/dart_async/Future.html">Future</a>&lt;<a href="http://api.dartlang.org/dart_core/Set.html">Set</a>&lt;<a href="../byte_stream/ByteStream.html">T</a>&gt;&gt; <strong>toSet</strong>() <a class="anchor-link" href="#toSet"
               title="Permalink to ByteStream.toSet">#</a></h4>
 <div class="inherited-from">inherited from <a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a> </div><div class="doc">
-<p>Collects the data of this stream in a <code>Set</code>. </p>
+<p>Collects the data of this stream in a <a class="crossref" href="../dart_core/Set.html">Set</a>. </p>
 <pre class="source">
 Future&lt;Set&lt;T&gt;&gt; toSet() {
  Set&lt;T&gt; result = new Set&lt;T&gt;();
  _FutureImpl&lt;Set&lt;T&gt;&gt; future = new _FutureImpl&lt;Set&lt;T&gt;&gt;();
  this.listen(
-   // TODO(ahe): Restore type when feature is implemented in dart2js
-   // checked mode. http://dartbug.com/7733
-   (/*T*/ data) {
+   (T data) {
      result.add(data);
    },
    onError: future._setError,
@@ -985,7 +1041,7 @@ Future&lt;Set&lt;T&gt;&gt; toSet() {
 <div class="doc">
 <pre class="source">
 Stream&lt;String&gt; toStringStream([Encoding encoding=Encoding.UTF_8]) =&gt;
-   map((bytes) =&gt; decodeString(bytes, encoding));
+ transform(new StringDecoder(encoding));
 </pre>
 </div>
 </div>
@@ -994,7 +1050,7 @@ Stream&lt;String&gt; toStringStream([Encoding encoding=Encoding.UTF_8]) =&gt;
 <a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a> <strong>transform</strong>(<a href="http://api.dartlang.org/dart_async/StreamTransformer.html">StreamTransformer</a>&lt;<a href="../byte_stream/ByteStream.html">T</a>, dynamic&gt; streamTransformer) <a class="anchor-link" href="#transform"
               title="Permalink to ByteStream.transform">#</a></h4>
 <div class="inherited-from">inherited from <a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a> </div><div class="doc">
-<p>Chains this stream as the input of the provided <code>StreamTransformer</code>.</p>
+<p>Chains this stream as the input of the provided <a class="crossref" href="../dart_async/StreamTransformer.html">StreamTransformer</a>.</p>
 <p>Returns the result of <code>streamTransformer.bind</code> itself.</p>
 <pre class="source">
 Stream transform(StreamTransformer&lt;T, dynamic&gt; streamTransformer) {

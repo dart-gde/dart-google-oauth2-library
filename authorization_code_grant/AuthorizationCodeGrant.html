@@ -36,12 +36,12 @@
 method of authorization involves sending the resource owner to the
 authorization server where they will authorize the client. They're then
 redirected back to your server, along with an authorization code. This is
-used to obtain <code>Credentials</code> and create a fully-authorized <code>Client</code>.</p>
+used to obtain <code>Credentials</code> and create a fully-authorized <a class="crossref" href="../oauth2_client/Client.html">Client</a>.</p>
 <p>To use this class, you must first call <a class="crossref" href="../authorization_code_grant/AuthorizationCodeGrant.html#getAuthorizationUrl">getAuthorizationUrl</a> to get the URL
 to which to redirect the resource owner. Then once they've been redirected
 back to your application, call <a class="crossref" href="../authorization_code_grant/AuthorizationCodeGrant.html#handleAuthorizationResponse">handleAuthorizationResponse</a> or
 <a class="crossref" href="../authorization_code_grant/AuthorizationCodeGrant.html#handleAuthorizationCode">handleAuthorizationCode</a> to process the authorization server's response and
-construct a <code>Client</code>.</p>
+construct a <a class="crossref" href="../oauth2_client/Client.html">Client</a>.</p>
 <pre class="source">
 class AuthorizationCodeGrant {
  /// An enum value for [_state] indicating that [getAuthorizationUrl] has not
@@ -276,15 +276,15 @@ class AuthorizationCodeGrant {
 </div>
 <div>
 <h3>Constructors</h3>
-<div class="method"><h4 id="AuthorizationCodeGrant">
+<div class="method"><h4 id="">
 <button class="show-code">Code</button>
-new <strong>AuthorizationCodeGrant</strong>(<a href="http://api.dartlang.org/dart_core/String.html">String</a> identifier, <a href="http://api.dartlang.org/dart_core/String.html">String</a> secret, <a href="http://api.dartlang.org/dart_uri/Uri.html">Uri</a> authorizationEndpoint, <a href="http://api.dartlang.org/dart_uri/Uri.html">Uri</a> tokenEndpoint, {<a href="../client/Client.html">Client</a> httpClient}) <a class="anchor-link" href="#AuthorizationCodeGrant"
+new <strong>AuthorizationCodeGrant</strong>(<a href="http://api.dartlang.org/dart_core/String.html">String</a> identifier, <a href="http://api.dartlang.org/dart_core/String.html">String</a> secret, <a href="http://api.dartlang.org/dart_core/Uri.html">Uri</a> authorizationEndpoint, <a href="http://api.dartlang.org/dart_core/Uri.html">Uri</a> tokenEndpoint, {<a href="../client/Client.html">Client</a> httpClient}) <a class="anchor-link" href="#"
               title="Permalink to AuthorizationCodeGrant.AuthorizationCodeGrant">#</a></h4>
 <div class="doc">
 <p>Creates a new grant.</p>
 <p>
 <span class="param">httpClient</span> is used for all HTTP requests made by this grant, as well as
-those of the <code>Client</code> is constructs.</p>
+those of the <a class="crossref" href="../oauth2_client/Client.html">Client</a> is constructs.</p>
 <pre class="source">
 AuthorizationCodeGrant(
    this.identifier,
@@ -301,7 +301,7 @@ AuthorizationCodeGrant(
 <h3>Properties</h3>
 <div class="field"><h4 id="authorizationEndpoint">
 <button class="show-code">Code</button>
-final <a href="http://api.dartlang.org/dart_uri/Uri.html">Uri</a>         <strong>authorizationEndpoint</strong> <a class="anchor-link"
+final <a href="http://api.dartlang.org/dart_core/Uri.html">Uri</a>         <strong>authorizationEndpoint</strong> <a class="anchor-link"
             href="#authorizationEndpoint"
             title="Permalink to AuthorizationCodeGrant.authorizationEndpoint">#</a>
         </h4>
@@ -355,7 +355,7 @@ final String secret
 </div>
 <div class="field"><h4 id="tokenEndpoint">
 <button class="show-code">Code</button>
-final <a href="http://api.dartlang.org/dart_uri/Uri.html">Uri</a>         <strong>tokenEndpoint</strong> <a class="anchor-link"
+final <a href="http://api.dartlang.org/dart_core/Uri.html">Uri</a>         <strong>tokenEndpoint</strong> <a class="anchor-link"
             href="#tokenEndpoint"
             title="Permalink to AuthorizationCodeGrant.tokenEndpoint">#</a>
         </h4>
@@ -378,7 +378,7 @@ void <strong>close</strong>() <a class="anchor-link" href="#close"
 <div class="doc">
 <p>Closes the grant and frees its resources.</p>
 <p>This will close the underlying HTTP client, which is shared by the
-<code>Client</code> created by this grant, so it's not safe to close the grant and
+<a class="crossref" href="../oauth2_client/Client.html">Client</a> created by this grant, so it's not safe to close the grant and
 continue using the client.</p>
 <pre class="source">
 void close() {
@@ -390,7 +390,7 @@ void close() {
 </div>
 <div class="method"><h4 id="getAuthorizationUrl">
 <button class="show-code">Code</button>
-<a href="http://api.dartlang.org/dart_uri/Uri.html">Uri</a> <strong>getAuthorizationUrl</strong>(<a href="http://api.dartlang.org/dart_uri/Uri.html">Uri</a> redirect, {<a href="http://api.dartlang.org/dart_core/List.html">List</a>&lt;<a href="http://api.dartlang.org/dart_core/String.html">String</a>&gt; scopes: const<String>[] , <a href="http://api.dartlang.org/dart_core/String.html">String</a> state}) <a class="anchor-link" href="#getAuthorizationUrl"
+<a href="http://api.dartlang.org/dart_core/Uri.html">Uri</a> <strong>getAuthorizationUrl</strong>(<a href="http://api.dartlang.org/dart_core/Uri.html">Uri</a> redirect, {<a href="http://api.dartlang.org/dart_core/List.html">List</a>&lt;<a href="http://api.dartlang.org/dart_core/String.html">String</a>&gt; scopes: const<String>[] , <a href="http://api.dartlang.org/dart_core/String.html">String</a> state}) <a class="anchor-link" href="#getAuthorizationUrl"
               title="Permalink to AuthorizationCodeGrant.getAuthorizationUrl">#</a></h4>
 <div class="doc">
 <p>Returns the URL to which the resource owner should be redirected to
@@ -404,12 +404,12 @@ be specified via
 <span class="param">scopes</span>. The scope strings are specific to the
 authorization server and may be found in its documentation. Note that you
 may not be granted access to every scope you request; you may check the
-<code>Credentials.scopes</code> field of <code>Client.credentials</code> to see which scopes you
+<code>Credentials.scopes</code> field of <a class="crossref" href="../oauth2_client/Client.html#credentials">Client.credentials</a> to see which scopes you
 were granted.</p>
 <p>An opaque 
 <span class="param">state</span> string may also be passed that will be present in the
 query parameters provided to the redirect URL.</p>
-<p>It is a <code>StateError</code> to call this more than once.</p>
+<p>It is a <a class="crossref" href="../dart_core/StateError.html">StateError</a> to call this more than once.</p>
 <pre class="source">
 Uri getAuthorizationUrl(Uri redirect,
    {List&lt;String&gt; scopes: const &lt;String&gt;[], String state}) {
@@ -445,12 +445,12 @@ Uri getAuthorizationUrl(Uri redirect,
 validates all of the query parameters. However, some authorization servers
 allow the user to copy and paste an authorization code into a command-line
 application, in which case this method must be used.</p>
-<p>It is a <code>StateError</code> to call this more than once, to call it before
+<p>It is a <a class="crossref" href="../dart_core/StateError.html">StateError</a> to call this more than once, to call it before
 <a class="crossref" href="../authorization_code_grant/AuthorizationCodeGrant.html#getAuthorizationUrl">getAuthorizationUrl</a> is called, or to call it after
 <a class="crossref" href="../authorization_code_grant/AuthorizationCodeGrant.html#handleAuthorizationCode">handleAuthorizationCode</a> is called.</p>
 <p>Throws <code>FormatError</code> if the authorization server provides invalid
 responses while retrieving credentials.</p>
-<p>Throws <code>AuthorizationException</code> if the authorization fails.</p>
+<p>Throws <a class="crossref" href="../authorization_exception/AuthorizationException.html">AuthorizationException</a> if the authorization fails.</p>
 <pre class="source">
 Future&lt;Client&gt; handleAuthorizationCode(String authorizationCode) {
  return async.then((_) {
@@ -478,7 +478,7 @@ Future&lt;Client&gt; handleAuthorizationCode(String authorizationCode) {
 server. Note that this "response" is not an HTTP response, but rather the
 data passed to a server controlled by the client as query parameters on
 the redirect URL.</p>
-<p>It is a <code>StateError</code> to call this more than once, to call it before
+<p>It is a <a class="crossref" href="../dart_core/StateError.html">StateError</a> to call this more than once, to call it before
 <a class="crossref" href="../authorization_code_grant/AuthorizationCodeGrant.html#getAuthorizationUrl">getAuthorizationUrl</a> is called, or to call it after
 <a class="crossref" href="../authorization_code_grant/AuthorizationCodeGrant.html#handleAuthorizationCode">handleAuthorizationCode</a> is called.</p>
 <p>Throws <code>FormatError</code> if 
@@ -486,7 +486,7 @@ the redirect URL.</p>
 spec or if the authorization server otherwise provides invalid responses.
 If <code>state</code> was passed to <a class="crossref" href="../authorization_code_grant/AuthorizationCodeGrant.html#getAuthorizationUrl">getAuthorizationUrl</a>, this will throw a
 <code>FormatError</code> if the <code>state</code> parameter doesn't match the original value.</p>
-<p>Throws <code>AuthorizationException</code> if the authorization fails.</p>
+<p>Throws <a class="crossref" href="../authorization_exception/AuthorizationException.html">AuthorizationException</a> if the authorization fails.</p>
 <pre class="source">
 Future&lt;Client&gt; handleAuthorizationResponse(Map&lt;String, String&gt; parameters) {
  return async.then((_) {

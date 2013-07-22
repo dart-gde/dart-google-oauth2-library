@@ -141,7 +141,7 @@ class MultipartFile {
 <a href="http://api.dartlang.org/dart_async/Future.html">Future</a>&lt;<a href="../multipart_file/MultipartFile.html">MultipartFile</a>&gt; <strong>fromPath</strong>(<a href="http://api.dartlang.org/dart_core/String.html">String</a> field, <a href="http://api.dartlang.org/dart_core/String.html">String</a> filePath, {<a href="http://api.dartlang.org/dart_core/String.html">String</a> filename, <a href="http://api.dartlang.org/dart_io/ContentType.html">ContentType</a> contentType}) <a class="anchor-link" href="#fromPath"
               title="Permalink to MultipartFile.fromPath">#</a></h4>
 <div class="doc">
-<p>Creates a new <a class="crossref" href="../multipart_file/MultipartFile.html#MultipartFile">MultipartFile</a> from a path to a file on disk.</p>
+<p>Creates a new <a class="crossref" href="../multipart_file/MultipartFile.html">MultipartFile</a> from a path to a file on disk.</p>
 <p>
 <span class="param">filename</span> defaults to the basename of 
 <span class="param">filePath</span>. 
@@ -167,14 +167,14 @@ static Future&lt;MultipartFile&gt; fromPath(String field, String filePath,
 </div>
 <div>
 <h3>Constructors</h3>
-<div class="method"><h4 id="MultipartFile">
+<div class="method"><h4 id="">
 <button class="show-code">Code</button>
-new <strong>MultipartFile</strong>(<a href="http://api.dartlang.org/dart_core/String.html">String</a> field, <a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a>&lt;<a href="http://api.dartlang.org/dart_core/List.html">List</a>&lt;<a href="http://api.dartlang.org/dart_core/int.html">int</a>&gt;&gt; stream, <a href="http://api.dartlang.org/dart_core/int.html">int</a> length, {<a href="http://api.dartlang.org/dart_core/String.html">String</a> filename, <a href="http://api.dartlang.org/dart_io/ContentType.html">ContentType</a> contentType}) <a class="anchor-link" href="#MultipartFile"
+new <strong>MultipartFile</strong>(<a href="http://api.dartlang.org/dart_core/String.html">String</a> field, <a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a>&lt;<a href="http://api.dartlang.org/dart_core/List.html">List</a>&lt;<a href="http://api.dartlang.org/dart_core/int.html">int</a>&gt;&gt; stream, <a href="http://api.dartlang.org/dart_core/int.html">int</a> length, {<a href="http://api.dartlang.org/dart_core/String.html">String</a> filename, <a href="http://api.dartlang.org/dart_io/ContentType.html">ContentType</a> contentType}) <a class="anchor-link" href="#"
               title="Permalink to MultipartFile.MultipartFile">#</a></h4>
 <div class="doc">
-<p>Creates a new <a class="crossref" href="../multipart_file/MultipartFile.html#MultipartFile">MultipartFile</a> from a chunked <code>Stream</code> of bytes. The length
+<p>Creates a new <a class="crossref" href="../multipart_file/MultipartFile.html">MultipartFile</a> from a chunked <a class="crossref" href="../dart_async/Stream.html">Stream</a> of bytes. The length
 of the file in bytes must be known in advance. If it's not, read the data
-from the stream and use <a class="crossref" href="../multipart_file/MultipartFile.html#MultipartFile.fromBytes">MultipartFile.fromBytes</a> instead.</p>
+from the stream and use <a class="crossref" href="../multipart_file/MultipartFile.html#fromBytes">MultipartFile.fromBytes</a> instead.</p>
 <p>
 <span class="param">contentType</span> currently defaults to <code>application/octet-stream</code>, but in the
 future may be inferred from 
@@ -188,12 +188,12 @@ MultipartFile(this.field, Stream&lt;List&lt;int&gt;&gt; stream, this.length,
 </pre>
 </div>
 </div>
-<div class="method"><h4 id="MultipartFile.fromBytes">
+<div class="method"><h4 id="fromBytes">
 <button class="show-code">Code</button>
-factory <strong>MultipartFile.fromBytes</strong>(<a href="http://api.dartlang.org/dart_core/String.html">String</a> field, <a href="http://api.dartlang.org/dart_core/List.html">List</a>&lt;<a href="http://api.dartlang.org/dart_core/int.html">int</a>&gt; value, {<a href="http://api.dartlang.org/dart_core/String.html">String</a> filename, <a href="http://api.dartlang.org/dart_io/ContentType.html">ContentType</a> contentType}) <a class="anchor-link" href="#MultipartFile.fromBytes"
+factory <strong>MultipartFile.fromBytes</strong>(<a href="http://api.dartlang.org/dart_core/String.html">String</a> field, <a href="http://api.dartlang.org/dart_core/List.html">List</a>&lt;<a href="http://api.dartlang.org/dart_core/int.html">int</a>&gt; value, {<a href="http://api.dartlang.org/dart_core/String.html">String</a> filename, <a href="http://api.dartlang.org/dart_io/ContentType.html">ContentType</a> contentType}) <a class="anchor-link" href="#fromBytes"
               title="Permalink to MultipartFile.MultipartFile.fromBytes">#</a></h4>
 <div class="doc">
-<p>Creates a new <a class="crossref" href="../multipart_file/MultipartFile.html#MultipartFile">MultipartFile</a> from a byte array.</p>
+<p>Creates a new <a class="crossref" href="../multipart_file/MultipartFile.html">MultipartFile</a> from a byte array.</p>
 <p>
 <span class="param">contentType</span> currently defaults to <code>application/octet-stream</code>, but in the
 future may be inferred from 
@@ -209,12 +209,12 @@ factory MultipartFile.fromBytes(String field, List&lt;int&gt; value,
 </pre>
 </div>
 </div>
-<div class="method"><h4 id="MultipartFile.fromString">
+<div class="method"><h4 id="fromString">
 <button class="show-code">Code</button>
-factory <strong>MultipartFile.fromString</strong>(<a href="http://api.dartlang.org/dart_core/String.html">String</a> field, <a href="http://api.dartlang.org/dart_core/String.html">String</a> value, {<a href="http://api.dartlang.org/dart_core/String.html">String</a> filename, <a href="http://api.dartlang.org/dart_io/ContentType.html">ContentType</a> contentType}) <a class="anchor-link" href="#MultipartFile.fromString"
+factory <strong>MultipartFile.fromString</strong>(<a href="http://api.dartlang.org/dart_core/String.html">String</a> field, <a href="http://api.dartlang.org/dart_core/String.html">String</a> value, {<a href="http://api.dartlang.org/dart_core/String.html">String</a> filename, <a href="http://api.dartlang.org/dart_io/ContentType.html">ContentType</a> contentType}) <a class="anchor-link" href="#fromString"
               title="Permalink to MultipartFile.MultipartFile.fromString">#</a></h4>
 <div class="doc">
-<p>Creates a new <a class="crossref" href="../multipart_file/MultipartFile.html#MultipartFile">MultipartFile</a> from a string.</p>
+<p>Creates a new <a class="crossref" href="../multipart_file/MultipartFile.html">MultipartFile</a> from a string.</p>
 <p>The encoding to use when translating 
 <span class="param">value</span> into bytes is taken from
 
@@ -306,7 +306,7 @@ final <a href="http://api.dartlang.org/dart_core/int.html">int</a>         <stro
         </h4>
         <div class="doc">
 <p>The size of the file in bytes. This must be known in advance, even if this
-file is created from a <code>ByteStream</code>.</p>
+file is created from a <a class="crossref" href="../byte_stream/ByteStream.html">ByteStream</a>.</p>
 <pre class="source">
 final int length
 </pre>

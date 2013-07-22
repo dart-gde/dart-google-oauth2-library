@@ -27,40 +27,38 @@
 </div>
 <div class="content">
 <h2><strong>utils</strong> library</h2>
-<div>
-<h3>Properties</h3>
-<div class="field"><h4 id="async">
-<button class="show-code">Code</button>
-final <a href="http://api.dartlang.org/dart_async/Future.html">Future</a>         <strong>async</strong> <a class="anchor-link"
-            href="#async"
-            title="Permalink to async">#</a>
-        </h4>
-        <div class="doc">
-<p>Returns a <code>Future</code> that asynchronously completes to <code>null</code>.</p>
-<pre class="source">
-Future get async =&gt; new Future.delayed(const Duration(milliseconds: 0),
-                                      () =&gt; null);
-</pre>
-</div>
-</div>
-</div>
+<div class="doc"><p>Generic utility functions. Stuff that should possibly be in core.</p></div>
 <div>
 <h3>Functions</h3>
-<div class="method"><h4 id="split1">
+<div class="method"><h4 id="awaitObject">
 <button class="show-code">Code</button>
-<a href="http://api.dartlang.org/dart_core/List.html">List</a>&lt;<a href="http://api.dartlang.org/dart_core/String.html">String</a>&gt; <strong>split1</strong>(<a href="http://api.dartlang.org/dart_core/String.html">String</a> toSplit, <a href="http://api.dartlang.org/dart_core/String.html">String</a> pattern) <a class="anchor-link" href="#split1"
-              title="Permalink to split1">#</a></h4>
+<a href="http://api.dartlang.org/dart_async/Future.html">Future</a> <strong>awaitObject</strong>(object) <a class="anchor-link" href="#awaitObject"
+              title="Permalink to awaitObject">#</a></h4>
 <div class="doc">
-<p>Like <code>String.split</code>, but only splits on the first occurrence of the pattern.
-This will always return a list of two elements or fewer.</p>
+<p>Takes a simple data structure (composed of <a class="crossref" href="dart_core/Map.html">Map</a>s, <a class="crossref" href="dart_core/Iterable.html">Iterable</a>s, scalar
+objects, and <a class="crossref" href="dart_async/Future.html">Future</a>s) and recursively resolves all the <a class="crossref" href="dart_async/Future.html">Future</a>s contained
+within. Completes with the fully resolved structure.</p>
 <pre class="source">
-List&lt;String&gt; split1(String toSplit, String pattern) {
- if (toSplit.isEmpty) return &lt;String&gt;[];
+Future awaitObject(object) {
+ // Unroll nested futures.
+ if (object is Future) return object.then(awaitObject);
+ if (object is Iterable) {
+   return Future.wait(object.map(awaitObject).toList());
+ }
+ if (object is! Map) return new Future.value(object);
 
- var index = toSplit.indexOf(pattern);
- if (index == -1) return [toSplit];
- return [toSplit.substring(0, index),
-     toSplit.substring(index + pattern.length)];
+ var pairs = &lt;Future&lt;Pair&gt;&gt;[];
+ object.forEach((key, value) {
+   pairs.add(awaitObject(value)
+       .then((resolved) =&gt; new Pair(key, resolved)));
+ });
+ return Future.wait(pairs).then((resolvedPairs) {
+   var map = {};
+   for (var pair in resolvedPairs) {
+     map[pair.first] = pair.last;
+   }
+   return map;
+ });
 }
 </pre>
 </div>
@@ -70,11 +68,11 @@ List&lt;String&gt; split1(String toSplit, String pattern) {
 <a href="http://api.dartlang.org/dart_core/String.html">String</a> <strong>urlDecode</strong>(<a href="http://api.dartlang.org/dart_core/String.html">String</a> encoded) <a class="anchor-link" href="#urlDecode"
               title="Permalink to urlDecode">#</a></h4>
 <div class="doc">
-<p>Decode a URL-encoded string. Unlike <code>decodeUriComponent</code>, this includes
+<p>Decodes a URL-encoded string. Unlike <code>decodeUriComponent</code>, this includes
 replacing <code>+</code> with <code> </code>.</p>
 <pre class="source">
 String urlDecode(String encoded) =&gt;
- decodeUriComponent(encoded.replaceAll("+", " "));
+ Uri.decodeComponent(encoded.replaceAll("+", " "));
 </pre>
 </div>
 </div>
@@ -93,18 +91,54 @@ void mapAddAll(Map destination, Map source) =&gt;
 </pre>
 </div>
 </div>
+<div class="method"><h4 id="canonicalizeUri">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_core/Uri.html">Uri</a> <strong>canonicalizeUri</strong>(<a href="http://api.dartlang.org/dart_core/Uri.html">Uri</a> uri) <a class="anchor-link" href="#canonicalizeUri"
+              title="Permalink to canonicalizeUri">#</a></h4>
+<div class="doc">
+<p>Return 
+<span class="param">uri</span> with redundant port information removed.</p>
+<pre class="source">
+Uri canonicalizeUri(Uri uri) {
+ if (uri == null) return null;
+
+ var sansPort = new Uri(
+     scheme: uri.scheme, userInfo: uri.userInfo, host: uri.host,
+     path: uri.path, query: uri.query, fragment: uri.fragment);
+ if (uri.scheme == 'http' &amp;&amp; uri.port == 80) return sansPort;
+ if (uri.scheme == 'https' &amp;&amp; uri.port == 443) return sansPort;
+ return uri;
+}
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="urisEqual">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_core/bool.html">bool</a> <strong>urisEqual</strong>(<a href="http://api.dartlang.org/dart_core/Uri.html">Uri</a> uri1, <a href="http://api.dartlang.org/dart_core/Uri.html">Uri</a> uri2) <a class="anchor-link" href="#urisEqual"
+              title="Permalink to urisEqual">#</a></h4>
+<div class="doc">
+<p>Whether 
+<span class="param">uri1</span> and 
+<span class="param">uri2</span> are equal. This consider HTTP URIs to default to
+port 80, and HTTPs URIs to default to port 443.</p>
+<pre class="source">
+bool urisEqual(Uri uri1, Uri uri2) =&gt;
+ canonicalizeUri(uri1) == canonicalizeUri(uri2);
+</pre>
+</div>
+</div>
 <div class="method"><h4 id="mapToQuery">
 <button class="show-code">Code</button>
 <a href="http://api.dartlang.org/dart_core/String.html">String</a> <strong>mapToQuery</strong>(<a href="http://api.dartlang.org/dart_core/Map.html">Map</a>&lt;<a href="http://api.dartlang.org/dart_core/String.html">String</a>, <a href="http://api.dartlang.org/dart_core/String.html">String</a>&gt; map) <a class="anchor-link" href="#mapToQuery"
               title="Permalink to mapToQuery">#</a></h4>
 <div class="doc">
-<p>Convert a <code>Map</code> from parameter names to values to a URL query string.</p>
+<p>Convert a <a class="crossref" href="dart_core/Map.html">Map</a> from parameter names to values to a URL query string.</p>
 <pre class="source">
 String mapToQuery(Map&lt;String, String&gt; map) {
  var pairs = &lt;List&lt;String&gt;&gt;[];
  map.forEach((key, value) {
-   key = encodeUriComponent(key);
-   value = (value == null || value.isEmpty) ? null : encodeUriComponent(value);
+   key = Uri.encodeComponent(key);
+   value = (value == null || value.isEmpty) ? null : Uri.encodeComponent(value);
    pairs.add([key, value]);
  });
  return pairs.map((pair) {
@@ -121,7 +155,7 @@ String mapToQuery(Map&lt;String, String&gt; map) {
               title="Permalink to queryToMap">#</a></h4>
 <div class="doc">
 <p>Convert a URL query string (or <code>application/x-www-form-urlencoded</code> body)
-into a <code>Map</code> from parameter names to values.</p>
+into a <a class="crossref" href="dart_core/Map.html">Map</a> from parameter names to values.</p>
 <pre class="source">
 Map&lt;String, String&gt; queryToMap(String queryList) {
  var map = {};
@@ -139,7 +173,7 @@ Map&lt;String, String&gt; queryToMap(String queryList) {
 </div>
 <div class="method"><h4 id="addQueryParameters">
 <button class="show-code">Code</button>
-<a href="http://api.dartlang.org/dart_uri/Uri.html">Uri</a> <strong>addQueryParameters</strong>(<a href="http://api.dartlang.org/dart_uri/Uri.html">Uri</a> url, <a href="http://api.dartlang.org/dart_core/Map.html">Map</a>&lt;<a href="http://api.dartlang.org/dart_core/String.html">String</a>, <a href="http://api.dartlang.org/dart_core/String.html">String</a>&gt; parameters) <a class="anchor-link" href="#addQueryParameters"
+<a href="http://api.dartlang.org/dart_core/Uri.html">Uri</a> <strong>addQueryParameters</strong>(<a href="http://api.dartlang.org/dart_core/Uri.html">Uri</a> url, <a href="http://api.dartlang.org/dart_core/Map.html">Map</a>&lt;<a href="http://api.dartlang.org/dart_core/String.html">String</a>, <a href="http://api.dartlang.org/dart_core/String.html">String</a>&gt; parameters) <a class="anchor-link" href="#addQueryParameters"
               title="Permalink to addQueryParameters">#</a></h4>
 <div class="doc">
 <p>Adds additional query parameters to 
@@ -154,12 +188,357 @@ Uri addQueryParameters(Uri url, Map&lt;String, String&gt; parameters) {
 </pre>
 </div>
 </div>
+<div class="method"><h4 id="split1">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_core/List.html">List</a>&lt;<a href="http://api.dartlang.org/dart_core/String.html">String</a>&gt; <strong>split1</strong>(<a href="http://api.dartlang.org/dart_core/String.html">String</a> toSplit, <a href="http://api.dartlang.org/dart_core/String.html">String</a> pattern) <a class="anchor-link" href="#split1"
+              title="Permalink to split1">#</a></h4>
+<div class="doc">
+<p>Like <a class="crossref" href="dart_core/String.html#split">String.split</a>, but only splits on the first occurrence of the pattern.
+This will always return an array of two elements or fewer.</p>
+<pre class="source">
+List&lt;String&gt; split1(String toSplit, String pattern) {
+ if (toSplit.isEmpty) return &lt;String&gt;[];
+
+ var index = toSplit.indexOf(pattern);
+ if (index == -1) return [toSplit];
+ return [toSplit.substring(0, index),
+   toSplit.substring(index + pattern.length)];
+}
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="futureWhere">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_async/Future.html">Future</a>&lt;<a href="http://api.dartlang.org/dart_core/Iterable.html">Iterable</a>&gt; <strong>futureWhere</strong>(<a href="http://api.dartlang.org/dart_core/Iterable.html">Iterable</a> iter, test(value)) <a class="anchor-link" href="#futureWhere"
+              title="Permalink to futureWhere">#</a></h4>
+<div class="doc">
+<p>Like <a class="crossref" href="dart_core/Iterable.html#where">Iterable.where</a>, but allows 
+<span class="param">test</span> to return <a class="crossref" href="dart_async/Future.html">Future</a>s and uses the
+results of those <a class="crossref" href="dart_async/Future.html">Future</a>s as the test.</p>
+<pre class="source">
+Future&lt;Iterable&gt; futureWhere(Iterable iter, test(value)) {
+ return Future.wait(iter.map((e) {
+   var result = test(e);
+   if (result is! Future) result = new Future.value(result);
+   return result.then((result) =&gt; new Pair(e, result));
+ }))
+     .then((pairs) =&gt; pairs.where((pair) =&gt; pair.last))
+     .then((pairs) =&gt; pairs.map((pair) =&gt; pair.first));
+}
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="streamToLines">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a>&lt;<a href="http://api.dartlang.org/dart_core/String.html">String</a>&gt; <strong>streamToLines</strong>(<a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a>&lt;<a href="http://api.dartlang.org/dart_core/String.html">String</a>&gt; stream) <a class="anchor-link" href="#streamToLines"
+              title="Permalink to streamToLines">#</a></h4>
+<div class="doc">
+<p>Converts a stream of arbitrarily chunked strings into a line-by-line stream.
+The lines don't include line termination characters. A single trailing
+newline is ignored.</p>
+<pre class="source">
+Stream&lt;String&gt; streamToLines(Stream&lt;String&gt; stream) {
+ var buffer = new StringBuffer();
+ return stream.transform(new StreamTransformer(
+     handleData: (chunk, sink) {
+       var lines = splitLines(chunk);
+       var leftover = lines.removeLast();
+       for (var line in lines) {
+         if (!buffer.isEmpty) {
+           buffer.write(line);
+           line = buffer.toString();
+           buffer = new StringBuffer();
+         }
+
+         sink.add(line);
+       }
+       buffer.write(leftover);
+     },
+     handleDone: (sink) {
+       if (!buffer.isEmpty) sink.add(buffer.toString());
+       sink.close();
+     }));
+}
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="splitLines">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_core/List.html">List</a>&lt;<a href="http://api.dartlang.org/dart_core/String.html">String</a>&gt; <strong>splitLines</strong>(<a href="http://api.dartlang.org/dart_core/String.html">String</a> text) <a class="anchor-link" href="#splitLines"
+              title="Permalink to splitLines">#</a></h4>
+<div class="doc">
+<p>Splits 
+<span class="param">text</span> on its line breaks in a Windows-line-break-friendly way.</p>
+<pre class="source">
+List&lt;String&gt; splitLines(String text) =&gt;
+ text.split("\n").map((line) =&gt; line.replaceFirst(_trailingCR, "")).toList();
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="tee">
+<button class="show-code">Code</button>
+<a href="utils/Pair.html">Pair</a>&lt;<a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a>, <a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a>&gt; <strong>tee</strong>(<a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a> stream) <a class="anchor-link" href="#tee"
+              title="Permalink to tee">#</a></h4>
+<div class="doc">
+<p>Creates two single-subscription <a class="crossref" href="dart_async/Stream.html">Stream</a>s that each emit all values and
+errors from 
+<span class="param">stream</span>. This is useful if 
+<span class="param">stream</span> is single-subscription but
+multiple subscribers are necessary.</p>
+<pre class="source">
+Pair&lt;Stream, Stream&gt; tee(Stream stream) {
+ var controller1 = new StreamController();
+ var controller2 = new StreamController();
+ stream.listen((value) {
+   controller1.add(value);
+   controller2.add(value);
+ }, onError: (error) {
+   controller1.addError(error);
+   controller2.addError(error);
+ }, onDone: () {
+   controller1.close();
+   controller2.close();
+ });
+ return new Pair&lt;Stream, Stream&gt;(controller1.stream, controller2.stream);
+}
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="streamWithSubscription">
+<button class="show-code">Code</button>
+<a href="utils/Pair.html">Pair</a>&lt;<a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a>, <a href="http://api.dartlang.org/dart_async/StreamSubscription.html">StreamSubscription</a>&gt; <strong>streamWithSubscription</strong>(<a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a> stream) <a class="anchor-link" href="#streamWithSubscription"
+              title="Permalink to streamWithSubscription">#</a></h4>
+<div class="doc">
+<p>Returns a wrapped version of 
+<span class="param">stream</span> along with a <a class="crossref" href="dart_async/StreamSubscription.html">StreamSubscription</a> that
+can be used to control the wrapped stream.</p>
+<pre class="source">
+Pair&lt;Stream, StreamSubscription&gt; streamWithSubscription(Stream stream) {
+ var controller = new StreamController();
+ var controllerStream = stream.isBroadcast ?
+     controller.stream.asBroadcastStream() :
+     controller.stream;
+ var subscription = stream.listen(controller.add,
+     onError: controller.addError,
+     onDone: controller.close);
+ return new Pair&lt;Stream, StreamSubscription&gt;(controllerStream, subscription);
+}
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="streamFirst">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_async/Future.html">Future</a> <strong>streamFirst</strong>(<a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a> stream) <a class="anchor-link" href="#streamFirst"
+              title="Permalink to streamFirst">#</a></h4>
+<div class="doc">
+<p>Returns a <a class="crossref" href="dart_async/Future.html">Future</a> that will complete to the first element of 
+<span class="param">stream</span>.
+Unlike <a class="crossref" href="dart_async/Stream.html#first">Stream.first</a>, this is safe to use with single-subscription streams.</p>
+<pre class="source">
+Future streamFirst(Stream stream) {
+ var completer = new Completer();
+ var subscription;
+ subscription = stream.listen((value) {
+   subscription.cancel();
+   completer.complete(value);
+ }, onError: (e) {
+   completer.completeError(e);
+ }, onDone: () {
+   completer.completeError(new StateError("No elements"));
+ }, cancelOnError: true);
+ return completer.future;
+}
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="chainToCompleter">
+<button class="show-code">Code</button>
+void <strong>chainToCompleter</strong>(<a href="http://api.dartlang.org/dart_async/Future.html">Future</a> future, <a href="http://api.dartlang.org/dart_async/Completer.html">Completer</a> completer) <a class="anchor-link" href="#chainToCompleter"
+              title="Permalink to chainToCompleter">#</a></h4>
+<div class="doc">
+<p>Configures 
+<span class="param">future</span> so that its result (success or exception) is passed on
+to 
+<span class="param">completer</span>.</p>
+<pre class="source">
+void chainToCompleter(Future future, Completer completer) {
+ future.then((value) =&gt; completer.complete(value),
+     onError: (e) =&gt; completer.completeError(e));
+}
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="sleep">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_async/Future.html">Future</a> <strong>sleep</strong>(<a href="http://api.dartlang.org/dart_core/int.html">int</a> milliseconds) <a class="anchor-link" href="#sleep"
+              title="Permalink to sleep">#</a></h4>
+<div class="doc">
+<p>Returns a <a class="crossref" href="dart_async/Future.html">Future</a> that completes in 
+<span class="param">milliseconds</span>.</p>
+<pre class="source">
+Future sleep(int milliseconds) {
+ var completer = new Completer();
+ new Timer(new Duration(milliseconds: milliseconds), completer.complete);
+ return completer.future;
+}
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="sha1">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_core/String.html">String</a> <strong>sha1</strong>(<a href="http://api.dartlang.org/dart_core/String.html">String</a> source) <a class="anchor-link" href="#sha1"
+              title="Permalink to sha1">#</a></h4>
+<div class="doc">
+<p>Returns the hex-encoded sha1 hash of 
+<span class="param">source</span>.</p>
+<pre class="source">
+String sha1(String source) {
+ var sha = new SHA1();
+ sha.add(source.codeUnits);
+ return CryptoUtils.bytesToHex(sha.close());
+}
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="endsWithPattern">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_core/bool.html">bool</a> <strong>endsWithPattern</strong>(<a href="http://api.dartlang.org/dart_core/String.html">String</a> str, <a href="http://api.dartlang.org/dart_core/Pattern.html">Pattern</a> matcher) <a class="anchor-link" href="#endsWithPattern"
+              title="Permalink to endsWithPattern">#</a></h4>
+<div class="doc">
+<p>Returns whether or not 
+<span class="param">str</span> ends with 
+<span class="param">matcher</span>.</p>
+<pre class="source">
+bool endsWithPattern(String str, Pattern matcher) {
+ for (var match in matcher.allMatches(str)) {
+   if (match.end == str.length) return true;
+ }
+ return false;
+}
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="replace">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_core/String.html">String</a> <strong>replace</strong>(<a href="http://api.dartlang.org/dart_core/String.html">String</a> source, <a href="http://api.dartlang.org/dart_core/Pattern.html">Pattern</a> matcher, <a href="http://api.dartlang.org/dart_core/String.html">String</a> fn(Match)) <a class="anchor-link" href="#replace"
+              title="Permalink to replace">#</a></h4>
+<div class="doc">
+<p>Replace each instance of 
+<span class="param">matcher</span> in 
+<span class="param">source</span> with the return value of
+
+<span class="param">fn</span>.</p>
+<pre class="source">
+String replace(String source, Pattern matcher, String fn(Match)) {
+ var buffer = new StringBuffer();
+ var start = 0;
+ for (var match in matcher.allMatches(source)) {
+   buffer.write(source.substring(start, match.start));
+   start = match.end;
+   buffer.write(fn(match));
+ }
+ buffer.write(source.substring(start));
+ return buffer.toString();
+}
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="setMinus">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_core/Set.html">Set</a> <strong>setMinus</strong>(<a href="http://api.dartlang.org/dart_core/Iterable.html">Iterable</a> minuend, <a href="http://api.dartlang.org/dart_core/Iterable.html">Iterable</a> subtrahend) <a class="anchor-link" href="#setMinus"
+              title="Permalink to setMinus">#</a></h4>
+<div class="doc">
+<p>Returns a set containing all elements in 
+<span class="param">minuend</span> that are not in
+
+<span class="param">subtrahend</span>.</p>
+<pre class="source">
+Set setMinus(Iterable minuend, Iterable subtrahend) {
+ var minuendSet = new Set.from(minuend);
+ minuendSet.removeAll(subtrahend);
+ return minuendSet;
+}
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="only">
+<button class="show-code">Code</button>
+dynamic <strong>only</strong>(<a href="http://api.dartlang.org/dart_core/Iterable.html">Iterable</a> iter) <a class="anchor-link" href="#only"
+              title="Permalink to only">#</a></h4>
+<div class="doc">
+<p>Asserts that 
+<span class="param">iter</span> contains only one element, and returns it.</p>
+<pre class="source">
+only(Iterable iter) {
+ var iterator = iter.iterator;
+ var currentIsValid = iterator.moveNext();
+ assert(currentIsValid);
+ var obj = iterator.current;
+ assert(!iterator.moveNext());
+ return obj;
+}
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="flatten">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_core/List.html">List</a> <strong>flatten</strong>(<a href="http://api.dartlang.org/dart_core/Iterable.html">Iterable</a> nested) <a class="anchor-link" href="#flatten"
+              title="Permalink to flatten">#</a></h4>
+<div class="doc">
+<p>Flattens nested lists inside an iterable into a single list containing only
+non-list elements.</p>
+<pre class="source">
+List flatten(Iterable nested) {
+ var result = [];
+ helper(list) {
+   for (var element in list) {
+     if (element is List) {
+       helper(element);
+     } else {
+       result.add(element);
+     }
+   }
+ }
+ helper(nested);
+ return result;
+}
+</pre>
+</div>
+</div>
+<div class="method"><h4 id="padRight">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_core/String.html">String</a> <strong>padRight</strong>(<a href="http://api.dartlang.org/dart_core/String.html">String</a> source, <a href="http://api.dartlang.org/dart_core/int.html">int</a> length) <a class="anchor-link" href="#padRight"
+              title="Permalink to padRight">#</a></h4>
+<div class="doc">
+<p>Pads 
+<span class="param">source</span> to 
+<span class="param">length</span> by adding spaces at the end.</p>
+<pre class="source">
+String padRight(String source, int length) {
+ final result = new StringBuffer();
+ result.write(source);
+
+ while (result.length &lt; length) {
+   result.write(' ');
+ }
+
+ return result.toString();
+}
+</pre>
+</div>
+</div>
 </div>
 <div>
 <h3>Classes</h3>
           <div class="type">
           <h4>
-            <a href="utils/AuthenticateHeader.html"><strong>AuthenticateHeader</strong></a>
+            <a href="utils/FutureGroup.html"><strong>FutureGroup&lt;T&gt;</strong></a>
+          </h4>
+          </div>
+          
+          <div class="type">
+          <h4>
+            <a href="utils/Pair.html"><strong>Pair&lt;E, F&gt;</strong></a>
           </h4>
           </div>
           

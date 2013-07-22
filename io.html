@@ -28,21 +28,6 @@
 <div class="content">
 <h2><strong>io</strong> library</h2>
 <div class="doc"><p>Helper functionality to make working with IO easier.</p></div>
-<h3>Exports</h3>
-<ul>
-<ul><a href="http.html">http</a> show <code>ByteStream</code></ul>
-<ul><a href="base_client.html">base_client</a> show <code>ByteStream</code></ul>
-<ul><a href="base_request.html">base_request</a> show <code>ByteStream</code></ul>
-<ul><a href="base_response.html">base_response</a> show <code>ByteStream</code></ul>
-<ul><a href="byte_stream.html">byte_stream</a> show <a class="crossref" href="byte_stream/ByteStream.html">ByteStream</a></ul>
-<ul><a href="client.html">client</a> show <code>ByteStream</code></ul>
-<ul><a href="multipart_file.html">multipart_file</a> show <code>ByteStream</code></ul>
-<ul><a href="multipart_request.html">multipart_request</a> show <code>ByteStream</code></ul>
-<ul><a href="request.html">request</a> show <code>ByteStream</code></ul>
-<ul><a href="response.html">response</a> show <code>ByteStream</code></ul>
-<ul><a href="streamed_request.html">streamed_request</a> show <code>ByteStream</code></ul>
-<ul><a href="streamed_response.html">streamed_response</a> show <code>ByteStream</code></ul>
-</ul>
 <div>
 <h3>Properties</h3>
 <div class="field"><h4 id="stdinLines">
@@ -68,10 +53,10 @@ final Stream&lt;String&gt; stdinLines = streamToLines(
               title="Permalink to createTarGz">#</a></h4>
 <div class="doc">
 <p>Create a .tar.gz archive from a list of entries. Each entry can be a
-<code>String</code>, <code>Directory</code>, or <code>File</code> object. The root of the archive is
+<a class="crossref" href="dart_core/String.html">String</a>, <a class="crossref" href="dart_io/Directory.html">Directory</a>, or <a class="crossref" href="dart_io/File.html">File</a> object. The root of the archive is
 considered to be 
 <span class="param">baseDir</span>, which defaults to the current working directory.
-Returns a <code>ByteStream</code> that will emit the contents of the archive.</p>
+Returns a <a class="crossref" href="byte_stream/ByteStream.html">ByteStream</a> that will emit the contents of the archive.</p>
 <pre class="source">
 ByteStream createTarGz(List contents, {baseDir}) {
  var buffer = new StringBuffer();
@@ -193,7 +178,7 @@ Future&lt;bool&gt; extractTarGz(Stream&lt;List&lt;int&gt;&gt; stream, String des
               title="Permalink to withTempDir">#</a></h4>
 <div class="doc">
 <p>Creates a temporary directory and passes its path to 
-<span class="param">fn</span>. Once the <code>Future</code>
+<span class="param">fn</span>. Once the <a class="crossref" href="dart_async/Future.html">Future</a>
 returned by 
 <span class="param">fn</span> completes, the temporary directory and all its contents
 will be deleted. 
@@ -261,7 +246,7 @@ Future timeout(Future input, int milliseconds, String description) {
 <p>Spawns the process located at 
 <span class="param">executable</span>, passing in 
 <span class="param">args</span>. Returns a
-<code>Future</code> that will complete with the <code>Process</code> once it's been started.</p>
+<a class="crossref" href="dart_async/Future.html">Future</a> that will complete with the <a class="crossref" href="dart_io/Process.html">Process</a> once it's been started.</p>
 <p>The spawned process will inherit its parent's environment variables. If
 
 <span class="param">environment</span> is provided, that will be used to augment (not replace) the
@@ -282,7 +267,7 @@ Future&lt;PubProcess&gt; startProcess(String executable, List&lt;String&gt; args
 <p>Spawns and runs the process located at 
 <span class="param">executable</span>, passing in 
 <span class="param">args</span>.
-Returns a <code>Future</code> that will complete with the results of the process after
+Returns a <a class="crossref" href="dart_async/Future.html">Future</a> that will complete with the results of the process after
 it has ended.</p>
 <p>The spawned process will inherit its parent's environment variables. If
 
@@ -320,7 +305,7 @@ Future&lt;PubProcessResult&gt; runProcess(String executable, List&lt;String&gt; 
 <span class="param">stream</span> into 
 <span class="param">sink</span>. When 
 <span class="param">stream</span> is done,
-the returned <code>Future</code> is completed and 
+the returned <a class="crossref" href="dart_async/Future.html">Future</a> is completed and 
 <span class="param">sink</span> is closed if 
 <span class="param">closeSink</span> is
 true.</p>
@@ -328,7 +313,7 @@ true.</p>
 <span class="param">stream</span>, that error is passed to 
 <span class="param">sink</span>. If
 
-<span class="param">cancelOnError</span> is true, <code>Future</code> will be completed successfully and no
+<span class="param">cancelOnError</span> is true, <a class="crossref" href="dart_async/Future.html">Future</a> will be completed successfully and no
 more data or errors will be piped from 
 <span class="param">stream</span> to 
 <span class="param">sink</span>. If
@@ -363,9 +348,9 @@ Future store(Stream stream, EventSink sink,
 <a href="utils/Pair.html">Pair</a>&lt;<a href="http://api.dartlang.org/dart_async/EventSink.html">EventSink</a>, <a href="http://api.dartlang.org/dart_async/Future.html">Future</a>&gt; <strong>consumerToSink</strong>(<a href="http://api.dartlang.org/dart_async/StreamConsumer.html">StreamConsumer</a> consumer) <a class="anchor-link" href="#consumerToSink"
               title="Permalink to consumerToSink">#</a></h4>
 <div class="doc">
-<p>Returns a <code>EventSink</code> that pipes all data to 
-<span class="param">consumer</span> and a <code>Future</code> that
-will succeed when <code>EventSink</code> is closed or fail with any errors that occur
+<p>Returns a <a class="crossref" href="dart_async/EventSink.html">EventSink</a> that pipes all data to 
+<span class="param">consumer</span> and a <a class="crossref" href="dart_async/Future.html">Future</a> that
+will succeed when <a class="crossref" href="dart_async/EventSink.html">EventSink</a> is closed or fail with any errors that occur
 while writing.</p>
 <pre class="source">
 Pair&lt;EventSink, Future&gt; consumerToSink(StreamConsumer consumer) {
@@ -382,7 +367,7 @@ Pair&lt;EventSink, Future&gt; consumerToSink(StreamConsumer consumer) {
               title="Permalink to drainStream">#</a></h4>
 <div class="doc">
 <p>Reads and discards all output from 
-<span class="param">stream</span>. Returns a <code>Future</code> that
+<span class="param">stream</span>. Returns a <a class="crossref" href="dart_async/Future.html">Future</a> that
 completes when the stream is closed.</p>
 <pre class="source">
 Future drainStream(Stream stream) {
@@ -397,7 +382,7 @@ Future drainStream(Stream stream) {
               title="Permalink to confirm">#</a></h4>
 <div class="doc">
 <p>Displays a message and reads a yes/no confirmation from the user. Returns
-a <code>Future</code> that completes to <code>true</code> if the user confirms or <code>false</code> if they
+a <a class="crossref" href="dart_async/Future.html">Future</a> that completes to <code>true</code> if the user confirms or <code>false</code> if they
 do not.</p>
 <p>This will automatically append " (y/n)?" to the message, so 
 <span class="param">message</span>
@@ -483,7 +468,7 @@ void <strong>createSymlink</strong>(<a href="http://api.dartlang.org/dart_core/S
 <p>Creates a new symlink at path 
 <span class="param">symlink</span> that points to 
 <span class="param">target</span>. Returns a
-<code>Future</code> which completes to the path to the symlink file.</p>
+<a class="crossref" href="dart_async/Future.html">Future</a> which completes to the path to the symlink file.</p>
 <p>If 
 <span class="param">relative</span> is true, creates a symlink with a relative path from the
 symlink to the target. Otherwise, uses the 
@@ -673,7 +658,7 @@ String ensureDir(String dirPath) {
 
  try {
    createDir(dirPath);
- } on DirectoryIOException catch (ex) {
+ } on DirectoryException catch (ex) {
    // Error 17 means the directory already exists (or 183 on Windows).
    if (ex.osError.errorCode == 17 || ex.osError.errorCode == 183) {
      log.fine("Got 'already exists' error when creating directory.");

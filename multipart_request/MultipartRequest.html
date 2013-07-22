@@ -107,7 +107,7 @@ class MultipartRequest extends BaseRequest {
    headers['content-transfer-encoding'] = 'binary';
    super.finalize();
 
-   var controller = new StreamController&lt;List&lt;int&gt;&gt;();
+   var controller = new StreamController&lt;List&lt;int&gt;&gt;(sync: true);
 
    void writeAscii(String string) {
      assert(isPlainAscii(string));
@@ -155,7 +155,8 @@ class MultipartRequest extends BaseRequest {
    // http://tools.ietf.org/html/rfc2388 mandates some complex encodings for
    // field names and file names, but in practice user agents seem to just
    // URL-encode them so we do the same.
-   var header = 'content-disposition: form-data; name="${encodeUri(name)}"';
+   var header =
+       'content-disposition: form-data; name="${Uri.encodeFull(name)}"';
    if (!isPlainAscii(value)) {
      header = '$header\r\ncontent-type: text/plain; charset=utf-8';
    }
@@ -166,10 +167,10 @@ class MultipartRequest extends BaseRequest {
  /// contain only ASCII characters.
  String _headerForFile(MultipartFile file) {
    var header = 'content-type: ${file.contentType}\r\n'
-     'content-disposition: form-data; name="${encodeUri(file.field)}"';
+     'content-disposition: form-data; name="${Uri.encodeFull(file.field)}"';
 
    if (file.filename != null) {
-     header = '$header; filename="${encodeUri(file.filename)}"';
+     header = '$header; filename="${Uri.encodeFull(file.filename)}"';
    }
    return '$header\r\n\r\n';
  }
@@ -193,12 +194,12 @@ class MultipartRequest extends BaseRequest {
 <span class="type-box"><span class="icon-class"></span><a href="../base_request/BaseRequest.html">BaseRequest</a></span>&nbsp;&gt;&nbsp;<span class="type-box"><span class="icon-class"></span><strong>MultipartRequest</strong></span></p>
 <div>
 <h3>Constructors</h3>
-<div class="method"><h4 id="MultipartRequest">
+<div class="method"><h4 id="">
 <button class="show-code">Code</button>
-new <strong>MultipartRequest</strong>(<a href="http://api.dartlang.org/dart_core/String.html">String</a> method, <a href="http://api.dartlang.org/dart_uri/Uri.html">Uri</a> url) <a class="anchor-link" href="#MultipartRequest"
+new <strong>MultipartRequest</strong>(<a href="http://api.dartlang.org/dart_core/String.html">String</a> method, <a href="http://api.dartlang.org/dart_core/Uri.html">Uri</a> url) <a class="anchor-link" href="#"
               title="Permalink to MultipartRequest.MultipartRequest">#</a></h4>
 <div class="doc">
-<p>Creates a new <a class="crossref" href="../multipart_request/MultipartRequest.html#MultipartRequest">MultipartRequest</a>.</p>
+<p>Creates a new <a class="crossref" href="../multipart_request/MultipartRequest.html">MultipartRequest</a>.</p>
 <pre class="source">
 MultipartRequest(String method, Uri url)
  : super(method, url),
@@ -325,9 +326,9 @@ final Map&lt;String, String&gt; headers
             title="Permalink to MultipartRequest.maxRedirects">#</a>
         </h4>
         <div class="inherited-from">inherited from <a href="../base_request/BaseRequest.html">BaseRequest</a> </div><div class="doc">
-<p>The maximum number of redirects to follow when <code>followRedirects</code> is true.
+<p>The maximum number of redirects to follow when <a class="crossref" href="../base_request/BaseRequest.html#followRedirects">followRedirects</a> is true.
 If this number is exceeded the <code>BaseResponse</code> future will signal a
-<code>RedirectLimitExceeded</code> exception. Defaults to 5.</p>
+<a class="crossref" href="../dart_io/RedirectException.html">RedirectException</a>. Defaults to 5.</p>
 <pre class="source">
 int get maxRedirects =&gt; _maxRedirects;
 </pre>
@@ -376,7 +377,7 @@ set persistentConnection(bool value) {
 </div>
 <div class="field inherited"><h4 id="url">
 <button class="show-code">Code</button>
-final <a href="http://api.dartlang.org/dart_uri/Uri.html">Uri</a>         <strong>url</strong> <a class="anchor-link"
+final <a href="http://api.dartlang.org/dart_core/Uri.html">Uri</a>         <strong>url</strong> <a class="anchor-link"
             href="#url"
             title="Permalink to MultipartRequest.url">#</a>
         </h4>
@@ -395,7 +396,7 @@ final Uri url
 <a href="../byte_stream/ByteStream.html">ByteStream</a> <strong>finalize</strong>() <a class="anchor-link" href="#finalize"
               title="Permalink to MultipartRequest.finalize">#</a></h4>
 <div class="doc">
-<p>Freezes all mutable fields and returns a single-subscription <code>ByteStream</code>
+<p>Freezes all mutable fields and returns a single-subscription <a class="crossref" href="../byte_stream/ByteStream.html">ByteStream</a>
 that will emit the request body.</p>
 <pre class="source">
 ByteStream finalize() {
@@ -405,7 +406,7 @@ ByteStream finalize() {
  headers['content-transfer-encoding'] = 'binary';
  super.finalize();
 
- var controller = new StreamController&lt;List&lt;int&gt;&gt;();
+ var controller = new StreamController&lt;List&lt;int&gt;&gt;(sync: true);
 
  void writeAscii(String string) {
    assert(isPlainAscii(string));
@@ -445,9 +446,9 @@ ByteStream finalize() {
               title="Permalink to MultipartRequest.send">#</a></h4>
 <div class="inherited-from">inherited from <a href="../base_request/BaseRequest.html">BaseRequest</a> </div><div class="doc">
 <p>Sends this request.</p>
-<p>This automatically initializes a new <code>Client</code> and closes that client once
+<p>This automatically initializes a new <a class="crossref" href="../client/Client.html">Client</a> and closes that client once
 the request is complete. If you're planning on making multiple requests to
-the same server, you should use a single <code>Client</code> for all of those
+the same server, you should use a single <a class="crossref" href="../client/Client.html">Client</a> for all of those
 requests.</p>
 <pre class="source">
 Future&lt;StreamedResponse&gt; send() {

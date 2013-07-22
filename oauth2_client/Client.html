@@ -32,18 +32,18 @@
         
 <button id="show-inherited" class="show-inherited">Hide inherited</button>
 <div class="doc">
-<p>An OAuth2 client. This acts as a drop-in replacement for an <code>http.Client</code>,
+<p>An OAuth2 client. This acts as a drop-in replacement for an <a class="crossref" href="../client/Client.html">http.Client</a>,
 while sending OAuth2 authorization credentials along with each request.</p>
 <p>The client also automatically refreshes its credentials if possible. When it
 makes a request, if its credentials are expired, it will first refresh them.
-This means that any request may throw an <code>AuthorizationException</code> if the
-refresh is not authorized for some reason, a <code>FormatException</code> if the
+This means that any request may throw an <a class="crossref" href="../authorization_exception/AuthorizationException.html">AuthorizationException</a> if the
+refresh is not authorized for some reason, a <a class="crossref" href="../dart_core/FormatException.html">FormatException</a> if the
 authorization server provides ill-formatted responses, or an
-<code>ExpirationException</code> if the credentials are expired and can't be refreshed.</p>
-<p>The client will also throw an <code>AuthorizationException</code> if the resource
+<a class="crossref" href="../expiration_exception/ExpirationException.html">ExpirationException</a> if the credentials are expired and can't be refreshed.</p>
+<p>The client will also throw an <a class="crossref" href="../authorization_exception/AuthorizationException.html">AuthorizationException</a> if the resource
 server returns a 401 response with a WWW-Authenticate header indicating that
 the current credentials are invalid.</p>
-<p>If you already have a set of <code>Credentials</code>, you can construct a <a class="crossref" href="../oauth2_client/Client.html#Client">Client</a>
+<p>If you already have a set of <a class="crossref" href="../credentials/Credentials.html">Credentials</a>, you can construct a <a class="crossref" href="../oauth2_client/Client.html">Client</a>
 directly. However, in order to first obtain the credentials, you must
 authorize. At the time of writing, the only authorization method this
 library supports is <code>AuthorizationCodeGrant</code>.</p>
@@ -123,7 +123,8 @@ class Client extends http.BaseClient {
      if (!params.containsKey('error')) return response;
 
      throw new AuthorizationException(
-         params['error'], params['error_description'], params['error_uri']);
+         params['error'], params['error_description'],
+         params['error_uri'] == null ? null : Uri.parse(params['error_uri']));
    });
  }
 
@@ -165,14 +166,14 @@ class Client extends http.BaseClient {
 <span class="type-box"><span class="icon-class"></span><a href="../base_client/BaseClient.html">BaseClient</a></span>&nbsp;&gt;&nbsp;<span class="type-box"><span class="icon-class"></span><strong>Client</strong></span></p>
 <div>
 <h3>Constructors</h3>
-<div class="method"><h4 id="Client">
+<div class="method"><h4 id="">
 <button class="show-code">Code</button>
-new <strong>Client</strong>(<a href="http://api.dartlang.org/dart_core/String.html">String</a> identifier, <a href="http://api.dartlang.org/dart_core/String.html">String</a> secret, <a href="../credentials/Credentials.html">Credentials</a> _credentials, {<a href="../client/Client.html">Client</a> httpClient}) <a class="anchor-link" href="#Client"
+new <strong>Client</strong>(<a href="http://api.dartlang.org/dart_core/String.html">String</a> identifier, <a href="http://api.dartlang.org/dart_core/String.html">String</a> secret, <a href="../credentials/Credentials.html">Credentials</a> _credentials, {<a href="../client/Client.html">Client</a> httpClient}) <a class="anchor-link" href="#"
               title="Permalink to Client.Client">#</a></h4>
 <div class="doc">
 <p>Creates a new client from a pre-existing set of credentials. When
 authorizing a client for the first time, you should use
-<code>AuthorizationCodeGrant</code> instead of constructing a <a class="crossref" href="../oauth2_client/Client.html#Client">Client</a> directly.</p>
+<code>AuthorizationCodeGrant</code> instead of constructing a <a class="crossref" href="../oauth2_client/Client.html">Client</a> directly.</p>
 <p>
 <span class="param">httpClient</span> is the underlying client that this forwards requests to after
 adding authorization credentials to them.</p>
@@ -265,8 +266,8 @@ void close() {
               title="Permalink to Client.delete">#</a></h4>
 <div class="inherited-from">inherited from <a href="../base_client/BaseClient.html">BaseClient</a> </div><div class="doc">
 <p>Sends an HTTP DELETE request with the given headers to the given URL,
-which can be a <code>Uri</code> or a <code>String</code>.</p>
-<p>For more fine-grained control over the request, use <a class="crossref" href="../oauth2_client/Client.html#send">send</a> instead.</p>
+which can be a <a class="crossref" href="../dart_core/Uri.html">Uri</a> or a <a class="crossref" href="../dart_core/String.html">String</a>.</p>
+<p>For more fine-grained control over the request, use <a class="crossref" href="../base_client/BaseClient.html#send">send</a> instead.</p>
 <pre class="source">
 Future&lt;Response&gt; delete(url, {Map&lt;String, String&gt; headers}) =&gt;
  _sendUnstreamed("DELETE", url, headers);
@@ -279,8 +280,8 @@ Future&lt;Response&gt; delete(url, {Map&lt;String, String&gt; headers}) =&gt;
               title="Permalink to Client.get">#</a></h4>
 <div class="inherited-from">inherited from <a href="../base_client/BaseClient.html">BaseClient</a> </div><div class="doc">
 <p>Sends an HTTP GET request with the given headers to the given URL, which
-can be a <code>Uri</code> or a <code>String</code>.</p>
-<p>For more fine-grained control over the request, use <a class="crossref" href="../oauth2_client/Client.html#send">send</a> instead.</p>
+can be a <a class="crossref" href="../dart_core/Uri.html">Uri</a> or a <a class="crossref" href="../dart_core/String.html">String</a>.</p>
+<p>For more fine-grained control over the request, use <a class="crossref" href="../base_client/BaseClient.html#send">send</a> instead.</p>
 <pre class="source">
 Future&lt;Response&gt; get(url, {Map&lt;String, String&gt; headers}) =&gt;
  _sendUnstreamed("GET", url, headers);
@@ -293,8 +294,8 @@ Future&lt;Response&gt; get(url, {Map&lt;String, String&gt; headers}) =&gt;
               title="Permalink to Client.head">#</a></h4>
 <div class="inherited-from">inherited from <a href="../base_client/BaseClient.html">BaseClient</a> </div><div class="doc">
 <p>Sends an HTTP HEAD request with the given headers to the given URL, which
-can be a <code>Uri</code> or a <code>String</code>.</p>
-<p>For more fine-grained control over the request, use <a class="crossref" href="../oauth2_client/Client.html#send">send</a> instead.</p>
+can be a <a class="crossref" href="../dart_core/Uri.html">Uri</a> or a <a class="crossref" href="../dart_core/String.html">String</a>.</p>
+<p>For more fine-grained control over the request, use <a class="crossref" href="../base_client/BaseClient.html#send">send</a> instead.</p>
 <pre class="source">
 Future&lt;Response&gt; head(url, {Map&lt;String, String&gt; headers}) =&gt;
  _sendUnstreamed("HEAD", url, headers);
@@ -307,10 +308,10 @@ Future&lt;Response&gt; head(url, {Map&lt;String, String&gt; headers}) =&gt;
               title="Permalink to Client.post">#</a></h4>
 <div class="inherited-from">inherited from <a href="../base_client/BaseClient.html">BaseClient</a> </div><div class="doc">
 <p>Sends an HTTP POST request with the given headers and fields to the given
-URL, which can be a <code>Uri</code> or a <code>String</code>. If any fields are specified, the
+URL, which can be a <a class="crossref" href="../dart_core/Uri.html">Uri</a> or a <a class="crossref" href="../dart_core/String.html">String</a>. If any fields are specified, the
 content-type is automatically set to
 <code>"application/x-www-form-urlencoded"</code>.</p>
-<p>For more fine-grained control over the request, use <a class="crossref" href="../oauth2_client/Client.html#send">send</a> instead.</p>
+<p>For more fine-grained control over the request, use <a class="crossref" href="../base_client/BaseClient.html#send">send</a> instead.</p>
 <pre class="source">
 Future&lt;Response&gt; post(url,
    {Map&lt;String, String&gt; headers,
@@ -325,10 +326,10 @@ Future&lt;Response&gt; post(url,
               title="Permalink to Client.put">#</a></h4>
 <div class="inherited-from">inherited from <a href="../base_client/BaseClient.html">BaseClient</a> </div><div class="doc">
 <p>Sends an HTTP PUT request with the given headers and fields to the given
-URL, which can be a <code>Uri</code> or a <code>String</code>. If any fields are specified, the
+URL, which can be a <a class="crossref" href="../dart_core/Uri.html">Uri</a> or a <a class="crossref" href="../dart_core/String.html">String</a>. If any fields are specified, the
 content-type is automatically set to
 <code>"application/x-www-form-urlencoded"</code>.</p>
-<p>For more fine-grained control over the request, use <a class="crossref" href="../oauth2_client/Client.html#send">send</a> instead.</p>
+<p>For more fine-grained control over the request, use <a class="crossref" href="../base_client/BaseClient.html#send">send</a> instead.</p>
 <pre class="source">
 Future&lt;Response&gt; put(url,
    {Map&lt;String, String&gt; headers,
@@ -343,12 +344,12 @@ Future&lt;Response&gt; put(url,
               title="Permalink to Client.read">#</a></h4>
 <div class="inherited-from">inherited from <a href="../base_client/BaseClient.html">BaseClient</a> </div><div class="doc">
 <p>Sends an HTTP GET request with the given headers to the given URL, which
-can be a <code>Uri</code> or a <code>String</code>, and returns a Future that completes to the
+can be a <a class="crossref" href="../dart_core/Uri.html">Uri</a> or a <a class="crossref" href="../dart_core/String.html">String</a>, and returns a Future that completes to the
 body of the response as a String.</p>
-<p>The Future will emit an <code>HttpException</code> if the response doesn't have a
+<p>The Future will emit an <a class="crossref" href="../dart_io/HttpException.html">HttpException</a> if the response doesn't have a
 success status code.</p>
-<p>For more fine-grained control over the request and response, use <a class="crossref" href="../oauth2_client/Client.html#send">send</a> or
-<code>get</code> instead.</p>
+<p>For more fine-grained control over the request and response, use <a class="crossref" href="../base_client/BaseClient.html#send">send</a> or
+<a class="crossref" href="../base_client/BaseClient.html#get">get</a> instead.</p>
 <pre class="source">
 Future&lt;String&gt; read(url, {Map&lt;String, String&gt; headers}) {
  return get(url, headers: headers).then((response) {
@@ -365,12 +366,12 @@ Future&lt;String&gt; read(url, {Map&lt;String, String&gt; headers}) {
               title="Permalink to Client.readBytes">#</a></h4>
 <div class="inherited-from">inherited from <a href="../base_client/BaseClient.html">BaseClient</a> </div><div class="doc">
 <p>Sends an HTTP GET request with the given headers to the given URL, which
-can be a <code>Uri</code> or a <code>String</code>, and returns a Future that completes to the
+can be a <a class="crossref" href="../dart_core/Uri.html">Uri</a> or a <a class="crossref" href="../dart_core/String.html">String</a>, and returns a Future that completes to the
 body of the response as a list of bytes.</p>
-<p>The Future will emit an <code>HttpException</code> if the response doesn't have a
+<p>The Future will emit an <a class="crossref" href="../dart_io/HttpException.html">HttpException</a> if the response doesn't have a
 success status code.</p>
-<p>For more fine-grained control over the request and response, use <a class="crossref" href="../oauth2_client/Client.html#send">send</a> or
-<code>get</code> instead.</p>
+<p>For more fine-grained control over the request and response, use <a class="crossref" href="../base_client/BaseClient.html#send">send</a> or
+<a class="crossref" href="../base_client/BaseClient.html#get">get</a> instead.</p>
 <pre class="source">
 Future&lt;Uint8List&gt; readBytes(url, {Map&lt;String, String&gt; headers}) {
  return get(url, headers: headers).then((response) {
@@ -387,8 +388,8 @@ Future&lt;Uint8List&gt; readBytes(url, {Map&lt;String, String&gt; headers}) {
               title="Permalink to Client.refreshCredentials">#</a></h4>
 <div class="doc">
 <p>Explicitly refreshes this client's credentials. Returns this client.</p>
-<p>This will throw a <code>StateError</code> if the <code>Credentials</code> can't be refreshed, an
-<code>AuthorizationException</code> if refreshing the credentials fails, or a
+<p>This will throw a <a class="crossref" href="../dart_core/StateError.html">StateError</a> if the <a class="crossref" href="../credentials/Credentials.html">Credentials</a> can't be refreshed, an
+<a class="crossref" href="../authorization_exception/AuthorizationException.html">AuthorizationException</a> if refreshing the credentials fails, or a
 <code>FormatError</code> if the authorization server returns invalid responses.</p>
 <p>You may request different scopes than the default by passing in
 
@@ -419,7 +420,7 @@ Future&lt;Client&gt; refreshCredentials([List&lt;String&gt; newScopes]) {
               title="Permalink to Client.send">#</a></h4>
 <div class="doc">
 <p>Sends an HTTP request with OAuth2 authorization credentials attached. This
-will also automatically refresh this client's <code>Credentials</code> before sending
+will also automatically refresh this client's <a class="crossref" href="../credentials/Credentials.html">Credentials</a> before sending
 the request if necessary.</p>
 <pre class="source">
 Future&lt;http.StreamedResponse&gt; send(http.BaseRequest request) {
@@ -450,7 +451,8 @@ Future&lt;http.StreamedResponse&gt; send(http.BaseRequest request) {
    if (!params.containsKey('error')) return response;
 
    throw new AuthorizationException(
-       params['error'], params['error_description'], params['error_uri']);
+       params['error'], params['error_description'],
+       params['error_uri'] == null ? null : Uri.parse(params['error_uri']));
  });
 }
 </pre>

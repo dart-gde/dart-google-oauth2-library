@@ -111,7 +111,7 @@ class Response extends BaseResponse {
               title="Permalink to Response.fromStream">#</a></h4>
 <div class="doc">
 <p>Creates a new HTTP response by waiting for the full body to become
-available from a <code>StreamedResponse</code>.</p>
+available from a <a class="crossref" href="../streamed_response/StreamedResponse.html">StreamedResponse</a>.</p>
 <pre class="source">
 static Future&lt;Response&gt; fromStream(StreamedResponse response) {
  return response.stream.toBytes().then((body) {
@@ -131,9 +131,9 @@ static Future&lt;Response&gt; fromStream(StreamedResponse response) {
 </div>
 <div>
 <h3>Constructors</h3>
-<div class="method"><h4 id="Response">
+<div class="method"><h4 id="">
 <button class="show-code">Code</button>
-new <strong>Response</strong>(<a href="http://api.dartlang.org/dart_core/String.html">String</a> body, <a href="http://api.dartlang.org/dart_core/int.html">int</a> statusCode, {<a href="../base_request/BaseRequest.html">BaseRequest</a> request, <a href="http://api.dartlang.org/dart_core/Map.html">Map</a>&lt;<a href="http://api.dartlang.org/dart_core/String.html">String</a>, <a href="http://api.dartlang.org/dart_core/String.html">String</a>&gt; headers: const{}, <a href="http://api.dartlang.org/dart_core/bool.html">bool</a> isRedirect: false, <a href="http://api.dartlang.org/dart_core/bool.html">bool</a> persistentConnection: true, <a href="http://api.dartlang.org/dart_core/String.html">String</a> reasonPhrase}) <a class="anchor-link" href="#Response"
+new <strong>Response</strong>(<a href="http://api.dartlang.org/dart_core/String.html">String</a> body, <a href="http://api.dartlang.org/dart_core/int.html">int</a> statusCode, {<a href="../base_request/BaseRequest.html">BaseRequest</a> request, <a href="http://api.dartlang.org/dart_core/Map.html">Map</a>&lt;<a href="http://api.dartlang.org/dart_core/String.html">String</a>, <a href="http://api.dartlang.org/dart_core/String.html">String</a>&gt; headers: const{}, <a href="http://api.dartlang.org/dart_core/bool.html">bool</a> isRedirect: false, <a href="http://api.dartlang.org/dart_core/bool.html">bool</a> persistentConnection: true, <a href="http://api.dartlang.org/dart_core/String.html">String</a> reasonPhrase}) <a class="anchor-link" href="#"
               title="Permalink to Response.Response">#</a></h4>
 <div class="doc">
 <p>Creates a new HTTP response with a string body.</p>
@@ -157,9 +157,9 @@ Response(
 </pre>
 </div>
 </div>
-<div class="method"><h4 id="Response.bytes">
+<div class="method"><h4 id="bytes">
 <button class="show-code">Code</button>
-new <strong>Response.bytes</strong>(<a href="http://api.dartlang.org/dart_core/List.html">List</a>&lt;<a href="http://api.dartlang.org/dart_core/int.html">int</a>&gt; bodyBytes, <a href="http://api.dartlang.org/dart_core/int.html">int</a> statusCode, {<a href="../base_request/BaseRequest.html">BaseRequest</a> request, <a href="http://api.dartlang.org/dart_core/Map.html">Map</a>&lt;<a href="http://api.dartlang.org/dart_core/String.html">String</a>, <a href="http://api.dartlang.org/dart_core/String.html">String</a>&gt; headers: const{}, <a href="http://api.dartlang.org/dart_core/bool.html">bool</a> isRedirect: false, <a href="http://api.dartlang.org/dart_core/bool.html">bool</a> persistentConnection: true, <a href="http://api.dartlang.org/dart_core/String.html">String</a> reasonPhrase}) <a class="anchor-link" href="#Response.bytes"
+new <strong>Response.bytes</strong>(<a href="http://api.dartlang.org/dart_core/List.html">List</a>&lt;<a href="http://api.dartlang.org/dart_core/int.html">int</a>&gt; bodyBytes, <a href="http://api.dartlang.org/dart_core/int.html">int</a> statusCode, {<a href="../base_request/BaseRequest.html">BaseRequest</a> request, <a href="http://api.dartlang.org/dart_core/Map.html">Map</a>&lt;<a href="http://api.dartlang.org/dart_core/String.html">String</a>, <a href="http://api.dartlang.org/dart_core/String.html">String</a>&gt; headers: const{}, <a href="http://api.dartlang.org/dart_core/bool.html">bool</a> isRedirect: false, <a href="http://api.dartlang.org/dart_core/bool.html">bool</a> persistentConnection: true, <a href="http://api.dartlang.org/dart_core/String.html">String</a> reasonPhrase}) <a class="anchor-link" href="#bytes"
               title="Permalink to Response.Response.bytes">#</a></h4>
 <div class="doc">
 <p>Create a new HTTP response with a byte array body.</p>

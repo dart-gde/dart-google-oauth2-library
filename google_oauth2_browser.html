@@ -27,10 +27,6 @@
 </div>
 <div class="content">
 <h2><strong>google_oauth2_browser</strong> library</h2>
-<h3>Exports</h3>
-<ul>
-<ul><a href="url_pattern.html">url_pattern</a></ul>
-</ul>
 <div>
 <h3>Functions</h3>
 <div class="method"><h4 id="random">
@@ -41,7 +37,7 @@
 <p>Returns a random unsigned 32-bit integer.</p>
 <pre class="source">
 int random() {
- final ary = new Uint32Array(1);
+ final ary = new Uint32List(1);
  window.crypto.getRandomValues(ary);
  return ary[0];
 }

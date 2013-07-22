@@ -35,11 +35,11 @@
 <p>An OAuth2 authentication context.</p>
 <pre class="source">
 class GoogleOAuth2 extends OAuth2 {
- String _clientId;
- List&lt;String&gt; _scopes;
- List&lt;String&gt; _request_visible_actions;
- String _provider;
- Function _tokenLoaded;
+ final String _clientId;
+ final List&lt;String&gt; _scopes;
+ final List&lt;String&gt; _request_visible_actions;
+ final String _provider;
+ final Function _tokenLoaded;
 
  Future&lt;_ProxyChannel&gt; _channel;
 
@@ -113,11 +113,11 @@ class GoogleOAuth2 extends OAuth2 {
    if (_request_visible_actions != null &amp;&amp; _request_visible_actions.length &gt; 0) {
      queryParams["request_visible_actions"] = _request_visible_actions.join(" ");
    }
-   return new UrlPattern("${_provider}auth").generate({}, queryParams);
+   return UrlPattern.generatePattern("${_provider}auth", {}, queryParams);
  }
 
  /// Deletes the stored token
- logout() {
+ void logout() {
    _token = null;
  }
 
@@ -128,7 +128,7 @@ class GoogleOAuth2 extends OAuth2 {
  /// If you have no token, a popup prompt will be displayed.
  /// If the user declines, closes the popup, or the service returns a token
  /// that cannot be validated, an exception will be delivered.
- Future&lt;Token&gt; login({immediate: null}) {
+ Future&lt;Token&gt; login({bool immediate: null}) {
    if (token != null) {
      if (token.expired) {
        if (immediate == null) {
@@ -275,9 +275,9 @@ class GoogleOAuth2 extends OAuth2 {
 <span class="type-box"><span class="icon-class"></span><a href="../google_oauth2_browser/OAuth2.html">OAuth2</a></span>&nbsp;&gt;&nbsp;<span class="type-box"><span class="icon-class"></span><strong>GoogleOAuth2</strong></span></p>
 <div>
 <h3>Constructors</h3>
-<div class="method"><h4 id="GoogleOAuth2">
+<div class="method"><h4 id="">
 <button class="show-code">Code</button>
-new <strong>GoogleOAuth2</strong>(<a href="http://api.dartlang.org/dart_core/String.html">String</a> _clientId, <a href="http://api.dartlang.org/dart_core/List.html">List</a>&lt;<a href="http://api.dartlang.org/dart_core/String.html">String</a>&gt; _scopes, {<a href="http://api.dartlang.org/dart_core/List.html">List</a>&lt;<a href="http://api.dartlang.org/dart_core/String.html">String</a>&gt; request_visible_actions: null, <a href="http://api.dartlang.org/dart_core/String.html">String</a> provider: "https://accounts.google.com/o/oauth2/", tokenLoaded(<a href="../google_oauth2_browser/Token.html">Token</a> token), <a href="http://api.dartlang.org/dart_core/bool.html">bool</a> autoLogin: false}) <a class="anchor-link" href="#GoogleOAuth2"
+new <strong>GoogleOAuth2</strong>(<a href="http://api.dartlang.org/dart_core/String.html">String</a> _clientId, <a href="http://api.dartlang.org/dart_core/List.html">List</a>&lt;<a href="http://api.dartlang.org/dart_core/String.html">String</a>&gt; _scopes, {<a href="http://api.dartlang.org/dart_core/List.html">List</a>&lt;<a href="http://api.dartlang.org/dart_core/String.html">String</a>&gt; request_visible_actions: null, <a href="http://api.dartlang.org/dart_core/String.html">String</a> provider: "https://accounts.google.com/o/oauth2/", tokenLoaded(<a href="../google_oauth2_browser/Token.html">Token</a> token), <a href="http://api.dartlang.org/dart_core/bool.html">bool</a> autoLogin: false}) <a class="anchor-link" href="#"
               title="Permalink to GoogleOAuth2.GoogleOAuth2">#</a></h4>
 <div class="doc">
 <p>Creates an OAuth2 context for the application identified by <code>clientId</code>
@@ -347,7 +347,7 @@ Future&lt;HttpRequest&gt; authenticate(HttpRequest request) =&gt;
 </div>
 <div class="method"><h4 id="login">
 <button class="show-code">Code</button>
-<a href="http://api.dartlang.org/dart_async/Future.html">Future</a>&lt;<a href="../google_oauth2_browser/Token.html">Token</a>&gt; <strong>login</strong>({immediate: null}) <a class="anchor-link" href="#login"
+<a href="http://api.dartlang.org/dart_async/Future.html">Future</a>&lt;<a href="../google_oauth2_browser/Token.html">Token</a>&gt; <strong>login</strong>({<a href="http://api.dartlang.org/dart_core/bool.html">bool</a> immediate: null}) <a class="anchor-link" href="#login"
               title="Permalink to GoogleOAuth2.login">#</a></h4>
 <div class="doc">
 <p>Attempt to authenticate.
@@ -358,7 +358,7 @@ If you have no token, a popup prompt will be displayed.
 If the user declines, closes the popup, or the service returns a token
 that cannot be validated, an exception will be delivered.</p>
 <pre class="source">
-Future&lt;Token&gt; login({immediate: null}) {
+Future&lt;Token&gt; login({bool immediate: null}) {
  if (token != null) {
    if (token.expired) {
      if (immediate == null) {
@@ -438,12 +438,12 @@ Future&lt;Token&gt; login({immediate: null}) {
 </div>
 <div class="method"><h4 id="logout">
 <button class="show-code">Code</button>
-dynamic <strong>logout</strong>() <a class="anchor-link" href="#logout"
+void <strong>logout</strong>() <a class="anchor-link" href="#logout"
               title="Permalink to GoogleOAuth2.logout">#</a></h4>
 <div class="doc">
 <p>Deletes the stored token</p>
 <pre class="source">
-logout() {
+void logout() {
  _token = null;
 }
 </pre>

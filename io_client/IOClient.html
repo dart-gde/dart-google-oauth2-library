@@ -86,9 +86,9 @@ class IOClient extends BaseClient {
 <span class="type-box"><span class="icon-class"></span><a href="../base_client/BaseClient.html">BaseClient</a></span>&nbsp;&gt;&nbsp;<span class="type-box"><span class="icon-class"></span><strong>IOClient</strong></span></p>
 <div>
 <h3>Constructors</h3>
-<div class="method"><h4 id="IOClient">
+<div class="method"><h4 id="">
 <button class="show-code">Code</button>
-new <strong>IOClient</strong>() <a class="anchor-link" href="#IOClient"
+new <strong>IOClient</strong>() <a class="anchor-link" href="#"
               title="Permalink to IOClient.IOClient">#</a></h4>
 <div class="doc">
 <p>Creates a new HTTP client.</p>
@@ -121,8 +121,8 @@ void close() {
               title="Permalink to IOClient.delete">#</a></h4>
 <div class="inherited-from">inherited from <a href="../base_client/BaseClient.html">BaseClient</a> </div><div class="doc">
 <p>Sends an HTTP DELETE request with the given headers to the given URL,
-which can be a <code>Uri</code> or a <code>String</code>.</p>
-<p>For more fine-grained control over the request, use <a class="crossref" href="../io_client/IOClient.html#send">send</a> instead.</p>
+which can be a <a class="crossref" href="../dart_core/Uri.html">Uri</a> or a <a class="crossref" href="../dart_core/String.html">String</a>.</p>
+<p>For more fine-grained control over the request, use <a class="crossref" href="../base_client/BaseClient.html#send">send</a> instead.</p>
 <pre class="source">
 Future&lt;Response&gt; delete(url, {Map&lt;String, String&gt; headers}) =&gt;
  _sendUnstreamed("DELETE", url, headers);
@@ -135,8 +135,8 @@ Future&lt;Response&gt; delete(url, {Map&lt;String, String&gt; headers}) =&gt;
               title="Permalink to IOClient.get">#</a></h4>
 <div class="inherited-from">inherited from <a href="../base_client/BaseClient.html">BaseClient</a> </div><div class="doc">
 <p>Sends an HTTP GET request with the given headers to the given URL, which
-can be a <code>Uri</code> or a <code>String</code>.</p>
-<p>For more fine-grained control over the request, use <a class="crossref" href="../io_client/IOClient.html#send">send</a> instead.</p>
+can be a <a class="crossref" href="../dart_core/Uri.html">Uri</a> or a <a class="crossref" href="../dart_core/String.html">String</a>.</p>
+<p>For more fine-grained control over the request, use <a class="crossref" href="../base_client/BaseClient.html#send">send</a> instead.</p>
 <pre class="source">
 Future&lt;Response&gt; get(url, {Map&lt;String, String&gt; headers}) =&gt;
  _sendUnstreamed("GET", url, headers);
@@ -149,8 +149,8 @@ Future&lt;Response&gt; get(url, {Map&lt;String, String&gt; headers}) =&gt;
               title="Permalink to IOClient.head">#</a></h4>
 <div class="inherited-from">inherited from <a href="../base_client/BaseClient.html">BaseClient</a> </div><div class="doc">
 <p>Sends an HTTP HEAD request with the given headers to the given URL, which
-can be a <code>Uri</code> or a <code>String</code>.</p>
-<p>For more fine-grained control over the request, use <a class="crossref" href="../io_client/IOClient.html#send">send</a> instead.</p>
+can be a <a class="crossref" href="../dart_core/Uri.html">Uri</a> or a <a class="crossref" href="../dart_core/String.html">String</a>.</p>
+<p>For more fine-grained control over the request, use <a class="crossref" href="../base_client/BaseClient.html#send">send</a> instead.</p>
 <pre class="source">
 Future&lt;Response&gt; head(url, {Map&lt;String, String&gt; headers}) =&gt;
  _sendUnstreamed("HEAD", url, headers);
@@ -163,10 +163,10 @@ Future&lt;Response&gt; head(url, {Map&lt;String, String&gt; headers}) =&gt;
               title="Permalink to IOClient.post">#</a></h4>
 <div class="inherited-from">inherited from <a href="../base_client/BaseClient.html">BaseClient</a> </div><div class="doc">
 <p>Sends an HTTP POST request with the given headers and fields to the given
-URL, which can be a <code>Uri</code> or a <code>String</code>. If any fields are specified, the
+URL, which can be a <a class="crossref" href="../dart_core/Uri.html">Uri</a> or a <a class="crossref" href="../dart_core/String.html">String</a>. If any fields are specified, the
 content-type is automatically set to
 <code>"application/x-www-form-urlencoded"</code>.</p>
-<p>For more fine-grained control over the request, use <a class="crossref" href="../io_client/IOClient.html#send">send</a> instead.</p>
+<p>For more fine-grained control over the request, use <a class="crossref" href="../base_client/BaseClient.html#send">send</a> instead.</p>
 <pre class="source">
 Future&lt;Response&gt; post(url,
    {Map&lt;String, String&gt; headers,
@@ -181,10 +181,10 @@ Future&lt;Response&gt; post(url,
               title="Permalink to IOClient.put">#</a></h4>
 <div class="inherited-from">inherited from <a href="../base_client/BaseClient.html">BaseClient</a> </div><div class="doc">
 <p>Sends an HTTP PUT request with the given headers and fields to the given
-URL, which can be a <code>Uri</code> or a <code>String</code>. If any fields are specified, the
+URL, which can be a <a class="crossref" href="../dart_core/Uri.html">Uri</a> or a <a class="crossref" href="../dart_core/String.html">String</a>. If any fields are specified, the
 content-type is automatically set to
 <code>"application/x-www-form-urlencoded"</code>.</p>
-<p>For more fine-grained control over the request, use <a class="crossref" href="../io_client/IOClient.html#send">send</a> instead.</p>
+<p>For more fine-grained control over the request, use <a class="crossref" href="../base_client/BaseClient.html#send">send</a> instead.</p>
 <pre class="source">
 Future&lt;Response&gt; put(url,
    {Map&lt;String, String&gt; headers,
@@ -199,12 +199,12 @@ Future&lt;Response&gt; put(url,
               title="Permalink to IOClient.read">#</a></h4>
 <div class="inherited-from">inherited from <a href="../base_client/BaseClient.html">BaseClient</a> </div><div class="doc">
 <p>Sends an HTTP GET request with the given headers to the given URL, which
-can be a <code>Uri</code> or a <code>String</code>, and returns a Future that completes to the
+can be a <a class="crossref" href="../dart_core/Uri.html">Uri</a> or a <a class="crossref" href="../dart_core/String.html">String</a>, and returns a Future that completes to the
 body of the response as a String.</p>
-<p>The Future will emit an <code>HttpException</code> if the response doesn't have a
+<p>The Future will emit an <a class="crossref" href="../dart_io/HttpException.html">HttpException</a> if the response doesn't have a
 success status code.</p>
-<p>For more fine-grained control over the request and response, use <a class="crossref" href="../io_client/IOClient.html#send">send</a> or
-<code>get</code> instead.</p>
+<p>For more fine-grained control over the request and response, use <a class="crossref" href="../base_client/BaseClient.html#send">send</a> or
+<a class="crossref" href="../base_client/BaseClient.html#get">get</a> instead.</p>
 <pre class="source">
 Future&lt;String&gt; read(url, {Map&lt;String, String&gt; headers}) {
  return get(url, headers: headers).then((response) {
@@ -221,12 +221,12 @@ Future&lt;String&gt; read(url, {Map&lt;String, String&gt; headers}) {
               title="Permalink to IOClient.readBytes">#</a></h4>
 <div class="inherited-from">inherited from <a href="../base_client/BaseClient.html">BaseClient</a> </div><div class="doc">
 <p>Sends an HTTP GET request with the given headers to the given URL, which
-can be a <code>Uri</code> or a <code>String</code>, and returns a Future that completes to the
+can be a <a class="crossref" href="../dart_core/Uri.html">Uri</a> or a <a class="crossref" href="../dart_core/String.html">String</a>, and returns a Future that completes to the
 body of the response as a list of bytes.</p>
-<p>The Future will emit an <code>HttpException</code> if the response doesn't have a
+<p>The Future will emit an <a class="crossref" href="../dart_io/HttpException.html">HttpException</a> if the response doesn't have a
 success status code.</p>
-<p>For more fine-grained control over the request and response, use <a class="crossref" href="../io_client/IOClient.html#send">send</a> or
-<code>get</code> instead.</p>
+<p>For more fine-grained control over the request and response, use <a class="crossref" href="../base_client/BaseClient.html#send">send</a> or
+<a class="crossref" href="../base_client/BaseClient.html#get">get</a> instead.</p>
 <pre class="source">
 Future&lt;Uint8List&gt; readBytes(url, {Map&lt;String, String&gt; headers}) {
  return get(url, headers: headers).then((response) {

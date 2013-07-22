@@ -32,19 +32,19 @@
         
 <button id="show-inherited" class="show-inherited">Hide inherited</button>
 <div class="doc">
-<p>An <a class="crossref" href="../error_group/ErrorGroup.html#ErrorGroup">ErrorGroup</a> entangles the errors of multiple <code>Future</code>s and <code>Stream</code>s
-with one another. This allows APIs to expose multiple <code>Future</code>s and
-<code>Stream</code>s that have identical error conditions without forcing API consumers
+<p>An <a class="crossref" href="../error_group/ErrorGroup.html">ErrorGroup</a> entangles the errors of multiple <a class="crossref" href="../dart_async/Future.html">Future</a>s and <a class="crossref" href="../dart_async/Stream.html">Stream</a>s
+with one another. This allows APIs to expose multiple <a class="crossref" href="../dart_async/Future.html">Future</a>s and
+<a class="crossref" href="../dart_async/Stream.html">Stream</a>s that have identical error conditions without forcing API consumers
 to attach error handling to objects they don't care about.</p>
-<p>To use an <a class="crossref" href="../error_group/ErrorGroup.html#ErrorGroup">ErrorGroup</a>, register <code>Future</code>s and <code>Stream</code>s with it using
+<p>To use an <a class="crossref" href="../error_group/ErrorGroup.html">ErrorGroup</a>, register <a class="crossref" href="../dart_async/Future.html">Future</a>s and <a class="crossref" href="../dart_async/Stream.html">Stream</a>s with it using
 <a class="crossref" href="../error_group/ErrorGroup.html#registerFuture">registerFuture</a> and <a class="crossref" href="../error_group/ErrorGroup.html#registerStream">registerStream</a>. These methods return wrapped versions
-of the <code>Future</code>s and <code>Stream</code>s, which should then be used in place of the
+of the <a class="crossref" href="../dart_async/Future.html">Future</a>s and <a class="crossref" href="../dart_async/Stream.html">Stream</a>s, which should then be used in place of the
 originals. For example:</p>
 <pre><code>var errorGroup = new ErrorGroup();
 future = errorGroup.registerFuture(future);
 stream = errorGroup.registerStream(stream);
 </code></pre>
-<p>An <a class="crossref" href="../error_group/ErrorGroup.html#ErrorGroup">ErrorGroup</a> has two major effects on its wrapped members:</p><ul><li>
+<p>An <a class="crossref" href="../error_group/ErrorGroup.html">ErrorGroup</a> has two major effects on its wrapped members:</p><ul><li>
 <p>An error in any member of the group will be propagated to every member
   that hasn't already completed. If those members later complete, their
   values will be ignored.</p></li><li>
@@ -176,9 +176,9 @@ class ErrorGroup {
 </div>
 <div>
 <h3>Constructors</h3>
-<div class="method"><h4 id="ErrorGroup">
+<div class="method"><h4 id="">
 <button class="show-code">Code</button>
-new <strong>ErrorGroup</strong>() <a class="anchor-link" href="#ErrorGroup"
+new <strong>ErrorGroup</strong>() <a class="anchor-link" href="#"
               title="Permalink to ErrorGroup.ErrorGroup">#</a></h4>
 <div class="doc">
 <p>Creates a new group with no members.</p>
@@ -199,9 +199,9 @@ final <a href="http://api.dartlang.org/dart_async/Future.html">Future</a>       
             title="Permalink to ErrorGroup.done">#</a>
         </h4>
         <div class="doc">
-<p>Returns a <code>Future</code> that completes successully when all members of <code>this</code>
+<p>Returns a <a class="crossref" href="../dart_async/Future.html">Future</a> that completes successully when all members of <code>this</code>
 are complete, or with an error if any member receives an error.</p>
-<p>This <code>Future</code> is effectively in the group in that an error on it won't be
+<p>This <a class="crossref" href="../dart_async/Future.html">Future</a> is effectively in the group in that an error on it won't be
 passed to the top-level error handler unless no members of the group have
 listeners attached.</p>
 <pre class="source">
@@ -217,11 +217,11 @@ Future get done =&gt; _done;
 <a href="http://api.dartlang.org/dart_async/Future.html">Future</a> <strong>registerFuture</strong>(<a href="http://api.dartlang.org/dart_async/Future.html">Future</a> future) <a class="anchor-link" href="#registerFuture"
               title="Permalink to ErrorGroup.registerFuture">#</a></h4>
 <div class="doc">
-<p>Registers a <code>Future</code> as a member of <code>this</code>. Returns a wrapped version of
+<p>Registers a <a class="crossref" href="../dart_async/Future.html">Future</a> as a member of <code>this</code>. Returns a wrapped version of
 
 <span class="param">future</span> that should be used in its place.</p>
 <p>If all members of <code>this</code> have already completed successfully or with an
-error, it's a <code>StateError</code> to try to register a new <code>Future</code>.</p>
+error, it's a <a class="crossref" href="../dart_core/StateError.html">StateError</a> to try to register a new <a class="crossref" href="../dart_async/Future.html">Future</a>.</p>
 <pre class="source">
 Future registerFuture(Future future) {
  if (_isDone) {
@@ -241,16 +241,16 @@ Future registerFuture(Future future) {
 <a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a> <strong>registerStream</strong>(<a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a> stream) <a class="anchor-link" href="#registerStream"
               title="Permalink to ErrorGroup.registerStream">#</a></h4>
 <div class="doc">
-<p>Registers a <code>Stream</code> as a member of <code>this</code>. Returns a wrapped version of
+<p>Registers a <a class="crossref" href="../dart_async/Stream.html">Stream</a> as a member of <code>this</code>. Returns a wrapped version of
 
-<span class="param">stream</span> that should be used in its place. The returned <code>Stream</code> will be
+<span class="param">stream</span> that should be used in its place. The returned <a class="crossref" href="../dart_async/Stream.html">Stream</a> will be
 multi-subscription if and only if 
 <span class="param">stream</span> is.</p>
 <p>Since all errors in a group are passed to all members, the returned
-<code>Stream</code> will automatically unsubscribe all its listeners when it
+<a class="crossref" href="../dart_async/Stream.html">Stream</a> will automatically unsubscribe all its listeners when it
 encounters an error.</p>
 <p>If all members of <code>this</code> have already completed successfully or with an
-error, it's a <code>StateError</code> to try to register a new <code>Stream</code>.</p>
+error, it's a <a class="crossref" href="../dart_core/StateError.html">StateError</a> to try to register a new <a class="crossref" href="../dart_async/Stream.html">Stream</a>.</p>
 <pre class="source">
 Stream registerStream(Stream stream) {
  if (_isDone) {
@@ -275,7 +275,7 @@ void <strong>signalError</strong>(error) <a class="anchor-link" href="#signalErr
 members, this will only be passed to the top-level error handler if no
 members have listeners.</p>
 <p>If all members of <code>this</code> have already completed successfully or with an
-error, it's a <code>StateError</code> to try to signal an error.</p>
+error, it's a <a class="crossref" href="../dart_core/StateError.html">StateError</a> to try to signal an error.</p>
 <pre class="source">
 void signalError(var error) {
  if (_isDone) {

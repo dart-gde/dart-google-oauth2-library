@@ -35,7 +35,8 @@
 <p>URL template with placeholders that can be filled in to produce a URL. </p>
 <pre class="source">
 class UrlPattern {
- List&lt;_UrlPatternToken&gt; _tokens;
+ final List&lt;_UrlPatternToken&gt; _tokens;
+
  /**
   * Creates a UrlPattern from the specification [:pattern:].
   * See http://tools.ietf.org/html/draft-gregorio-uritemplate-07
@@ -59,11 +60,12 @@ class UrlPattern {
        String variable = pattern.substring(open + 1, close);
        _tokens.add((params) =&gt; (params[variable] == null)
            ? 'null'
-           : encodeUriComponent(params[variable].toString()));
+           : Uri.encodeComponent(params[variable].toString()));
        cursor = close + 1;
      }
    }
  }
+
  /** Generate a URL with the specified list of URL and query parameters. */
  String generate(Map&lt;String, Object&gt; urlParams, Map&lt;String, Object&gt; queryParams) {
    final buffer = new StringBuffer();
@@ -71,22 +73,55 @@ class UrlPattern {
    var first = true;
    queryParams.forEach((key, value) {
      if (value == null) return;
-     buffer.write(first ? '?' : '&amp;');
-     if (first) first = false;
-     buffer.write(encodeUriComponent(key.toString()));
-     buffer.write('=');
-     buffer.write(encodeUriComponent(value.toString()));
+     if (value is List) {
+       value.forEach((listValue) {
+         buffer.write(first ? '?' : '&amp;');
+         if (first) first = false;
+         buffer.write(Uri.encodeComponent(key.toString()));
+         buffer.write('=');
+         buffer.write(Uri.encodeComponent(listValue.toString()));
+       });
+     } else {
+       buffer.write(first ? '?' : '&amp;');
+       if (first) first = false;
+       buffer.write(Uri.encodeComponent(key.toString()));
+       buffer.write('=');
+       buffer.write(Uri.encodeComponent(value.toString()));
+     }
    });
    return buffer.toString();
+ }
+
+ static String generatePattern(String pattern, Map&lt;String, Object&gt; urlParams,
+                               Map&lt;String, Object&gt; queryParams) {
+   var urlPattern = new UrlPattern(pattern);
+   return urlPattern.generate(urlParams, queryParams);
  }
 }
 </pre>
 </div>
 <div>
-<h3>Constructors</h3>
-<div class="method"><h4 id="UrlPattern">
+<h3>Static Methods</h3>
+<div class="method"><h4 id="generatePattern">
 <button class="show-code">Code</button>
-new <strong>UrlPattern</strong>(<a href="http://api.dartlang.org/dart_core/String.html">String</a> pattern) <a class="anchor-link" href="#UrlPattern"
+<a href="http://api.dartlang.org/dart_core/String.html">String</a> <strong>generatePattern</strong>(<a href="http://api.dartlang.org/dart_core/String.html">String</a> pattern, <a href="http://api.dartlang.org/dart_core/Map.html">Map</a>&lt;<a href="http://api.dartlang.org/dart_core/String.html">String</a>, <a href="http://api.dartlang.org/dart_core/Object.html">Object</a>&gt; urlParams, <a href="http://api.dartlang.org/dart_core/Map.html">Map</a>&lt;<a href="http://api.dartlang.org/dart_core/String.html">String</a>, <a href="http://api.dartlang.org/dart_core/Object.html">Object</a>&gt; queryParams) <a class="anchor-link" href="#generatePattern"
+              title="Permalink to UrlPattern.generatePattern">#</a></h4>
+<div class="doc">
+<pre class="source">
+static String generatePattern(String pattern, Map&lt;String, Object&gt; urlParams,
+                             Map&lt;String, Object&gt; queryParams) {
+ var urlPattern = new UrlPattern(pattern);
+ return urlPattern.generate(urlParams, queryParams);
+}
+</pre>
+</div>
+</div>
+</div>
+<div>
+<h3>Constructors</h3>
+<div class="method"><h4 id="">
+<button class="show-code">Code</button>
+new <strong>UrlPattern</strong>(<a href="http://api.dartlang.org/dart_core/String.html">String</a> pattern) <a class="anchor-link" href="#"
               title="Permalink to UrlPattern.UrlPattern">#</a></h4>
 <div class="doc">
 <p>Creates a UrlPattern from the specification <code>pattern</code>.
@@ -111,7 +146,7 @@ UrlPattern(String pattern) : _tokens = [] {
      String variable = pattern.substring(open + 1, close);
      _tokens.add((params) =&gt; (params[variable] == null)
          ? 'null'
-         : encodeUriComponent(params[variable].toString()));
+         : Uri.encodeComponent(params[variable].toString()));
      cursor = close + 1;
    }
  }
@@ -135,11 +170,21 @@ String generate(Map&lt;String, Object&gt; urlParams, Map&lt;String, Object&gt; q
  var first = true;
  queryParams.forEach((key, value) {
    if (value == null) return;
-   buffer.write(first ? '?' : '&amp;');
-   if (first) first = false;
-   buffer.write(encodeUriComponent(key.toString()));
-   buffer.write('=');
-   buffer.write(encodeUriComponent(value.toString()));
+   if (value is List) {
+     value.forEach((listValue) {
+       buffer.write(first ? '?' : '&amp;');
+       if (first) first = false;
+       buffer.write(Uri.encodeComponent(key.toString()));
+       buffer.write('=');
+       buffer.write(Uri.encodeComponent(listValue.toString()));
+     });
+   } else {
+     buffer.write(first ? '?' : '&amp;');
+     if (first) first = false;
+     buffer.write(Uri.encodeComponent(key.toString()));
+     buffer.write('=');
+     buffer.write(Uri.encodeComponent(value.toString()));
+   }
  });
  return buffer.toString();
 }

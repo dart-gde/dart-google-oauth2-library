@@ -2,19 +2,19 @@
         <html>
         <head>
                 <meta charset="utf-8">
-        <title>SafeHttpServer class / safe_http_server Library / Dart Documentation</title>
+        <title>SafeHttpServer class / pub.safe_http_server Library / Dart Documentation</title>
         <link rel="stylesheet" type="text/css"
             href="../styles.css">
         <link href="//fonts.googleapis.com/css?family=Open+Sans:400,600,700,800" rel="stylesheet" type="text/css">
         <link rel="shortcut icon" href="../favicon.ico">
         
         </head>
-        <body data-library="safe_http_server" data-type="SafeHttpServer">
+        <body data-library="pub.safe_http_server" data-type="SafeHttpServer">
         <div class="page">
         <div class="header">
           <a href="../index.html"><div class="logo"></div></a>
           <a href="../index.html">Dart Documentation</a>
-         &rsaquo; <a href="../safe_http_server.html">safe_http_server</a> &rsaquo; <a href="../safe_http_server/SafeHttpServer.html">SafeHttpServer</a>        <div id="search-box">
+         &rsaquo; <a href="../pub.safe_http_server.html">pub.safe_http_server</a> &rsaquo; <a href="../pub.safe_http_server/SafeHttpServer.html">SafeHttpServer</a>        <div id="search-box">
           <input type="search" name="q" id="q" autocomplete="off"
               class="search-input" placeholder="Search API">
         </div>
@@ -32,19 +32,19 @@
         
 <button id="show-inherited" class="show-inherited">Hide inherited</button>
 <div class="doc">
-<p>A wrapper around <code>HttpServer</code> that swallows errors caused by requests
+<p>A wrapper around <a class="crossref" href="../dart_io/HttpServer.html">HttpServer</a> that swallows errors caused by requests
 behaving badly. This provides the following guarantees:</p><ul><li>
-<p>The <a class="crossref" href="../safe_http_server/SafeHttpServer.html#listen">SafeHttpServer.listen</a> onError callback will only emit server-wide
+<p>The <a class="crossref" href="../pub.safe_http_server/SafeHttpServer.html#listen">SafeHttpServer.listen</a> onError callback will only emit server-wide
   errors. It will not emit errors for requests that were unparseable or
   where the connection was closed too soon.</p></li><li><code>HttpResponse.done</code> will emit no errors.</li></ul>
-<p>The <code>HttpRequest</code> data stream can still emit errors.</p>
+<p>The <a class="crossref" href="../dart_io/HttpRequest.html">HttpRequest</a> data stream can still emit errors.</p>
 <pre class="source">
 class SafeHttpServer extends StreamView&lt;HttpRequest&gt; implements HttpServer {
  final HttpServer _inner;
 
- static Future&lt;SafeHttpServer&gt; bind([String host = "127.0.0.1",
+ static Future&lt;SafeHttpServer&gt; bind([String host = "localhost",
      int port = 0, int backlog = 0]) {
-   return HttpServer.bind(host, port, backlog)
+   return HttpServer.bind(host, port, backlog: backlog)
        .then((server) =&gt; new SafeHttpServer(server));
  }
 
@@ -72,9 +72,9 @@ class SafeHttpServer extends StreamView&lt;HttpRequest&gt; implements HttpServer
      // Ignore socket error 104, which is caused by a request being cancelled
      // before it writes any headers. There's no reason to care about such
      // requests.
-     if (error is SocketIOException &amp;&amp; error.osError.errorCode == 104) return;
+     if (error is SocketException &amp;&amp; error.osError.errorCode == 104) return;
      // Ignore any parsing errors, which come from malformed requests.
-     if (error is HttpParserException) return;
+     if (error is HttpException) return;
      // Manually handle cancelOnError so the above (ignored) errors don't
      // cause unsubscription.
      if (cancelOnError) subscription.cancel();
@@ -95,22 +95,33 @@ class SafeHttpServer extends StreamView&lt;HttpRequest&gt; implements HttpServer
 <h3>Static Methods</h3>
 <div class="method"><h4 id="bind">
 <button class="show-code">Code</button>
-<a href="http://api.dartlang.org/dart_async/Future.html">Future</a>&lt;<a href="../safe_http_server/SafeHttpServer.html">SafeHttpServer</a>&gt; <strong>bind</strong>([<a href="http://api.dartlang.org/dart_core/String.html">String</a> host = "127.0.0.1", <a href="http://api.dartlang.org/dart_core/int.html">int</a> port = 0, <a href="http://api.dartlang.org/dart_core/int.html">int</a> backlog = 0]) <a class="anchor-link" href="#bind"
+<a href="http://api.dartlang.org/dart_async/Future.html">Future</a>&lt;<a href="../pub.safe_http_server/SafeHttpServer.html">SafeHttpServer</a>&gt; <strong>bind</strong>([<a href="http://api.dartlang.org/dart_core/String.html">String</a> host = "localhost", <a href="http://api.dartlang.org/dart_core/int.html">int</a> port = 0, <a href="http://api.dartlang.org/dart_core/int.html">int</a> backlog = 0]) <a class="anchor-link" href="#bind"
               title="Permalink to SafeHttpServer.bind">#</a></h4>
 <div class="doc">
 <div class="inherited">
 <p>Starts listening for HTTP requests on the specified <code>address</code> and
 
 <span class="param">port</span>.</p>
-<p>The default value for <code>address</code> is 127.0.0.1, which will allow
-only incoming connections from the local host. To allow for
-incoming connection from the network use either the value 0.0.0.0
-to bind to all interfaces or the IP address of a specific
-interface.</p>
+<p>The <code>address</code> can either be a <a class="crossref" href="../dart_core/String.html">String</a> or an
+<a class="crossref" href="../dart_io/InternetAddress.html">InternetAddress</a>. If <code>address</code> is a <a class="crossref" href="../dart_core/String.html">String</a>, <a class="crossref" href="../pub.safe_http_server/SafeHttpServer.html#bind">bind</a> will
+perform a <a class="crossref" href="../dart_io/InternetAddress.html#lookup">InternetAddress.lookup</a> and use the first value in the
+list. To listen on the loopback adapter, which will allow only
+incoming connections from the local host, use the value
+[InternetAddress.LOOPBACK_IP_V4] or
+[InternetAddress.LOOPBACK_IP_V6]. To allow for incoming
+connection from the network use either one of the values
+[InternetAddress.ANY_IP_V4] or [InternetAddress.ANY_IP_V6] to
+bind to all interfaces or the IP address of a specific interface.</p>
+<p>If an IP version 6 (IPv6) address is used, both IP version 6
+(IPv6) and version 4 (IPv4) connections will be accepted. To
+restrict this to version 6 (IPv6) only, use <a class="crossref" href="../dart_io/HttpServer.html#listenOn">HttpServer.listenOn</a>
+with a <a class="crossref" href="../dart_io/ServerSocket.html">ServerSocket</a> configured for IP version 6 connections
+only.</p>
 <p>If 
-<span class="param">port</span> has the value <code>0</code> (the default) an ephemeral port
-will be chosen by the system. The actual port used can be
-retrieved using the <code>port</code> getter.</p>
+<span class="param">port</span> has the value <code>0</code> an ephemeral port will be chosen by
+the system. The actual port used can be retrieved using the
+
+<span class="param">port</span> getter.</p>
 <p>The optional argument 
 <span class="param">backlog</span> can be used to specify the listen
 backlog for the underlying OS listen setup. If 
@@ -119,9 +130,9 @@ value of <code>0</code> (the default) a reasonable value will be chosen by
 the system.</p>
 <div class="docs-inherited-from">docs inherited from <a href="http://api.dartlang.org/dart_io/HttpServer.html">HttpServer</a> </div></div>
 <pre class="source">
-static Future&lt;SafeHttpServer&gt; bind([String host = "127.0.0.1",
+static Future&lt;SafeHttpServer&gt; bind([String host = "localhost",
    int port = 0, int backlog = 0]) {
- return HttpServer.bind(host, port, backlog)
+ return HttpServer.bind(host, port, backlog: backlog)
      .then((server) =&gt; new SafeHttpServer(server));
 }
 </pre>
@@ -130,11 +141,17 @@ static Future&lt;SafeHttpServer&gt; bind([String host = "127.0.0.1",
 </div>
 <div>
 <h3>Constructors</h3>
-<div class="method"><h4 id="SafeHttpServer">
+<div class="method"><h4 id="">
 <button class="show-code">Code</button>
-new <strong>SafeHttpServer</strong>(<a href="http://api.dartlang.org/dart_io/HttpServer.html">HttpServer</a> server) <a class="anchor-link" href="#SafeHttpServer"
+new <strong>SafeHttpServer</strong>(<a href="http://api.dartlang.org/dart_io/HttpServer.html">HttpServer</a> server) <a class="anchor-link" href="#"
               title="Permalink to SafeHttpServer.SafeHttpServer">#</a></h4>
 <div class="doc">
+<div class="inherited">
+<p>Creates a new <a class="crossref" href="../dart_core/Object.html">Object</a> instance.</p>
+<p><a class="crossref" href="../dart_core/Object.html">Object</a> instances have no meaningful state, and are only useful
+through their identity. An <a class="crossref" href="../dart_core/Object.html">Object</a> instance is equal to itself
+only.</p>
+<div class="docs-inherited-from">docs inherited from <a href="http://api.dartlang.org/dart_core/Object.html">Object</a> </div></div>
 <pre class="source">
 SafeHttpServer(HttpServer server)
    : super(server),
@@ -147,22 +164,20 @@ SafeHttpServer(HttpServer server)
 <h3>Properties</h3>
 <div class="field inherited"><h4 id="first">
 <button class="show-code">Code</button>
-final <a href="http://api.dartlang.org/dart_async/Future.html">Future</a>&lt;<a href="../safe_http_server/SafeHttpServer.html">T</a>&gt;         <strong>first</strong> <a class="anchor-link"
+final <a href="http://api.dartlang.org/dart_async/Future.html">Future</a>&lt;<a href="../pub.safe_http_server/SafeHttpServer.html">T</a>&gt;         <strong>first</strong> <a class="anchor-link"
             href="#first"
             title="Permalink to SafeHttpServer.first">#</a>
         </h4>
         <div class="inherited-from">inherited from <a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a> </div><div class="doc">
 <p>Returns the first element.</p>
-<p>If <code>this</code> is empty throws a <code>StateError</code>. Otherwise this method is
+<p>If <code>this</code> is empty throws a <a class="crossref" href="../dart_core/StateError.html">StateError</a>. Otherwise this method is
 equivalent to <code>this.elementAt(0)</code></p>
 <pre class="source">
 Future&lt;T&gt; get first {
  _FutureImpl&lt;T&gt; future = new _FutureImpl&lt;T&gt;();
  StreamSubscription subscription;
  subscription = this.listen(
-   // TODO(ahe): Restore type when feature is implemented in dart2js
-   // checked mode. http://dartbug.com/7733
-   (/*T*/ value) {
+   (T value) {
      subscription.cancel();
      future._setValue(value);
      return;
@@ -186,7 +201,7 @@ final <a href="http://api.dartlang.org/dart_core/bool.html">bool</a>         <st
         <div class="inherited-from">inherited from <a href="http://api.dartlang.org/dart_async/StreamView.html">StreamView</a> </div><div class="doc">
 <div class="inherited">
 <p>Reports whether this stream is a broadcast stream.</p>
-<div class="docs-inherited-from">docs inherited from <a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a>&lt;<a href="../safe_http_server/SafeHttpServer.html">T</a>&gt; </div></div>
+<div class="docs-inherited-from">docs inherited from <a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a>&lt;<a href="../pub.safe_http_server/SafeHttpServer.html">T</a>&gt; </div></div>
 <pre class="source">
 bool get isBroadcast =&gt; _stream.isBroadcast;
 </pre>
@@ -221,13 +236,13 @@ Future&lt;bool&gt; get isEmpty {
 </div>
 <div class="field inherited"><h4 id="last">
 <button class="show-code">Code</button>
-final <a href="http://api.dartlang.org/dart_async/Future.html">Future</a>&lt;<a href="../safe_http_server/SafeHttpServer.html">T</a>&gt;         <strong>last</strong> <a class="anchor-link"
+final <a href="http://api.dartlang.org/dart_async/Future.html">Future</a>&lt;<a href="../pub.safe_http_server/SafeHttpServer.html">T</a>&gt;         <strong>last</strong> <a class="anchor-link"
             href="#last"
             title="Permalink to SafeHttpServer.last">#</a>
         </h4>
         <div class="inherited-from">inherited from <a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a> </div><div class="doc">
 <p>Returns the last element.</p>
-<p>If <code>this</code> is empty throws a <code>StateError</code>.</p>
+<p>If <code>this</code> is empty throws a <a class="crossref" href="../dart_core/StateError.html">StateError</a>.</p>
 <pre class="source">
 Future&lt;T&gt; get last {
  _FutureImpl&lt;T&gt; future = new _FutureImpl&lt;T&gt;();
@@ -235,9 +250,7 @@ Future&lt;T&gt; get last {
  bool foundResult = false;
  StreamSubscription subscription;
  subscription = this.listen(
-   // TODO(ahe): Restore type when feature is implemented in dart2js
-   // checked mode. http://dartbug.com/7733
-   (/*T*/ value) {
+   (T value) {
      foundResult = true;
      result = value;
    },
@@ -289,10 +302,27 @@ final <a href="http://api.dartlang.org/dart_core/int.html">int</a>         <stro
 <div class="inherited">
 <p>Returns the port that the server is listening on. This can be
 used to get the actual port used when a value of 0 for <code>port</code> is
-specified in the <a class="crossref" href="../safe_http_server/SafeHttpServer.html#bind">bind</a> or <code>bindSecure</code> call.</p>
+specified in the <a class="crossref" href="../pub.safe_http_server/SafeHttpServer.html#bind">bind</a> or <code>bindSecure</code> call.</p>
 <div class="docs-inherited-from">docs inherited from <a href="http://api.dartlang.org/dart_io/HttpServer.html">HttpServer</a> </div></div>
 <pre class="source">
 int get port =&gt; _inner.port;
+</pre>
+</div>
+</div>
+<div class="field inherited"><h4 id="serverHeader">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_core/String.html">String</a>         <strong>serverHeader</strong> <a class="anchor-link"
+            href="#serverHeader"
+            title="Permalink to SafeHttpServer.serverHeader">#</a>
+        </h4>
+        <div class="inherited-from">inherited from <a href="http://api.dartlang.org/dart_io/HttpServer.html">HttpServer</a> </div><div class="doc">
+<p>Set and get the default value of the <code>Server</code> header for all responses
+generated by this <a class="crossref" href="../dart_io/HttpServer.html">HttpServer</a>. The default value is
+<code>Dart/&lt;version&gt; (dart:io)</code>.</p>
+<p>If the serverHeader is set to <code>null</code>, no default <code>Server</code> header will be
+added to each response.</p>
+<pre class="source">
+String serverHeader
 </pre>
 </div>
 </div>
@@ -302,7 +332,7 @@ dynamic <strong>set sessionTimeout</strong>(<a href="http://api.dartlang.org/dar
               title="Permalink to SafeHttpServer.set sessionTimeout">#</a></h4>
 <div class="doc">
 <div class="inherited">
-<p>Sets the timeout, in seconds, for sessions of this <code>HttpServer</code>.
+<p>Sets the timeout, in seconds, for sessions of this <a class="crossref" href="../dart_io/HttpServer.html">HttpServer</a>.
 The default timeout is 20 minutes.</p>
 <div class="docs-inherited-from">docs inherited from <a href="http://api.dartlang.org/dart_io/HttpServer.html">HttpServer</a> </div></div>
 <pre class="source">
@@ -314,13 +344,13 @@ set sessionTimeout(int timeout) {
 </div>
 <div class="field inherited"><h4 id="single">
 <button class="show-code">Code</button>
-final <a href="http://api.dartlang.org/dart_async/Future.html">Future</a>&lt;<a href="../safe_http_server/SafeHttpServer.html">T</a>&gt;         <strong>single</strong> <a class="anchor-link"
+final <a href="http://api.dartlang.org/dart_async/Future.html">Future</a>&lt;<a href="../pub.safe_http_server/SafeHttpServer.html">T</a>&gt;         <strong>single</strong> <a class="anchor-link"
             href="#single"
             title="Permalink to SafeHttpServer.single">#</a>
         </h4>
         <div class="inherited-from">inherited from <a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a> </div><div class="doc">
 <p>Returns the single element.</p>
-<p>If <code>this</code> is empty or has more than one element throws a <code>StateError</code>.</p>
+<p>If <code>this</code> is empty or has more than one element throws a <a class="crossref" href="../dart_core/StateError.html">StateError</a>.</p>
 <pre class="source">
 Future&lt;T&gt; get single {
  _FutureImpl&lt;T&gt; future = new _FutureImpl&lt;T&gt;();
@@ -328,9 +358,7 @@ Future&lt;T&gt; get single {
  bool foundResult = false;
  StreamSubscription subscription;
  subscription = this.listen(
-   // TODO(ahe): Restore type when feature is implemented in dart2js
-   // checked mode. http://dartbug.com/7733
-   (/*T*/ value) {
+   (T value) {
      if (foundResult) {
        subscription.cancel();
        // This is the second element we get.
@@ -360,21 +388,19 @@ Future&lt;T&gt; get single {
 <h3>Methods</h3>
 <div class="method inherited"><h4 id="any">
 <button class="show-code">Code</button>
-<a href="http://api.dartlang.org/dart_async/Future.html">Future</a>&lt;<a href="http://api.dartlang.org/dart_core/bool.html">bool</a>&gt; <strong>any</strong>(<a href="http://api.dartlang.org/dart_core/bool.html">bool</a> test(<a href="../safe_http_server/SafeHttpServer.html">T</a> element)) <a class="anchor-link" href="#any"
+<a href="http://api.dartlang.org/dart_async/Future.html">Future</a>&lt;<a href="http://api.dartlang.org/dart_core/bool.html">bool</a>&gt; <strong>any</strong>(<a href="http://api.dartlang.org/dart_core/bool.html">bool</a> test(<a href="../pub.safe_http_server/SafeHttpServer.html">T</a> element)) <a class="anchor-link" href="#any"
               title="Permalink to SafeHttpServer.any">#</a></h4>
 <div class="inherited-from">inherited from <a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a> </div><div class="doc">
 <p>Checks whether 
 <span class="param">test</span> accepts any element provided by this stream.</p>
-<p>Completes the <code>Future</code> when the answer is known.
-If this stream reports an error, the <code>Future</code> will report that error.</p>
+<p>Completes the <a class="crossref" href="../dart_async/Future.html">Future</a> when the answer is known.
+If this stream reports an error, the <a class="crossref" href="../dart_async/Future.html">Future</a> will report that error.</p>
 <pre class="source">
 Future&lt;bool&gt; any(bool test(T element)) {
  _FutureImpl&lt;bool&gt; future = new _FutureImpl&lt;bool&gt;();
  StreamSubscription subscription;
  subscription = this.listen(
-     // TODO(ahe): Restore type when feature is implemented in dart2js
-     // checked mode. http://dartbug.com/7733
-     (/*T*/ element) {
+     (T element) {
        _runUserCode(
          () =&gt; test(element),
          (bool isMatch) {
@@ -398,19 +424,37 @@ Future&lt;bool&gt; any(bool test(T element)) {
 </div>
 <div class="method inherited"><h4 id="asBroadcastStream">
 <button class="show-code">Code</button>
-<a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a>&lt;<a href="../safe_http_server/SafeHttpServer.html">T</a>&gt; <strong>asBroadcastStream</strong>() <a class="anchor-link" href="#asBroadcastStream"
+<a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a>&lt;<a href="../pub.safe_http_server/SafeHttpServer.html">T</a>&gt; <strong>asBroadcastStream</strong>({void onListen(<a href="http://api.dartlang.org/dart_async/StreamSubscription.html">StreamSubscription</a> subscription), void onCancel(<a href="http://api.dartlang.org/dart_async/StreamSubscription.html">StreamSubscription</a> subscription)}) <a class="anchor-link" href="#asBroadcastStream"
               title="Permalink to SafeHttpServer.asBroadcastStream">#</a></h4>
 <div class="inherited-from">inherited from <a href="http://api.dartlang.org/dart_async/StreamView.html">StreamView</a> </div><div class="doc">
 <div class="inherited">
 <p>Returns a multi-subscription stream that produces the same events as this.</p>
+<p>If this stream is already a broadcast stream, it is returned unmodified.</p>
 <p>If this stream is single-subscription, return a new stream that allows
 multiple subscribers. It will subscribe to this stream when its first
-subscriber is added, and unsubscribe again when the last subscription is
-cancelled.</p>
-<p>If this stream is already a broadcast stream, it is returned unmodified.</p>
-<div class="docs-inherited-from">docs inherited from <a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a>&lt;<a href="../safe_http_server/SafeHttpServer.html">T</a>&gt; </div></div>
+subscriber is added, and will stay subscribed until this stream ends,
+or a callback cancels the subscription.</p>
+<p>If 
+<span class="param">onListen</span> is provided, it is called with a subscription-like object
+that represents the underlying subscription to this stream. It is
+possible to pause, resume or cancel the subscription during the call
+to 
+<span class="param">onListen</span>. It is not possible to change the event handlers, including
+using <a class="crossref" href="../dart_async/StreamSubscription.html#asFuture">StreamSubscription.asFuture</a>.</p>
+<p>If 
+<span class="param">onCancel</span> is provided, it is called in a similar way to 
+<span class="param">onListen</span>
+when the returned stream stops having listener. If it later gets
+a new listener, the 
+<span class="param">onListen</span> function is called again.</p>
+<p>Use the callbacks, for example, for pausing the underlying subscription
+while having no subscribers to prevent losing events, or canceling the
+subscription when there are no listeners.</p>
+<div class="docs-inherited-from">docs inherited from <a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a>&lt;<a href="../pub.safe_http_server/SafeHttpServer.html">T</a>&gt; </div></div>
 <pre class="source">
-Stream&lt;T&gt; asBroadcastStream() =&gt; _stream.asBroadcastStream();
+Stream&lt;T&gt; asBroadcastStream({void onListen(StreamSubscription subscription),
+                            void onCancel(StreamSubscription subscription)})
+   =&gt; _stream.asBroadcastStream(onListen: onListen, onCancel: onCancel);
 </pre>
 </div>
 </div>
@@ -420,8 +464,8 @@ void <strong>close</strong>() <a class="anchor-link" href="#close"
               title="Permalink to SafeHttpServer.close">#</a></h4>
 <div class="doc">
 <div class="inherited">
-<p>Permanently stops this <code>HttpServer</code> from listening for new connections.
-This closes this <code>Stream</code> of <code>HttpRequest</code>s with a done event.</p>
+<p>Permanently stops this <a class="crossref" href="../dart_io/HttpServer.html">HttpServer</a> from listening for new connections.
+This closes this <a class="crossref" href="../dart_async/Stream.html">Stream</a> of <a class="crossref" href="../dart_io/HttpRequest.html">HttpRequest</a>s with a done event.</p>
 <div class="docs-inherited-from">docs inherited from <a href="http://api.dartlang.org/dart_io/HttpServer.html">HttpServer</a> </div></div>
 <pre class="source">
 void close() =&gt; _inner.close();
@@ -434,7 +478,7 @@ void close() =&gt; _inner.close();
               title="Permalink to SafeHttpServer.connectionsInfo">#</a></h4>
 <div class="doc">
 <div class="inherited">
-<p>Returns an <code>HttpConnectionsInfo</code> object summarizing the number of
+<p>Returns an <a class="crossref" href="../dart_io/HttpConnectionsInfo.html">HttpConnectionsInfo</a> object summarizing the number of
 current connections handled by the server.</p>
 <div class="docs-inherited-from">docs inherited from <a href="http://api.dartlang.org/dart_io/HttpServer.html">HttpServer</a> </div></div>
 <pre class="source">
@@ -444,23 +488,21 @@ HttpConnectionsInfo connectionsInfo() =&gt; _inner.connectionsInfo();
 </div>
 <div class="method inherited"><h4 id="contains">
 <button class="show-code">Code</button>
-<a href="http://api.dartlang.org/dart_async/Future.html">Future</a>&lt;<a href="http://api.dartlang.org/dart_core/bool.html">bool</a>&gt; <strong>contains</strong>(<a href="../safe_http_server/SafeHttpServer.html">T</a> match) <a class="anchor-link" href="#contains"
+<a href="http://api.dartlang.org/dart_async/Future.html">Future</a>&lt;<a href="http://api.dartlang.org/dart_core/bool.html">bool</a>&gt; <strong>contains</strong>(<a href="http://api.dartlang.org/dart_core/Object.html">Object</a> needle) <a class="anchor-link" href="#contains"
               title="Permalink to SafeHttpServer.contains">#</a></h4>
 <div class="inherited-from">inherited from <a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a> </div><div class="doc">
 <p>Checks whether 
-<span class="param">match</span> occurs in the elements provided by this stream.</p>
-<p>Completes the <code>Future</code> when the answer is known.
-If this stream reports an error, the <code>Future</code> will report that error.</p>
+<span class="param">needle</span> occurs in the elements provided by this stream.</p>
+<p>Completes the <a class="crossref" href="../dart_async/Future.html">Future</a> when the answer is known.
+If this stream reports an error, the <a class="crossref" href="../dart_async/Future.html">Future</a> will report that error.</p>
 <pre class="source">
-Future&lt;bool&gt; contains(T match) {
+Future&lt;bool&gt; contains(Object needle) {
  _FutureImpl&lt;bool&gt; future = new _FutureImpl&lt;bool&gt;();
  StreamSubscription subscription;
  subscription = this.listen(
-     // TODO(ahe): Restore type when feature is implemented in dart2js
-     // checked mode. http://dartbug.com/7733
-     (/*T*/ element) {
+     (T element) {
        _runUserCode(
-         () =&gt; (element == match),
+         () =&gt; (element == needle),
          (bool isMatch) {
            if (isMatch) {
              subscription.cancel();
@@ -482,7 +524,7 @@ Future&lt;bool&gt; contains(T match) {
 </div>
 <div class="method inherited"><h4 id="distinct">
 <button class="show-code">Code</button>
-<a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a>&lt;<a href="../safe_http_server/SafeHttpServer.html">T</a>&gt; <strong>distinct</strong>([<a href="http://api.dartlang.org/dart_core/bool.html">bool</a> equals(<a href="../safe_http_server/SafeHttpServer.html">T</a> previous, <a href="../safe_http_server/SafeHttpServer.html">T</a> next)]) <a class="anchor-link" href="#distinct"
+<a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a>&lt;<a href="../pub.safe_http_server/SafeHttpServer.html">T</a>&gt; <strong>distinct</strong>([<a href="http://api.dartlang.org/dart_core/bool.html">bool</a> equals(<a href="../pub.safe_http_server/SafeHttpServer.html">T</a> previous, <a href="../pub.safe_http_server/SafeHttpServer.html">T</a> next)]) <a class="anchor-link" href="#distinct"
               title="Permalink to SafeHttpServer.distinct">#</a></h4>
 <div class="inherited-from">inherited from <a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a> </div><div class="doc">
 <p>Skips data events if they are equal to the previous data event.</p>
@@ -498,9 +540,28 @@ Stream&lt;T&gt; distinct([bool equals(T previous, T next)]) {
 </pre>
 </div>
 </div>
+<div class="method inherited"><h4 id="drain">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_async/Future.html">Future</a> <strong>drain</strong>([futureValue]) <a class="anchor-link" href="#drain"
+              title="Permalink to SafeHttpServer.drain">#</a></h4>
+<div class="inherited-from">inherited from <a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a> </div><div class="doc">
+<p>Discards all data on the stream, but signals when it's done or an error
+occured.</p>
+<p>When subscribing using <a class="crossref" href="../dart_async/Stream.html#drain">drain</a>, cancelOnError will be true. This means
+that the future will complete with the first error on the stream and then
+cancel the subscription.</p>
+<p>In case of a <code>done</code> event the future completes with the given
+
+<span class="param">futureValue</span>.</p>
+<pre class="source">
+Future drain([var futureValue]) =&gt; listen(null, cancelOnError: true)
+   .asFuture(futureValue);
+</pre>
+</div>
+</div>
 <div class="method inherited"><h4 id="elementAt">
 <button class="show-code">Code</button>
-<a href="http://api.dartlang.org/dart_async/Future.html">Future</a>&lt;<a href="../safe_http_server/SafeHttpServer.html">T</a>&gt; <strong>elementAt</strong>(<a href="http://api.dartlang.org/dart_core/int.html">int</a> index) <a class="anchor-link" href="#elementAt"
+<a href="http://api.dartlang.org/dart_async/Future.html">Future</a>&lt;<a href="../pub.safe_http_server/SafeHttpServer.html">T</a>&gt; <strong>elementAt</strong>(<a href="http://api.dartlang.org/dart_core/int.html">int</a> index) <a class="anchor-link" href="#elementAt"
               title="Permalink to SafeHttpServer.elementAt">#</a></h4>
 <div class="inherited-from">inherited from <a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a> </div><div class="doc">
 <p>Returns the value of the 
@@ -515,9 +576,7 @@ Future&lt;T&gt; elementAt(int index) {
  _FutureImpl&lt;T&gt; future = new _FutureImpl&lt;T&gt;();
  StreamSubscription subscription;
  subscription = this.listen(
-   // TODO(ahe): Restore type when feature is implemented in dart2js
-   // checked mode. http://dartbug.com/7733
-   (/*T*/ value) {
+   (T value) {
      if (index == 0) {
        subscription.cancel();
        future._setValue(value);
@@ -537,21 +596,19 @@ Future&lt;T&gt; elementAt(int index) {
 </div>
 <div class="method inherited"><h4 id="every">
 <button class="show-code">Code</button>
-<a href="http://api.dartlang.org/dart_async/Future.html">Future</a>&lt;<a href="http://api.dartlang.org/dart_core/bool.html">bool</a>&gt; <strong>every</strong>(<a href="http://api.dartlang.org/dart_core/bool.html">bool</a> test(<a href="../safe_http_server/SafeHttpServer.html">T</a> element)) <a class="anchor-link" href="#every"
+<a href="http://api.dartlang.org/dart_async/Future.html">Future</a>&lt;<a href="http://api.dartlang.org/dart_core/bool.html">bool</a>&gt; <strong>every</strong>(<a href="http://api.dartlang.org/dart_core/bool.html">bool</a> test(<a href="../pub.safe_http_server/SafeHttpServer.html">T</a> element)) <a class="anchor-link" href="#every"
               title="Permalink to SafeHttpServer.every">#</a></h4>
 <div class="inherited-from">inherited from <a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a> </div><div class="doc">
 <p>Checks whether 
 <span class="param">test</span> accepts all elements provided by this stream.</p>
-<p>Completes the <code>Future</code> when the answer is known.
-If this stream reports an error, the <code>Future</code> will report that error.</p>
+<p>Completes the <a class="crossref" href="../dart_async/Future.html">Future</a> when the answer is known.
+If this stream reports an error, the <a class="crossref" href="../dart_async/Future.html">Future</a> will report that error.</p>
 <pre class="source">
 Future&lt;bool&gt; every(bool test(T element)) {
  _FutureImpl&lt;bool&gt; future = new _FutureImpl&lt;bool&gt;();
  StreamSubscription subscription;
  subscription = this.listen(
-     // TODO(ahe): Restore type when feature is implemented in dart2js
-     // checked mode. http://dartbug.com/7733
-     (/*T*/ element) {
+     (T element) {
        _runUserCode(
          () =&gt; test(element),
          (bool isMatch) {
@@ -575,12 +632,12 @@ Future&lt;bool&gt; every(bool test(T element)) {
 </div>
 <div class="method inherited"><h4 id="expand">
 <button class="show-code">Code</button>
-<a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a> <strong>expand</strong>(<a href="http://api.dartlang.org/dart_core/Iterable.html">Iterable</a> convert(<a href="../safe_http_server/SafeHttpServer.html">T</a> value)) <a class="anchor-link" href="#expand"
+<a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a> <strong>expand</strong>(<a href="http://api.dartlang.org/dart_core/Iterable.html">Iterable</a> convert(<a href="../pub.safe_http_server/SafeHttpServer.html">T</a> value)) <a class="anchor-link" href="#expand"
               title="Permalink to SafeHttpServer.expand">#</a></h4>
 <div class="inherited-from">inherited from <a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a> </div><div class="doc">
 <p>Creates a new stream from this stream that converts each element
 into zero or more events.</p>
-<p>Each incoming event is converted to an <code>Iterable</code> of new events,
+<p>Each incoming event is converted to an <a class="crossref" href="../dart_core/Iterable.html">Iterable</a> of new events,
 and each of these new events are then sent by the returned stream
 in order.</p>
 <pre class="source">
@@ -592,7 +649,7 @@ Stream expand(Iterable convert(T value)) {
 </div>
 <div class="method inherited"><h4 id="firstWhere">
 <button class="show-code">Code</button>
-<a href="http://api.dartlang.org/dart_async/Future.html">Future</a>&lt;<a href="../safe_http_server/SafeHttpServer.html">T</a>&gt; <strong>firstWhere</strong>(<a href="http://api.dartlang.org/dart_core/bool.html">bool</a> test(<a href="../safe_http_server/SafeHttpServer.html">T</a> value), {<a href="../safe_http_server/SafeHttpServer.html">T</a> defaultValue()}) <a class="anchor-link" href="#firstWhere"
+<a href="http://api.dartlang.org/dart_async/Future.html">Future</a>&lt;dynamic&gt; <strong>firstWhere</strong>(<a href="http://api.dartlang.org/dart_core/bool.html">bool</a> test(<a href="../pub.safe_http_server/SafeHttpServer.html">T</a> element), {<a href="http://api.dartlang.org/dart_core/Object.html">Object</a> defaultValue()}) <a class="anchor-link" href="#firstWhere"
               title="Permalink to SafeHttpServer.firstWhere">#</a></h4>
 <div class="inherited-from">inherited from <a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a> </div><div class="doc">
 <p>Finds the first element of this stream matching 
@@ -610,13 +667,11 @@ with no
 <span class="param">defaultValue</span> function provided, the future will receive an
 error.</p>
 <pre class="source">
-Future&lt;T&gt; firstWhere(bool test(T value), {T defaultValue()}) {
- _FutureImpl&lt;T&gt; future = new _FutureImpl&lt;T&gt;();
+Future&lt;dynamic&gt; firstWhere(bool test(T element), {Object defaultValue()}) {
+ _FutureImpl&lt;dynamic&gt; future = new _FutureImpl();
  StreamSubscription subscription;
  subscription = this.listen(
-   // TODO(ahe): Restore type when feature is implemented in dart2js
-   // checked mode. http://dartbug.com/7733
-   (/*T*/ value) {
+   (T value) {
      _runUserCode(
        () =&gt; test(value),
        (bool isMatch) {
@@ -644,7 +699,7 @@ Future&lt;T&gt; firstWhere(bool test(T value), {T defaultValue()}) {
 </div>
 <div class="method inherited"><h4 id="fold">
 <button class="show-code">Code</button>
-<a href="http://api.dartlang.org/dart_async/Future.html">Future</a> <strong>fold</strong>(initialValue, combine(previous, <a href="../safe_http_server/SafeHttpServer.html">T</a> element)) <a class="anchor-link" href="#fold"
+<a href="http://api.dartlang.org/dart_async/Future.html">Future</a> <strong>fold</strong>(initialValue, combine(previous, <a href="../pub.safe_http_server/SafeHttpServer.html">T</a> element)) <a class="anchor-link" href="#fold"
               title="Permalink to SafeHttpServer.fold">#</a></h4>
 <div class="inherited-from">inherited from <a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a> </div><div class="doc">
 <p>Reduces a sequence of values by repeatedly applying 
@@ -655,9 +710,7 @@ Future fold(var initialValue, combine(var previous, T element)) {
  var value = initialValue;
  StreamSubscription subscription;
  subscription = this.listen(
-   // TODO(ahe): Restore type when feature is implemented in dart2js
-   // checked mode. http://dartbug.com/7733
-   (/*T*/ element) {
+   (T element) {
      _runUserCode(
        () =&gt; combine(value, element),
        (newValue) { value = newValue; },
@@ -678,12 +731,12 @@ Future fold(var initialValue, combine(var previous, T element)) {
 </div>
 <div class="method inherited"><h4 id="forEach">
 <button class="show-code">Code</button>
-<a href="http://api.dartlang.org/dart_async/Future.html">Future</a> <strong>forEach</strong>(void action(<a href="../safe_http_server/SafeHttpServer.html">T</a> element)) <a class="anchor-link" href="#forEach"
+<a href="http://api.dartlang.org/dart_async/Future.html">Future</a> <strong>forEach</strong>(void action(<a href="../pub.safe_http_server/SafeHttpServer.html">T</a> element)) <a class="anchor-link" href="#forEach"
               title="Permalink to SafeHttpServer.forEach">#</a></h4>
 <div class="inherited-from">inherited from <a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a> </div><div class="doc">
 <p>Executes 
 <span class="param">action</span> on each data event of the stream.</p>
-<p>Completes the returned <code>Future</code> when all events of the stream
+<p>Completes the returned <a class="crossref" href="../dart_async/Future.html">Future</a> when all events of the stream
 have been processed. Completes the future with an error if the
 stream has an error event, or if 
 <span class="param">action</span> throws.</p>
@@ -692,9 +745,7 @@ Future forEach(void action(T element)) {
  _FutureImpl future = new _FutureImpl();
  StreamSubscription subscription;
  subscription = this.listen(
-     // TODO(ahe): Restore type when feature is implemented in dart2js
-     // checked mode. http://dartbug.com/7733
-     (/*T*/ element) {
+     (T element) {
        _runUserCode(
          () =&gt; action(element),
          (_) {},
@@ -713,7 +764,7 @@ Future forEach(void action(T element)) {
 </div>
 <div class="method inherited"><h4 id="handleError">
 <button class="show-code">Code</button>
-<a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a>&lt;<a href="../safe_http_server/SafeHttpServer.html">T</a>&gt; <strong>handleError</strong>(void handle(error), {<a href="http://api.dartlang.org/dart_core/bool.html">bool</a> test(error)}) <a class="anchor-link" href="#handleError"
+<a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a>&lt;<a href="../pub.safe_http_server/SafeHttpServer.html">T</a>&gt; <strong>handleError</strong>(void handle(error), {<a href="http://api.dartlang.org/dart_core/bool.html">bool</a> test(error)}) <a class="anchor-link" href="#handleError"
               title="Permalink to SafeHttpServer.handleError">#</a></h4>
 <div class="inherited-from">inherited from <a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a> </div><div class="doc">
 <p>Creates a wrapper Stream that intercepts some errors from this stream.</p>
@@ -738,26 +789,67 @@ Stream&lt;T&gt; handleError(void handle( error), { bool test(error) }) {
 </pre>
 </div>
 </div>
+<div class="method inherited"><h4 id="join">
+<button class="show-code">Code</button>
+<a href="http://api.dartlang.org/dart_async/Future.html">Future</a>&lt;<a href="http://api.dartlang.org/dart_core/String.html">String</a>&gt; <strong>join</strong>([<a href="http://api.dartlang.org/dart_core/String.html">String</a> separator = ""]) <a class="anchor-link" href="#join"
+              title="Permalink to SafeHttpServer.join">#</a></h4>
+<div class="inherited-from">inherited from <a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a> </div><div class="doc">
+<p>Collects string of data events' string representations.</p>
+<p>If 
+<span class="param">separator</span> is provided, it is inserted between any two
+elements.</p>
+<p>Any error in the stream causes the future to complete with that
+error. Otherwise it completes with the collected string when
+the "done" event arrives.</p>
+<pre class="source">
+Future&lt;String&gt; join([String separator = ""]) {
+ _FutureImpl&lt;String&gt; result = new _FutureImpl&lt;String&gt;();
+ StringBuffer buffer = new StringBuffer();
+ StreamSubscription subscription;
+ bool first = true;
+ subscription = this.listen(
+   (T element) {
+     if (!first) {
+       buffer.write(separator);
+     }
+     first = false;
+     try {
+       buffer.write(element);
+     } catch (e, s) {
+       subscription.cancel();
+       result._setError(_asyncError(e, s));
+     }
+   },
+   onError: (e) {
+     result._setError(e);
+   },
+   onDone: () {
+     result._setValue(buffer.toString());
+   },
+   cancelOnError: true);
+ return result;
+}
+</pre>
+</div>
+</div>
 <div class="method inherited"><h4 id="lastWhere">
 <button class="show-code">Code</button>
-<a href="http://api.dartlang.org/dart_async/Future.html">Future</a>&lt;<a href="../safe_http_server/SafeHttpServer.html">T</a>&gt; <strong>lastWhere</strong>(<a href="http://api.dartlang.org/dart_core/bool.html">bool</a> test(<a href="../safe_http_server/SafeHttpServer.html">T</a> value), {<a href="../safe_http_server/SafeHttpServer.html">T</a> defaultValue()}) <a class="anchor-link" href="#lastWhere"
+<a href="http://api.dartlang.org/dart_async/Future.html">Future</a>&lt;dynamic&gt; <strong>lastWhere</strong>(<a href="http://api.dartlang.org/dart_core/bool.html">bool</a> test(<a href="../pub.safe_http_server/SafeHttpServer.html">T</a> element), {<a href="http://api.dartlang.org/dart_core/Object.html">Object</a> defaultValue()}) <a class="anchor-link" href="#lastWhere"
               title="Permalink to SafeHttpServer.lastWhere">#</a></h4>
 <div class="inherited-from">inherited from <a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a> </div><div class="doc">
 <p>Finds the last element in this stream matching 
 <span class="param">test</span>.</p>
-<p>As <code>firstWhere</code>, except that the last matching element is found.
+<p>As <a class="crossref" href="../dart_async/Stream.html#firstWhere">firstWhere</a>, except that the last matching element is found.
 That means that the result cannot be provided before this stream
 is done.</p>
 <pre class="source">
-Future&lt;T&gt; lastWhere(bool test(T value), {T defaultValue()}) {
- _FutureImpl&lt;T&gt; future = new _FutureImpl&lt;T&gt;();
+Future&lt;dynamic&gt; lastWhere(bool test(T element), {Object defaultValue()}) {
+ _FutureImpl&lt;dynamic&gt; future = new _FutureImpl();
  T result = null;
  bool foundResult = false;
  StreamSubscription subscription;
  subscription = this.listen(
-   // TODO(ahe): Restore type when feature is implemented in dart2js
-   // checked mode. http://dartbug.com/7733
-   (/*T*/ value) {
+   (T value) {
      _runUserCode(
        () =&gt; true == test(value),
        (bool isMatch) {
@@ -806,7 +898,7 @@ object describing the error.</p>
 <p>If 
 <span class="param">cancelOnError</span> is true, the subscription is ended when
 the first error is reported. The default is false.</p>
-<div class="docs-inherited-from">docs inherited from <a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a>&lt;<a href="../safe_http_server/SafeHttpServer.html">T</a>&gt; </div></div>
+<div class="docs-inherited-from">docs inherited from <a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a>&lt;<a href="../pub.safe_http_server/SafeHttpServer.html">T</a>&gt; </div></div>
 <pre class="source">
 StreamSubscription&lt;HttpRequest&gt; listen(void onData(HttpRequest value),
    {void onError(error), void onDone(),
@@ -818,9 +910,9 @@ StreamSubscription&lt;HttpRequest&gt; listen(void onData(HttpRequest value),
    // Ignore socket error 104, which is caused by a request being cancelled
    // before it writes any headers. There's no reason to care about such
    // requests.
-   if (error is SocketIOException &amp;&amp; error.osError.errorCode == 104) return;
+   if (error is SocketException &amp;&amp; error.osError.errorCode == 104) return;
    // Ignore any parsing errors, which come from malformed requests.
-   if (error is HttpParserException) return;
+   if (error is HttpException) return;
    // Manually handle cancelOnError so the above (ignored) errors don't
    // cause unsubscription.
    if (cancelOnError) subscription.cancel();
@@ -833,7 +925,7 @@ StreamSubscription&lt;HttpRequest&gt; listen(void onData(HttpRequest value),
 </div>
 <div class="method inherited"><h4 id="map">
 <button class="show-code">Code</button>
-<a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a> <strong>map</strong>(convert(<a href="../safe_http_server/SafeHttpServer.html">T</a> event)) <a class="anchor-link" href="#map"
+<a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a> <strong>map</strong>(convert(<a href="../pub.safe_http_server/SafeHttpServer.html">T</a> event)) <a class="anchor-link" href="#map"
               title="Permalink to SafeHttpServer.map">#</a></h4>
 <div class="inherited-from">inherited from <a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a> </div><div class="doc">
 <p>Creates a new stream that converts each element of this stream
@@ -848,10 +940,10 @@ Stream map(convert(T event)) {
 </div>
 <div class="method inherited"><h4 id="pipe">
 <button class="show-code">Code</button>
-<a href="http://api.dartlang.org/dart_async/Future.html">Future</a> <strong>pipe</strong>(<a href="http://api.dartlang.org/dart_async/StreamConsumer.html">StreamConsumer</a>&lt;<a href="../safe_http_server/SafeHttpServer.html">T</a>&gt; streamConsumer) <a class="anchor-link" href="#pipe"
+<a href="http://api.dartlang.org/dart_async/Future.html">Future</a> <strong>pipe</strong>(<a href="http://api.dartlang.org/dart_async/StreamConsumer.html">StreamConsumer</a>&lt;<a href="../pub.safe_http_server/SafeHttpServer.html">T</a>&gt; streamConsumer) <a class="anchor-link" href="#pipe"
               title="Permalink to SafeHttpServer.pipe">#</a></h4>
 <div class="inherited-from">inherited from <a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a> </div><div class="doc">
-<p>Binds this stream as the input of the provided <code>StreamConsumer</code>.</p>
+<p>Binds this stream as the input of the provided <a class="crossref" href="../dart_async/StreamConsumer.html">StreamConsumer</a>.</p>
 <pre class="source">
 Future pipe(StreamConsumer&lt;T&gt; streamConsumer) {
  return streamConsumer.addStream(this).then((_) =&gt; streamConsumer.close());
@@ -861,7 +953,7 @@ Future pipe(StreamConsumer&lt;T&gt; streamConsumer) {
 </div>
 <div class="method inherited"><h4 id="reduce">
 <button class="show-code">Code</button>
-<a href="http://api.dartlang.org/dart_async/Future.html">Future</a>&lt;<a href="../safe_http_server/SafeHttpServer.html">T</a>&gt; <strong>reduce</strong>(<a href="../safe_http_server/SafeHttpServer.html">T</a> combine(<a href="../safe_http_server/SafeHttpServer.html">T</a> previous, <a href="../safe_http_server/SafeHttpServer.html">T</a> element)) <a class="anchor-link" href="#reduce"
+<a href="http://api.dartlang.org/dart_async/Future.html">Future</a>&lt;<a href="../pub.safe_http_server/SafeHttpServer.html">T</a>&gt; <strong>reduce</strong>(<a href="../pub.safe_http_server/SafeHttpServer.html">T</a> combine(<a href="../pub.safe_http_server/SafeHttpServer.html">T</a> previous, <a href="../pub.safe_http_server/SafeHttpServer.html">T</a> element)) <a class="anchor-link" href="#reduce"
               title="Permalink to SafeHttpServer.reduce">#</a></h4>
 <div class="inherited-from">inherited from <a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a> </div><div class="doc">
 <p>Reduces a sequence of values by repeatedly applying 
@@ -873,9 +965,7 @@ Future&lt;T&gt; reduce(T combine(T previous, T element)) {
  T value;
  StreamSubscription subscription;
  subscription = this.listen(
-   // TODO(ahe): Restore type when feature is implemented in dart2js
-   // checked mode. http://dartbug.com/7733
-   (/* T */ element) {
+   (T element) {
      if (seenFirst) {
        _runUserCode(() =&gt; combine(value, element),
                     (T newValue) { value = newValue; },
@@ -902,7 +992,7 @@ Future&lt;T&gt; reduce(T combine(T previous, T element)) {
 </div>
 <div class="method inherited"><h4 id="singleWhere">
 <button class="show-code">Code</button>
-<a href="http://api.dartlang.org/dart_async/Future.html">Future</a>&lt;<a href="../safe_http_server/SafeHttpServer.html">T</a>&gt; <strong>singleWhere</strong>(<a href="http://api.dartlang.org/dart_core/bool.html">bool</a> test(<a href="../safe_http_server/SafeHttpServer.html">T</a> value)) <a class="anchor-link" href="#singleWhere"
+<a href="http://api.dartlang.org/dart_async/Future.html">Future</a>&lt;<a href="../pub.safe_http_server/SafeHttpServer.html">T</a>&gt; <strong>singleWhere</strong>(<a href="http://api.dartlang.org/dart_core/bool.html">bool</a> test(<a href="../pub.safe_http_server/SafeHttpServer.html">T</a> element)) <a class="anchor-link" href="#singleWhere"
               title="Permalink to SafeHttpServer.singleWhere">#</a></h4>
 <div class="inherited-from">inherited from <a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a> </div><div class="doc">
 <p>Finds the single element in this stream matching 
@@ -910,15 +1000,13 @@ Future&lt;T&gt; reduce(T combine(T previous, T element)) {
 <p>Like <code>lastMatch</code>, except that it is an error if more than one
 matching element occurs in the stream.</p>
 <pre class="source">
-Future&lt;T&gt; singleWhere(bool test(T value)) {
+Future&lt;T&gt; singleWhere(bool test(T element)) {
  _FutureImpl&lt;T&gt; future = new _FutureImpl&lt;T&gt;();
  T result = null;
  bool foundResult = false;
  StreamSubscription subscription;
  subscription = this.listen(
-   // TODO(ahe): Restore type when feature is implemented in dart2js
-   // checked mode. http://dartbug.com/7733
-   (/*T*/ value) {
+   (T value) {
      _runUserCode(
        () =&gt; true == test(value),
        (bool isMatch) {
@@ -952,7 +1040,7 @@ Future&lt;T&gt; singleWhere(bool test(T value)) {
 </div>
 <div class="method inherited"><h4 id="skip">
 <button class="show-code">Code</button>
-<a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a>&lt;<a href="../safe_http_server/SafeHttpServer.html">T</a>&gt; <strong>skip</strong>(<a href="http://api.dartlang.org/dart_core/int.html">int</a> count) <a class="anchor-link" href="#skip"
+<a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a>&lt;<a href="../pub.safe_http_server/SafeHttpServer.html">T</a>&gt; <strong>skip</strong>(<a href="http://api.dartlang.org/dart_core/int.html">int</a> count) <a class="anchor-link" href="#skip"
               title="Permalink to SafeHttpServer.skip">#</a></h4>
 <div class="inherited-from">inherited from <a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a> </div><div class="doc">
 <p>Skips the first 
@@ -966,7 +1054,7 @@ Stream&lt;T&gt; skip(int count) {
 </div>
 <div class="method inherited"><h4 id="skipWhile">
 <button class="show-code">Code</button>
-<a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a>&lt;<a href="../safe_http_server/SafeHttpServer.html">T</a>&gt; <strong>skipWhile</strong>(<a href="http://api.dartlang.org/dart_core/bool.html">bool</a> test(<a href="../safe_http_server/SafeHttpServer.html">T</a> value)) <a class="anchor-link" href="#skipWhile"
+<a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a>&lt;<a href="../pub.safe_http_server/SafeHttpServer.html">T</a>&gt; <strong>skipWhile</strong>(<a href="http://api.dartlang.org/dart_core/bool.html">bool</a> test(<a href="../pub.safe_http_server/SafeHttpServer.html">T</a> element)) <a class="anchor-link" href="#skipWhile"
               title="Permalink to SafeHttpServer.skipWhile">#</a></h4>
 <div class="inherited-from">inherited from <a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a> </div><div class="doc">
 <p>Skip data events from this stream while they are matched by 
@@ -976,7 +1064,7 @@ Stream&lt;T&gt; skip(int count) {
 <span class="param">test</span> returns true for the
 event data, the returned stream will have the same events as this stream.</p>
 <pre class="source">
-Stream&lt;T&gt; skipWhile(bool test(T value)) {
+Stream&lt;T&gt; skipWhile(bool test(T element)) {
  return new _SkipWhileStream(this, test);
 }
 </pre>
@@ -984,7 +1072,7 @@ Stream&lt;T&gt; skipWhile(bool test(T value)) {
 </div>
 <div class="method inherited"><h4 id="take">
 <button class="show-code">Code</button>
-<a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a>&lt;<a href="../safe_http_server/SafeHttpServer.html">T</a>&gt; <strong>take</strong>(<a href="http://api.dartlang.org/dart_core/int.html">int</a> count) <a class="anchor-link" href="#take"
+<a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a>&lt;<a href="../pub.safe_http_server/SafeHttpServer.html">T</a>&gt; <strong>take</strong>(<a href="http://api.dartlang.org/dart_core/int.html">int</a> count) <a class="anchor-link" href="#take"
               title="Permalink to SafeHttpServer.take">#</a></h4>
 <div class="inherited-from">inherited from <a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a> </div><div class="doc">
 <p>Provides at most the first <code>n</code> values of this stream.</p>
@@ -1002,7 +1090,7 @@ Stream&lt;T&gt; take(int count) {
 </div>
 <div class="method inherited"><h4 id="takeWhile">
 <button class="show-code">Code</button>
-<a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a>&lt;<a href="../safe_http_server/SafeHttpServer.html">T</a>&gt; <strong>takeWhile</strong>(<a href="http://api.dartlang.org/dart_core/bool.html">bool</a> test(<a href="../safe_http_server/SafeHttpServer.html">T</a> value)) <a class="anchor-link" href="#takeWhile"
+<a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a>&lt;<a href="../pub.safe_http_server/SafeHttpServer.html">T</a>&gt; <strong>takeWhile</strong>(<a href="http://api.dartlang.org/dart_core/bool.html">bool</a> test(<a href="../pub.safe_http_server/SafeHttpServer.html">T</a> element)) <a class="anchor-link" href="#takeWhile"
               title="Permalink to SafeHttpServer.takeWhile">#</a></h4>
 <div class="inherited-from">inherited from <a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a> </div><div class="doc">
 <p>Forwards data events while 
@@ -1014,7 +1102,7 @@ when either this stream is done, or when this stream first provides
 a value that 
 <span class="param">test</span> doesn't accept.</p>
 <pre class="source">
-Stream&lt;T&gt; takeWhile(bool test(T value)) {
+Stream&lt;T&gt; takeWhile(bool test(T element)) {
  return new _TakeWhileStream(this, test);
 }
 </pre>
@@ -1022,18 +1110,16 @@ Stream&lt;T&gt; takeWhile(bool test(T value)) {
 </div>
 <div class="method inherited"><h4 id="toList">
 <button class="show-code">Code</button>
-<a href="http://api.dartlang.org/dart_async/Future.html">Future</a>&lt;<a href="http://api.dartlang.org/dart_core/List.html">List</a>&lt;<a href="../safe_http_server/SafeHttpServer.html">T</a>&gt;&gt; <strong>toList</strong>() <a class="anchor-link" href="#toList"
+<a href="http://api.dartlang.org/dart_async/Future.html">Future</a>&lt;<a href="http://api.dartlang.org/dart_core/List.html">List</a>&lt;<a href="../pub.safe_http_server/SafeHttpServer.html">T</a>&gt;&gt; <strong>toList</strong>() <a class="anchor-link" href="#toList"
               title="Permalink to SafeHttpServer.toList">#</a></h4>
 <div class="inherited-from">inherited from <a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a> </div><div class="doc">
-<p>Collects the data of this stream in a <code>List</code>. </p>
+<p>Collects the data of this stream in a <a class="crossref" href="../dart_core/List.html">List</a>. </p>
 <pre class="source">
 Future&lt;List&lt;T&gt;&gt; toList() {
  List&lt;T&gt; result = &lt;T&gt;[];
  _FutureImpl&lt;List&lt;T&gt;&gt; future = new _FutureImpl&lt;List&lt;T&gt;&gt;();
  this.listen(
-   // TODO(ahe): Restore type when feature is implemented in dart2js
-   // checked mode. http://dartbug.com/7733
-   (/*T*/ data) {
+   (T data) {
      result.add(data);
    },
    onError: future._setError,
@@ -1048,18 +1134,16 @@ Future&lt;List&lt;T&gt;&gt; toList() {
 </div>
 <div class="method inherited"><h4 id="toSet">
 <button class="show-code">Code</button>
-<a href="http://api.dartlang.org/dart_async/Future.html">Future</a>&lt;<a href="http://api.dartlang.org/dart_core/Set.html">Set</a>&lt;<a href="../safe_http_server/SafeHttpServer.html">T</a>&gt;&gt; <strong>toSet</strong>() <a class="anchor-link" href="#toSet"
+<a href="http://api.dartlang.org/dart_async/Future.html">Future</a>&lt;<a href="http://api.dartlang.org/dart_core/Set.html">Set</a>&lt;<a href="../pub.safe_http_server/SafeHttpServer.html">T</a>&gt;&gt; <strong>toSet</strong>() <a class="anchor-link" href="#toSet"
               title="Permalink to SafeHttpServer.toSet">#</a></h4>
 <div class="inherited-from">inherited from <a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a> </div><div class="doc">
-<p>Collects the data of this stream in a <code>Set</code>. </p>
+<p>Collects the data of this stream in a <a class="crossref" href="../dart_core/Set.html">Set</a>. </p>
 <pre class="source">
 Future&lt;Set&lt;T&gt;&gt; toSet() {
  Set&lt;T&gt; result = new Set&lt;T&gt;();
  _FutureImpl&lt;Set&lt;T&gt;&gt; future = new _FutureImpl&lt;Set&lt;T&gt;&gt;();
  this.listen(
-   // TODO(ahe): Restore type when feature is implemented in dart2js
-   // checked mode. http://dartbug.com/7733
-   (/*T*/ data) {
+   (T data) {
      result.add(data);
    },
    onError: future._setError,
@@ -1074,10 +1158,10 @@ Future&lt;Set&lt;T&gt;&gt; toSet() {
 </div>
 <div class="method inherited"><h4 id="transform">
 <button class="show-code">Code</button>
-<a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a> <strong>transform</strong>(<a href="http://api.dartlang.org/dart_async/StreamTransformer.html">StreamTransformer</a>&lt;<a href="../safe_http_server/SafeHttpServer.html">T</a>, dynamic&gt; streamTransformer) <a class="anchor-link" href="#transform"
+<a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a> <strong>transform</strong>(<a href="http://api.dartlang.org/dart_async/StreamTransformer.html">StreamTransformer</a>&lt;<a href="../pub.safe_http_server/SafeHttpServer.html">T</a>, dynamic&gt; streamTransformer) <a class="anchor-link" href="#transform"
               title="Permalink to SafeHttpServer.transform">#</a></h4>
 <div class="inherited-from">inherited from <a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a> </div><div class="doc">
-<p>Chains this stream as the input of the provided <code>StreamTransformer</code>.</p>
+<p>Chains this stream as the input of the provided <a class="crossref" href="../dart_async/StreamTransformer.html">StreamTransformer</a>.</p>
 <p>Returns the result of <code>streamTransformer.bind</code> itself.</p>
 <pre class="source">
 Stream transform(StreamTransformer&lt;T, dynamic&gt; streamTransformer) {
@@ -1088,7 +1172,7 @@ Stream transform(StreamTransformer&lt;T, dynamic&gt; streamTransformer) {
 </div>
 <div class="method inherited"><h4 id="where">
 <button class="show-code">Code</button>
-<a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a>&lt;<a href="../safe_http_server/SafeHttpServer.html">T</a>&gt; <strong>where</strong>(<a href="http://api.dartlang.org/dart_core/bool.html">bool</a> test(<a href="../safe_http_server/SafeHttpServer.html">T</a> event)) <a class="anchor-link" href="#where"
+<a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a>&lt;<a href="../pub.safe_http_server/SafeHttpServer.html">T</a>&gt; <strong>where</strong>(<a href="http://api.dartlang.org/dart_core/bool.html">bool</a> test(<a href="../pub.safe_http_server/SafeHttpServer.html">T</a> event)) <a class="anchor-link" href="#where"
               title="Permalink to SafeHttpServer.where">#</a></h4>
 <div class="inherited-from">inherited from <a href="http://api.dartlang.org/dart_async/Stream.html">Stream</a> </div><div class="doc">
 <p>Creates a new stream from this stream that discards some data events.</p>
