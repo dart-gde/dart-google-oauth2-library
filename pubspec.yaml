@@ -3,6 +3,7 @@ version: 0.2.16-dev
 authors:
 - Gerwin Sturm <scarygami@gmail.com>
 - Adam Singer <financeCoding@gmail.com>
+- Kevin Moore <kevin@thinkpixellab.com>
 description: Library to use for Google OAuth2 authentication / Client-side flow
 homepage: https://github.com/dart-gde/dart-google-oauth2-library
 environment:
@@ -14,4 +15,4 @@ dependencies:
   path: '>=0.6.5'
 dev_dependencies:
   browser: '>=0.6.5'
-  hop: '>=0.23.0'
+  hop: '>=0.24.0'
