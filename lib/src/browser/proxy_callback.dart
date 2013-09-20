@@ -30,7 +30,10 @@ class _ProxyChannel {
   }
 
   void _onMessage(MessageEvent event) {
-    if (event.origin != _expectedOrigin) return;
+    if (event.origin != _expectedOrigin) {
+      print("Invalid message origin: ${event.origin} / Expected ${_expectedOrigin}");
+      return;
+    }
     var data;
     try {
       data = JSON.parse(event.data);
@@ -51,7 +54,12 @@ class _ProxyChannel {
   /// Computes the javascript origin of an absolute URI.
   String _origin(String uriString) {
     final uri = Uri.parse(uriString);
-    final portPart = (uri.port != 0) ? ":${uri.port}" : "";
+    var portPart;
+    if (uri.port == 0 || (uri.port == 443 && uri.scheme == "https")) {
+      portPart = "";
+    } else {
+      portPart = ":${uri.port}";      
+    }
     return "${uri.scheme}://${uri.host}$portPart";
   }
 
