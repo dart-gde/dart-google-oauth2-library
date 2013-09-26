@@ -4,17 +4,11 @@
 
 library system_cache;
 
-import 'dart:io';
-import 'dart:async';
-
 import 'package:path/path.dart' as path;
 
 import 'io.dart';
 import 'io.dart' as io show createTempDir;
 import 'log.dart' as log;
-
-import 'utils.dart';
-
 
 /// The system-wide cache of installed packages.
 ///

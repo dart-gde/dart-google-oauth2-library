@@ -6,14 +6,12 @@
 library io;
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
-import 'dart:isolate';
-import 'dart:json';
 
 import 'package:path/path.dart' as path;
 import 'package:http/http.dart' show ByteStream;
 import 'error_group.dart';
-import 'exit_codes.dart' as exit_codes;
 import 'log.dart' as log;
 import 'utils.dart';
 
@@ -40,7 +38,7 @@ bool fileExists(String file) => new File(file).existsSync();
 
 /// Reads the contents of the text file [file].
 String readTextFile(String file) =>
-    new File(file).readAsStringSync(encoding: Encoding.UTF_8);
+    new File(file).readAsStringSync(encoding: UTF8);
 
 /// Reads the contents of the binary file [file].
 List<int> readBinaryFile(String file) {
