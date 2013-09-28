@@ -198,5 +198,5 @@ class PubHttpException implements Exception {
   const PubHttpException(this.response);
 
   String toString() => 'HTTP error ${response.statusCode}: '
-      '${response.reasonPhrase}';
+      '${response.reasonPhrase} - ${response.body}';
 }
