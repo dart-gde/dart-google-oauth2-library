@@ -130,23 +130,6 @@ void process(String executable, List<String> arguments) {
   io("Spawning $executable ${arguments.join(' ')}");
 }
 
-/// Enables recording of log entries.
-void recordTranscript() {
-  _transcript = <Entry>[];
-}
-
-/// If [recordTranscript()] was called, then prints the previously recorded log
-/// transcript to stderr.
-void dumpTranscript() {
-  if (_transcript == null) return;
-
-  stderr.writeln('---- Log transcript ----');
-  for (var entry in _transcript) {
-    _logToStderrWithLabel(entry);
-  }
-  stderr.writeln('---- End log transcript ----');
-}
-
 /// Sets the verbosity to "normal", which shows errors, warnings, and messages.
 void showNormal() {
   _loggers[Level.ERROR]   = _logToStderr;
@@ -157,46 +140,9 @@ void showNormal() {
   _loggers[Level.FINE]    = null;
 }
 
-/// Sets the verbosity to "io", which shows errors, warnings, messages, and IO
-/// event logs.
-void showIO() {
-  _loggers[Level.ERROR]   = _logToStderrWithLabel;
-  _loggers[Level.WARNING] = _logToStderrWithLabel;
-  _loggers[Level.MESSAGE] = _logToStdoutWithLabel;
-  _loggers[Level.IO]      = _logToStderrWithLabel;
-  _loggers[Level.SOLVER]  = null;
-  _loggers[Level.FINE]    = null;
-}
-
-/// Sets the verbosity to "solver", which shows errors, warnings, messages, and
-/// solver logs.
-void showSolver() {
-  _loggers[Level.ERROR]   = _logToStderr;
-  _loggers[Level.WARNING] = _logToStderr;
-  _loggers[Level.MESSAGE] = _logToStdout;
-  _loggers[Level.IO]      = null;
-  _loggers[Level.SOLVER]  = _logToStdout;
-  _loggers[Level.FINE]    = null;
-}
-
-/// Sets the verbosity to "all", which logs ALL the things.
-void showAll() {
-  _loggers[Level.ERROR]   = _logToStderrWithLabel;
-  _loggers[Level.WARNING] = _logToStderrWithLabel;
-  _loggers[Level.MESSAGE] = _logToStdoutWithLabel;
-  _loggers[Level.IO]      = _logToStderrWithLabel;
-  _loggers[Level.SOLVER]  = _logToStderrWithLabel;
-  _loggers[Level.FINE]    = _logToStderrWithLabel;
-}
-
 /// Log function that prints the message to stdout.
 void _logToStdout(Entry entry) {
   _logToStream(stdout, entry, showLabel: false);
-}
-
-/// Log function that prints the message to stdout with the level name.
-void _logToStdoutWithLabel(Entry entry) {
-  _logToStream(stdout, entry, showLabel: true);
 }
 
 /// Log function that prints the message to stderr.
