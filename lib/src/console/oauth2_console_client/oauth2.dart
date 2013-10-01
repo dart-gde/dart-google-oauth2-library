@@ -54,17 +54,17 @@ class OAuth2Console {
   Credentials get credentials => _credentials;
 
   /// Url to redirect when authorization has been called
-  String _authorizedRedirect = 'https://github.com/dart-gde/dart-google-oauth2-library';
+  final String authorizedRedirect;
 
-  String _credentialsFileName = "credentials.json";
+  final String credentialsFilePath;
 
   PubHttpClient _httpClient;
 
   OAuth2Console({String identifier: null, String secret: null,
     Uri authorizationEndpoint: null, Uri tokenEndpoint: null, List scopes: null,
     List<String> request_visible_actions: null,
-    String authorizedRedirect: 'https://github.com/dart-gde/dart-google-oauth2-library',
-    String credentialsFileName: 'credentials.json'}) {
+    this.authorizedRedirect: 'https://github.com/dart-gde/dart-google-oauth2-library',
+    this.credentialsFilePath: 'credentials.json'}) {
 
     if (identifier != null) this._identifier = identifier;
     if (secret != null) this._secret = secret;
@@ -73,10 +73,6 @@ class OAuth2Console {
     if (scopes != null) this._scopes = scopes;
     if (request_visible_actions != null) this._request_visible_actions = request_visible_actions;
 
-    if (credentialsFileName != null) this._credentialsFileName = credentialsFileName;
-
-    this._authorizedRedirect = authorizedRedirect;
-
     _httpClient = new PubHttpClient();
     _httpClient.tokenEndpoint = tokenEndpoint;
   }
@@ -84,7 +80,7 @@ class OAuth2Console {
   /// Delete the cached credentials, if they exist.
   void clearCredentials() {
     _credentials = null;
-    if (entryExists(_credentialsFileName)) deleteEntry(_credentialsFileName);
+    if (entryExists(credentialsFilePath)) deleteEntry(credentialsFilePath);
   }
 
   /// Close the httpClient when were done.
@@ -147,9 +143,9 @@ class OAuth2Console {
     try {
       if (_credentials != null) return _credentials;
 
-      if (!fileExists(_credentialsFileName)) return null;
+      if (!fileExists(credentialsFilePath)) return null;
 
-      var credentials = new Credentials.fromJson(readTextFile(_credentialsFileName));
+      var credentials = new Credentials.fromJson(readTextFile(credentialsFilePath));
       if (credentials.isExpired && !credentials.canRefresh) {
         log.error("Authorization has expired and "
         "can't be automatically refreshed.");
@@ -169,8 +165,8 @@ class OAuth2Console {
   void _saveCredentials(Credentials credentials) {
     log.fine('Saving OAuth2 credentials.');
     _credentials = credentials;
-    ensureDir(path.dirname(_credentialsFileName));
-    writeTextFile(_credentialsFileName, credentials.toJson(), dontLogContents: true);
+    ensureDir(path.dirname(credentialsFilePath));
+    writeTextFile(credentialsFilePath, credentials.toJson(), dontLogContents: true);
   }
 
   /// Gets the user to authorize pub as a client of pub.dartlang.org via oauth2.
@@ -202,7 +198,7 @@ class OAuth2Console {
           var queryString = request.uri.query;
           if (queryString == null) queryString = '';
           response.statusCode = 302;
-          response.headers.set('location', _authorizedRedirect);
+          response.headers.set('location', authorizedRedirect);
           response.close();
           return grant.handleAuthorizationResponse(queryToMap(queryString))
               .then((client) {
