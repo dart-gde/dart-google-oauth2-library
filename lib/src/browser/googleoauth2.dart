@@ -172,7 +172,7 @@ class GoogleOAuth2 extends OAuth2<Token> {
 
   Future<HttpRequest> authenticate(HttpRequest request) =>
       login().then((Token token) {
-        request.setRequestHeader("Authorization", "${token.type} ${token.data}");
+        populateRequestAuthHeader(request, token.type, token.data);
         return request;
       });
 

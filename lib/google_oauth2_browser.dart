@@ -33,3 +33,8 @@ part "src/browser/simpleoauth2.dart";
 part "src/browser/proxy_callback.dart";
 part "src/browser/token.dart";
 part "src/browser/utils.dart";
+
+void populateRequestAuthHeader(HttpRequest request, String tokenType,
+                               String token) {
+  request.setRequestHeader("Authorization", "${tokenType} ${token}");
+}

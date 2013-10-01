@@ -12,7 +12,7 @@ class SimpleOAuth2 extends OAuth2<String> {
   SimpleOAuth2(String this.token, {String this.tokenType: "Bearer"}) : super();
 
   Future<HttpRequest> authenticate(HttpRequest request) {
-    request.setRequestHeader("Authorization", "${tokenType} ${token}");
+    populateRequestAuthHeader(request, tokenType, token);
     return new Future.value(request);
   }
 }
