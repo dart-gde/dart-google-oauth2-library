@@ -36,5 +36,10 @@ part "src/browser/utils.dart";
 
 void populateRequestAuthHeader(HttpRequest request, String tokenType,
                                String token) {
-  request.setRequestHeader("Authorization", "${tokenType} ${token}");
+  var headers = getAuthHeaders(tokenType, token);
+  headers.forEach((k, v) => request.setRequestHeader(k, v));
+}
+
+Map<String, String> getAuthHeaders(String tokenType, String token) {
+  return { 'Authorization': "${tokenType} ${token}"};
 }
