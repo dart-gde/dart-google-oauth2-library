@@ -38,7 +38,7 @@ Future _oauthReady(Token token) {
   logoutButton.style.display = "inline-block";
   final url = "https://www.googleapis.com/books/v1/volumes/zyTCAlFPjgYC";
 
-  var headers = getAuthHeaders(token.type, token.data);
+  var headers = getAuthorizationHeaders(token.type, token.data);
 
   return HttpRequest.request(url, requestHeaders: headers)
     .then((HttpRequest request) {
