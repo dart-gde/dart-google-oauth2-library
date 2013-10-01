@@ -111,7 +111,6 @@ class OAuth2Console {
   Future withClient(Future fn(Client client)) {
 
     return _getClient(_systemCache).then((client) {
-      var completer = new Completer();
       _credentials = client.credentials;
       return fn(client).whenComplete(() {
         client.close();
@@ -136,20 +135,6 @@ class OAuth2Console {
       }
     });
   }
-
-  /// Gets a new OAuth2 client. If saved credentials are available, those are
-  /// used; otherwise, the user is prompted to authorize the pub client.
-//  Future _getClient(SystemCache cache) {
-//    return defer(() {
-//      var credentials = _loadCredentials(cache);
-//      if (credentials == null) return _authorize();
-//
-//      var client = new Client(_identifier, _secret, credentials,
-//          httpClient: _httpClient);
-//      _saveCredentials(cache, client.credentials);
-//      return client;
-//    });
-//  }
 
   Future<Client> _getClient(SystemCache cache) {
     return new Future.sync(() {
@@ -185,7 +170,7 @@ class OAuth2Console {
       return credentials;
     } catch (e) {
       log.error('Warning: could not load the saved OAuth2 credentials: $e\n'
-      'Obtaining new credentials...');
+      'Obtaining new credentials...', e);
       return null; // null means re-authorize.
     }
   }
