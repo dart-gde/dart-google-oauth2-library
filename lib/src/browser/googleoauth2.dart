@@ -24,15 +24,14 @@ class GoogleOAuth2 extends OAuth2 {
   /// is available. This can be used e.g. to set up a 'logged in' view.
   GoogleOAuth2(
     String this._clientId,
-    List<String> this._scopes,
-    {
-      List<String> request_visible_actions: null,
+    List<String> this._scopes, { List<String> request_visible_actions: null,
       String provider: "https://accounts.google.com/o/oauth2/",
       tokenLoaded(Token token),
-      bool autoLogin: false
-    }
-  ) : _provider = provider, _tokenLoaded = tokenLoaded, _request_visible_actions = request_visible_actions, super()
-  {
+      bool autoLogin: false }) :
+        _provider = provider,
+        _tokenLoaded = tokenLoaded,
+        _request_visible_actions = request_visible_actions,
+        super() {
     _channel = _createFutureChannel();
     // Attempt an immediate login, we may already be authorized.
     if (autoLogin) {
@@ -172,7 +171,7 @@ class GoogleOAuth2 extends OAuth2 {
   }
 
   Future<HttpRequest> authenticate(HttpRequest request) =>
-      login().then((token) {
+      login().then((Token token) {
         request.setRequestHeader("Authorization", "${token.type} ${token.data}");
         return request;
       });
