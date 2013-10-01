@@ -7,7 +7,6 @@ library utils;
 
 import 'dart:async';
 import 'package:crypto/crypto.dart';
-import 'dart:isolate';
 
 /// A pair of values.
 class Pair<E, F> {

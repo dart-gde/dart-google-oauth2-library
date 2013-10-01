@@ -8,7 +8,6 @@ library log;
 import 'dart:io';
 import 'dart:async';
 
-import 'io.dart';
 import 'utils.dart';
 
 typedef LogFn(Entry entry);
@@ -100,84 +99,6 @@ void write(Level level, message) {
   if (_transcript != null) _transcript.add(entry);
 }
 
-/// Logs an asynchronous IO operation. Logs [startMessage] before the operation
-/// starts, then when [operation] completes, invokes [endMessage] with the
-/// completion value and logs the result of that. Returns a future that
-/// completes after the logging is done.
-///
-/// If [endMessage] is omitted, then logs "Begin [startMessage]" before the
-/// operation and "End [startMessage]" after it.
-Future ioAsync(String startMessage, Future operation,
-               [String endMessage(value)]) {
-  if (endMessage == null) {
-    io("Begin $startMessage.");
-  } else {
-    io(startMessage);
-  }
-
-  return operation.then((result) {
-    if (endMessage == null) {
-      io("End $startMessage.");
-    } else {
-      io(endMessage(result));
-    }
-    return result;
-  });
-}
-
-/// Logs the spawning of an [executable] process with [arguments] at [IO]
-/// level.
-void process(String executable, List<String> arguments) {
-  io("Spawning $executable ${arguments.join(' ')}");
-}
-
-/// Logs the results of running [executable].
-void processResult(String executable, PubProcessResult result) {
-  // Log it all as one message so that it shows up as a single unit in the logs.
-  var buffer = new StringBuffer();
-  buffer.write("Finished $executable. Exit code ${result.exitCode}.");
-
-  dumpOutput(String name, List<String> output) {
-    if (output.length == 0) {
-      buffer.write("Nothing output on $name.");
-    } else {
-      buffer.write("$name:");
-      var numLines = 0;
-      for (var line in output) {
-        if (++numLines > 1000) {
-          buffer.write('[${output.length - 1000}] more lines of output '
-              'truncated...]');
-          break;
-        }
-
-        buffer.write(line);
-      }
-    }
-  }
-
-  dumpOutput("stdout", result.stdout);
-  dumpOutput("stderr", result.stderr);
-
-  io(buffer.toString());
-}
-
-/// Enables recording of log entries.
-void recordTranscript() {
-  _transcript = <Entry>[];
-}
-
-/// If [recordTranscript()] was called, then prints the previously recorded log
-/// transcript to stderr.
-void dumpTranscript() {
-  if (_transcript == null) return;
-
-  stderr.writeln('---- Log transcript ----');
-  for (var entry in _transcript) {
-    _logToStderrWithLabel(entry);
-  }
-  stderr.writeln('---- End log transcript ----');
-}
-
 /// Sets the verbosity to "normal", which shows errors, warnings, and messages.
 void showNormal() {
   _loggers[Level.ERROR]   = _logToStderr;
@@ -188,46 +109,9 @@ void showNormal() {
   _loggers[Level.FINE]    = null;
 }
 
-/// Sets the verbosity to "io", which shows errors, warnings, messages, and IO
-/// event logs.
-void showIO() {
-  _loggers[Level.ERROR]   = _logToStderrWithLabel;
-  _loggers[Level.WARNING] = _logToStderrWithLabel;
-  _loggers[Level.MESSAGE] = _logToStdoutWithLabel;
-  _loggers[Level.IO]      = _logToStderrWithLabel;
-  _loggers[Level.SOLVER]  = null;
-  _loggers[Level.FINE]    = null;
-}
-
-/// Sets the verbosity to "solver", which shows errors, warnings, messages, and
-/// solver logs.
-void showSolver() {
-  _loggers[Level.ERROR]   = _logToStderr;
-  _loggers[Level.WARNING] = _logToStderr;
-  _loggers[Level.MESSAGE] = _logToStdout;
-  _loggers[Level.IO]      = null;
-  _loggers[Level.SOLVER]  = _logToStdout;
-  _loggers[Level.FINE]    = null;
-}
-
-/// Sets the verbosity to "all", which logs ALL the things.
-void showAll() {
-  _loggers[Level.ERROR]   = _logToStderrWithLabel;
-  _loggers[Level.WARNING] = _logToStderrWithLabel;
-  _loggers[Level.MESSAGE] = _logToStdoutWithLabel;
-  _loggers[Level.IO]      = _logToStderrWithLabel;
-  _loggers[Level.SOLVER]  = _logToStderrWithLabel;
-  _loggers[Level.FINE]    = _logToStderrWithLabel;
-}
-
 /// Log function that prints the message to stdout.
 void _logToStdout(Entry entry) {
   _logToStream(stdout, entry, showLabel: false);
-}
-
-/// Log function that prints the message to stdout with the level name.
-void _logToStdoutWithLabel(Entry entry) {
-  _logToStream(stdout, entry, showLabel: true);
 }
 
 /// Log function that prints the message to stderr.

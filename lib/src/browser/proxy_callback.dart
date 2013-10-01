@@ -18,7 +18,7 @@ class _ProxyChannel {
   StreamSubscription _streamsub;
 
   _ProxyChannel(String this._provider, _ProxyCallback this._callback) {
-    _nonce = (0x7FFFFFFF & random()).toString();
+    _nonce = (0x7FFFFFFF & _random()).toString();
     _expectedOrigin = _origin(_provider);
     _element = _iframe(_getProxyUrl());
     _streamsub = window.onMessage.listen(_onMessage);

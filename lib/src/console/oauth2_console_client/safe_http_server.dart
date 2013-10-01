@@ -5,6 +5,7 @@
 library pub.safe_http_server;
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 // TODO(nweiz): remove this when issue 9140 is fixed.
@@ -36,6 +37,16 @@ class SafeHttpServer extends StreamView<HttpRequest> implements HttpServer {
 
   set sessionTimeout(int timeout) {
     _inner.sessionTimeout = timeout;
+  }
+
+  String get serverHeader => _inner.serverHeader;
+  set serverHeader(String value) {
+    _inner.serverHeader = value;
+  }
+
+  Duration get idleTimeout => _inner.idleTimeout;
+  set idleTimeout(Duration value) {
+    _inner.idleTimeout = value;
   }
 
   HttpConnectionsInfo connectionsInfo() => _inner.connectionsInfo();
@@ -138,4 +149,12 @@ class _HttpResponseWrapper implements HttpResponse {
   void writeCharCode(int charCode) => _inner.writeCharCode(charCode);
   void writeln([Object obj = ""]) => _inner.writeln(obj);
   void addError(error) => _inner.addError(error);
+
+  Duration get deadline => _inner.deadline;
+  set deadline(Duration value) {
+    _inner.deadline = value;
+  }
+
+  Future redirect(Uri location, {int status: HttpStatus.MOVED_TEMPORARILY}) =>
+      _inner.redirect(location, status: status);
 }
