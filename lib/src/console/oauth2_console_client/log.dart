@@ -99,37 +99,6 @@ void write(Level level, message) {
   if (_transcript != null) _transcript.add(entry);
 }
 
-/// Logs an asynchronous IO operation. Logs [startMessage] before the operation
-/// starts, then when [operation] completes, invokes [endMessage] with the
-/// completion value and logs the result of that. Returns a future that
-/// completes after the logging is done.
-///
-/// If [endMessage] is omitted, then logs "Begin [startMessage]" before the
-/// operation and "End [startMessage]" after it.
-Future ioAsync(String startMessage, Future operation,
-               [String endMessage(value)]) {
-  if (endMessage == null) {
-    io("Begin $startMessage.");
-  } else {
-    io(startMessage);
-  }
-
-  return operation.then((result) {
-    if (endMessage == null) {
-      io("End $startMessage.");
-    } else {
-      io(endMessage(result));
-    }
-    return result;
-  });
-}
-
-/// Logs the spawning of an [executable] process with [arguments] at [IO]
-/// level.
-void process(String executable, List<String> arguments) {
-  io("Spawning $executable ${arguments.join(' ')}");
-}
-
 /// Sets the verbosity to "normal", which shows errors, warnings, and messages.
 void showNormal() {
   _loggers[Level.ERROR]   = _logToStderr;
