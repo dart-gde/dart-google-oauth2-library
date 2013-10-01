@@ -1,7 +1,7 @@
 part of google_oauth2_browser;
 
 /// An OAuth2 authentication context.
-class GoogleOAuth2 extends OAuth2 {
+class GoogleOAuth2 extends OAuth2<Token> {
   final String _clientId;
   final List<String> _scopes;
   final List<String> _request_visible_actions;
@@ -202,9 +202,13 @@ class GoogleOAuth2 extends OAuth2 {
       ? new Token.fromJson(window.localStorage[_storageKey])
       : null;
 
-  set _storedToken(Token value) => (value == null)
-      ? window.localStorage.remove(_storageKey)
-      : window.localStorage[_storageKey] = value.toJson();
+  void set _storedToken(Token value) {
+    if(value == null) {
+      window.localStorage.remove(_storageKey);
+    } else {
+      window.localStorage[_storageKey] = value.toJson();
+    }
+  }
 
   /// Returns a unique identifier for this context for use in localStorage.
   String get _storageKey => JSON.stringify({
