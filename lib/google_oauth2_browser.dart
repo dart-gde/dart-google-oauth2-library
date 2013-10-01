@@ -34,12 +34,6 @@ part "src/browser/proxy_callback.dart";
 part "src/browser/token.dart";
 part "src/browser/utils.dart";
 
-void populateRequestAuthHeader(HttpRequest request, String tokenType,
-                               String token) {
-  var headers = getAuthHeaders(tokenType, token);
-  headers.forEach((k, v) => request.setRequestHeader(k, v));
-}
-
-Map<String, String> getAuthHeaders(String tokenType, String token) {
+Map<String, String> getAuthorizationHeaders(String tokenType, String token) {
   return { 'Authorization': "${tokenType} ${token}"};
 }

@@ -11,4 +11,6 @@ abstract class OAuth2<T> {
    * Take a [request] and return the request with the authorization headers set correctly
    */
   Future<HttpRequest> authenticate(HttpRequest request);
+
+  Map<String, String> getAuthHeaders();
 }

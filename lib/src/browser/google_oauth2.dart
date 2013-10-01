@@ -41,6 +41,9 @@ class GoogleOAuth2 extends OAuth2<Token> {
     }
   }
 
+  Map<String, String> getAuthHeaders() =>
+      getAuthorizationHeaders(token.type, token.data);
+
   /// Set up the proxy iframe in the provider's origin that will receive
   /// postMessages and relay them to us.
   /// This completes asynchronously as the proxy iframe is not ready to use
@@ -172,7 +175,8 @@ class GoogleOAuth2 extends OAuth2<Token> {
 
   Future<HttpRequest> authenticate(HttpRequest request) =>
       login().then((Token token) {
-        populateRequestAuthHeader(request, token.type, token.data);
+        var headers = getAuthHeaders();
+        headers.forEach((k, v) => request.setRequestHeader(k, v));
         return request;
       });
 
