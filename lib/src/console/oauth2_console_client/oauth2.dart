@@ -13,7 +13,6 @@ import 'http.dart';
 import 'io.dart';
 import 'log.dart' as log;
 import 'safe_http_server.dart';
-import 'system_cache.dart';
 import 'utils.dart';
 
 export 'package:oauth2/oauth2.dart';
@@ -57,8 +56,6 @@ class OAuth2Console {
   /// Url to redirect when authorization has been called
   String _authorizedRedirect = 'https://github.com/dart-gde/dart-google-oauth2-library';
 
-  SystemCache _systemCache;
-  SystemCache get systemCache => _systemCache;
   String _credentialsFileName = "credentials.json";
 
   PubHttpClient _httpClient;
@@ -67,7 +64,7 @@ class OAuth2Console {
     Uri authorizationEndpoint: null, Uri tokenEndpoint: null, List scopes: null,
     List<String> request_visible_actions: null,
     String authorizedRedirect: 'https://github.com/dart-gde/dart-google-oauth2-library',
-    String credentialsFileName: 'credentials.json', SystemCache systemCache: null}) {
+    String credentialsFileName: 'credentials.json'}) {
 
     if (identifier != null) this._identifier = identifier;
     if (secret != null) this._secret = secret;
@@ -78,12 +75,6 @@ class OAuth2Console {
 
     if (credentialsFileName != null) this._credentialsFileName = credentialsFileName;
 
-    if (systemCache != null) {
-      _systemCache = systemCache;
-    } else {
-      _systemCache = new SystemCache(".");
-    }
-
     this._authorizedRedirect = authorizedRedirect;
 
     _httpClient = new PubHttpClient();
@@ -91,10 +82,9 @@ class OAuth2Console {
   }
 
   /// Delete the cached credentials, if they exist.
-  void clearCredentials(SystemCache cache) {
+  void clearCredentials() {
     _credentials = null;
-    var credentialsFile = _credentialsFile(cache);
-    if (entryExists(credentialsFile)) deleteEntry(credentialsFile);
+    if (entryExists(_credentialsFileName)) deleteEntry(_credentialsFileName);
   }
 
   /// Close the httpClient when were done.
@@ -110,12 +100,12 @@ class OAuth2Console {
   /// re-run [fn] if a recoverable authorization error is detected.
   Future withClient(Future fn(Client client)) {
 
-    return _getClient(_systemCache).then((client) {
+    return _getClient().then((client) {
       _credentials = client.credentials;
       return fn(client).whenComplete(() {
         client.close();
         // Be sure to save the credentials even when an error happens.
-        _saveCredentials(_systemCache, client.credentials);
+        _saveCredentials(client.credentials);
       });
     }).catchError((error) {
       if (error is ExpirationException) {
@@ -128,7 +118,7 @@ class OAuth2Console {
           message = "$message (${error.description})";
         }
         log.error("$message.");
-        clearCredentials(_systemCache);
+        clearCredentials();
         return withClient(fn);
       } else {
         throw error;
@@ -136,14 +126,14 @@ class OAuth2Console {
     });
   }
 
-  Future<Client> _getClient(SystemCache cache) {
+  Future<Client> _getClient() {
     return new Future.sync(() {
-      var credentials = _loadCredentials(cache);
+      var credentials = _loadCredentials();
       if (credentials == null) return _authorize();
 
       var client = new Client(_identifier, _secret, credentials,
           httpClient: _httpClient);
-      _saveCredentials(cache, client.credentials);
+      _saveCredentials(client.credentials);
       return client;
     });
   }
@@ -151,16 +141,15 @@ class OAuth2Console {
   /// Loads the user's OAuth2 credentials from the in-memory cache or the
   /// filesystem if possible. If the credentials can't be loaded for any reason,
   /// the returned [Future] will complete to null.
-  Credentials _loadCredentials(SystemCache cache) {
+  Credentials _loadCredentials() {
     log.fine('Loading OAuth2 credentials.');
 
     try {
       if (_credentials != null) return _credentials;
 
-      var path = _credentialsFile(cache);
-      if (!fileExists(path)) return null;
+      if (!fileExists(_credentialsFileName)) return null;
 
-      var credentials = new Credentials.fromJson(readTextFile(path));
+      var credentials = new Credentials.fromJson(readTextFile(_credentialsFileName));
       if (credentials.isExpired && !credentials.canRefresh) {
         log.error("Authorization has expired and "
         "can't be automatically refreshed.");
@@ -177,17 +166,12 @@ class OAuth2Console {
 
   /// Save the user's OAuth2 credentials to the in-memory cache and the
   /// filesystem.
-  void _saveCredentials(SystemCache cache, Credentials credentials) {
+  void _saveCredentials(Credentials credentials) {
     log.fine('Saving OAuth2 credentials.');
     _credentials = credentials;
-    var credentialsPath = _credentialsFile(cache);
-    ensureDir(path.dirname(credentialsPath));
-    writeTextFile(credentialsPath, credentials.toJson(), dontLogContents: true);
+    ensureDir(path.dirname(_credentialsFileName));
+    writeTextFile(_credentialsFileName, credentials.toJson(), dontLogContents: true);
   }
-
-  /// The path to the file in which the user's OAuth2 credentials are stored.
-  String _credentialsFile(SystemCache cache) =>
-      path.join(cache.rootDir, 'credentials.json');
 
   /// Gets the user to authorize pub as a client of pub.dartlang.org via oauth2.
   /// Returns a Future that will complete to a fully-authorized [Client].
