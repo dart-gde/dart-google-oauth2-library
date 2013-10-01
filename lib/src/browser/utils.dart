@@ -4,19 +4,16 @@ part of google_oauth2_browser;
 /// If the window was closed without the future being completed, completes
 /// the future with an exception.
 class _WindowPoller {
-  Completer<Token> _completer;
-  WindowBase _window;
-  bool _complete = false;
-  
+  final Completer<Token> _completer;
+  final WindowBase _window;
+
   _WindowPoller(Completer<Token> this._completer, WindowBase this._window) {
-    _completer.future.whenComplete(() {
-      _complete = true;
-    });
+    assert(_window != null);
   }
-  
+
 
   void poll() {
-    if (_complete) {
+    if (_completer.isCompleted) {
       return;
     }
     if (_window.closed) {
@@ -51,7 +48,7 @@ IFrameElement _iframe(String url) {
 }
 
 /// Returns a random unsigned 32-bit integer.
-int random() {
+int _random() {
   final ary = new Uint32List(1);
   window.crypto.getRandomValues(ary);
   return ary[0];

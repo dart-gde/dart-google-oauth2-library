@@ -13,7 +13,6 @@ import 'package:http/http.dart' as http;
 
 import 'io.dart';
 import 'log.dart' as log;
-import 'oauth2.dart' as oauth2;
 import 'utils.dart';
 
 // TODO(nweiz): make this configurable
@@ -199,5 +198,5 @@ class PubHttpException implements Exception {
   const PubHttpException(this.response);
 
   String toString() => 'HTTP error ${response.statusCode}: '
-      '${response.reasonPhrase}';
+      '${response.reasonPhrase} - ${response.body}';
 }
