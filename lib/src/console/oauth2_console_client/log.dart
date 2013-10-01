@@ -8,7 +8,6 @@ library log;
 import 'dart:io';
 import 'dart:async';
 
-import 'io.dart';
 import 'utils.dart';
 
 typedef LogFn(Entry entry);
@@ -129,36 +128,6 @@ Future ioAsync(String startMessage, Future operation,
 /// level.
 void process(String executable, List<String> arguments) {
   io("Spawning $executable ${arguments.join(' ')}");
-}
-
-/// Logs the results of running [executable].
-void processResult(String executable, PubProcessResult result) {
-  // Log it all as one message so that it shows up as a single unit in the logs.
-  var buffer = new StringBuffer();
-  buffer.write("Finished $executable. Exit code ${result.exitCode}.");
-
-  dumpOutput(String name, List<String> output) {
-    if (output.length == 0) {
-      buffer.write("Nothing output on $name.");
-    } else {
-      buffer.write("$name:");
-      var numLines = 0;
-      for (var line in output) {
-        if (++numLines > 1000) {
-          buffer.write('[${output.length - 1000}] more lines of output '
-              'truncated...]');
-          break;
-        }
-
-        buffer.write(line);
-      }
-    }
-  }
-
-  dumpOutput("stdout", result.stdout);
-  dumpOutput("stderr", result.stderr);
-
-  io(buffer.toString());
 }
 
 /// Enables recording of log entries.
