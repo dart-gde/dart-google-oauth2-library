@@ -1,5 +1,5 @@
 name: google_oauth2_client
-version: 0.2.17
+version: 0.2.18-dev
 authors:
 - Gerwin Sturm <scarygami@gmail.com>
 - Adam Singer <financeCoding@gmail.com>
@@ -7,12 +7,12 @@ authors:
 description: Library to use for Google OAuth2 authentication / Client-side flow
 homepage: https://github.com/dart-gde/dart-google-oauth2-library
 environment:
-  sdk: '>=0.7.5+3'
+  sdk: '>=0.7.6'
 dependencies:
-  crypto: '>=0.6.5'
-  http: '>=0.6.5'
-  oauth2: '>=0.6.5'
-  path: '>=0.6.5'
+  crypto: '>=0.7.6'
+  http: '>=0.7.6'
+  oauth2: '>=0.7.6'
+  path: '>=0.7.6'
 dev_dependencies:
-  browser: '>=0.6.5'
-  hop: '>=0.24.0'
+  browser: '>=0.7.6'
+  hop: '>=0.25.1'
