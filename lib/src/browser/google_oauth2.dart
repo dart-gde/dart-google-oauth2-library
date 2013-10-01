@@ -173,12 +173,9 @@ class GoogleOAuth2 extends OAuth2<Token> {
     return _tokenFuture;
   }
 
-  Future<HttpRequest> authenticate(HttpRequest request) =>
-      login().then((Token token) {
-        var headers = getAuthHeaders();
-        headers.forEach((k, v) => request.setRequestHeader(k, v));
-        return request;
-      });
+  Future ensureAuthenticated() {
+    return login().then((_) => null);
+  }
 
   /// Returns the OAuth2 token, if one is currently available.
   Token get token => __token;

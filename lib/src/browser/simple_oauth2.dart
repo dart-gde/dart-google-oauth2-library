@@ -11,11 +11,7 @@ class SimpleOAuth2 extends OAuth2<String> {
   /// Creates an OAuth2 context for the application using [token] for authentication
   SimpleOAuth2(String this.token, {String this.tokenType: "Bearer"}) : super();
 
-  Future<HttpRequest> authenticate(HttpRequest request) {
-    var headers = getAuthHeaders();
-    headers.forEach((k, v) => request.setRequestHeader(k, v));
-    return new Future.value(request);
-  }
+  Future ensureAuthenticated() => new Future.value();
 
   Map<String, String> getAuthHeaders() =>
       getAuthorizationHeaders(tokenType, token);

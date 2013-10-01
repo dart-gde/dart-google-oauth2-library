@@ -10,7 +10,19 @@ abstract class OAuth2<T> {
   /**
    * Take a [request] and return the request with the authorization headers set correctly
    */
-  Future<HttpRequest> authenticate(HttpRequest request);
+  Future<HttpRequest> authenticate(HttpRequest request) {
+    return ensureAuthenticated()
+        .then((_) {
+          var headers = getAuthHeaders();
+          headers.forEach((k, v) => request.setRequestHeader(k, v));
+          return request;
+        });
+  }
+
+  /**
+   * Returns a [Future] that completes when this instance is authenticated.
+   */
+  Future ensureAuthenticated();
 
   Map<String, String> getAuthHeaders();
 }
