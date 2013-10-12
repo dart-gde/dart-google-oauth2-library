@@ -1,6 +1,6 @@
 import 'dart:async';
 import "dart:html";
-import "dart:json" as JSON;
+import "dart:convert";
 import "package:google_oauth2_client/google_oauth2_browser.dart";
 
 final ButtonElement loginButton = query("#login");
