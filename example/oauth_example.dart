@@ -16,7 +16,7 @@ void main() {
 
   loginButton.onClick.listen((e) {
     loginButton.disabled = true;
-    auth.login(immediate: true)
+    auth.login()
       .then(_oauthReady)
       .whenComplete(() {
         loginButton.disabled = false;
