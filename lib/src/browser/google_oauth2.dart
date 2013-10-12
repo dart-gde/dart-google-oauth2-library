@@ -212,7 +212,7 @@ class GoogleOAuth2 extends OAuth2<Token> {
   }
 
   /// Returns a unique identifier for this context for use in localStorage.
-  String get _storageKey => JSON.stringify({
+  String get _storageKey => JSON.encode({
     "clientId": _clientId,
     "scopes": _scopes,
     "provider": _provider,

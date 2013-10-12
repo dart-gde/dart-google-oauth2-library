@@ -36,7 +36,7 @@ class _ProxyChannel {
     }
     var data;
     try {
-      data = JSON.parse(event.data);
+      data = JSON.decode(event.data);
     } catch (e) {
       print("Invalid JSON received via postMessage: ${event.data}");
       return;
@@ -58,7 +58,7 @@ class _ProxyChannel {
     if (uri.port == 0 || (uri.port == 443 && uri.scheme == "https")) {
       portPart = "";
     } else {
-      portPart = ":${uri.port}";      
+      portPart = ":${uri.port}";
     }
     return "${uri.scheme}://${uri.host}$portPart";
   }

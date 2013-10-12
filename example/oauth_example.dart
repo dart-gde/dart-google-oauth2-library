@@ -16,7 +16,7 @@ void main() {
 
   loginButton.onClick.listen((e) {
     loginButton.disabled = true;
-    auth.login()
+    auth.login(immediate: true)
       .then(_oauthReady)
       .whenComplete(() {
         loginButton.disabled = false;
@@ -43,7 +43,7 @@ Future _oauthReady(Token token) {
   return HttpRequest.request(url, requestHeaders: headers)
     .then((HttpRequest request) {
       if (request.status == 200) {
-        var data = JSON.parse(request.responseText);
+        var data = JSON.decode(request.responseText);
         outputDiv.innerHtml = "Book info:\n${data['volumeInfo']['title']}";
       } else {
         outputDiv.innerHtml = "Error ${request.status}: ${request.statusText}";

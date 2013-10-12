@@ -20,7 +20,7 @@ class Token {
   Token(String this.type, String this.data, DateTime this.expiry);
 
   factory Token.fromJson(String json) {
-    final map = JSON.parse(json);
+    final map = JSON.decode(json);
     final token = new Token(map['type'], map['data'],
         new DateTime.fromMillisecondsSinceEpoch(map['expiry']));
     token._email = map['email'];
@@ -48,7 +48,7 @@ class Token {
     request.send();
 
     return completer.future.then((json) {
-      final data = JSON.parse(json);
+      final data = JSON.decode(json);
       final valid = clientId == data['audience'];
       if (valid) {
         _email = data['email'];
@@ -59,7 +59,7 @@ class Token {
   }
 
   String toJson() {
-    return JSON.stringify({
+    return JSON.encode({
       "type": type,
       "data": data,
       "expiry": expiry.millisecondsSinceEpoch,
