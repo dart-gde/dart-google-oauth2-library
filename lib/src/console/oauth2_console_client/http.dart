@@ -7,7 +7,7 @@ library pub.http;
 
 import 'dart:async';
 import 'dart:io';
-import 'dart:json' as json;
+import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
@@ -177,7 +177,7 @@ void handleJsonError(http.Response response) {
 Map parseJsonResponse(http.Response response) {
   var value;
   try {
-    value = json.parse(response.body);
+    value = JSON.decode(response.body);
   } catch (e) {
     // TODO(nweiz): narrow this catch clause once issue 6775 is fixed.
     invalidServerResponse(response);
