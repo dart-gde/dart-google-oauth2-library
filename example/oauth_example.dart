@@ -1,6 +1,6 @@
 import 'dart:async';
 import "dart:html";
-import "dart:json" as JSON;
+import "dart:convert";
 import "package:google_oauth2_client/google_oauth2_browser.dart";
 
 final ButtonElement loginButton = query("#login");
@@ -43,7 +43,7 @@ Future _oauthReady(Token token) {
   return HttpRequest.request(url, requestHeaders: headers)
     .then((HttpRequest request) {
       if (request.status == 200) {
-        var data = JSON.parse(request.responseText);
+        var data = JSON.decode(request.responseText);
         outputDiv.innerHtml = "Book info:\n${data['volumeInfo']['title']}";
       } else {
         outputDiv.innerHtml = "Error ${request.status}: ${request.statusText}";
