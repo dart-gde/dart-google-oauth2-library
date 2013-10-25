@@ -217,3 +217,83 @@ class OAuth2Console {
     });
   }
 }
+
+/**
+ * A simple OAuth2 authentication client when [secret] and [accessToken]
+ * are already available. [credentials] are kept in memory.
+ */
+class SimpleOAuth2Console implements OAuth2Console {
+  /// The URL from which the pub client will request an access token once it's
+  /// been authorized by the user.
+  Uri _tokenEndpoint = Uri.parse('https://accounts.google.com/o/oauth2/token');
+  Uri get tokenEndpoint => _tokenEndpoint;
+
+  Credentials _credentials;
+
+  Credentials get credentials => _credentials;
+
+  void set credentials(value) {
+    _credentials = value;
+  }
+
+  final String _identifier;
+
+  final String _secret;
+
+  final String _accessToken;
+
+  Client _simpleHttpClient;
+
+  SimpleOAuth2Console(this._identifier, this._secret, this._accessToken) {
+    this.credentials = new Credentials(_accessToken);
+  }
+
+  Future withClient(Future fn(Client client)) {
+    log.fine("withClient(Future ${fn}(Client client))");
+    _simpleHttpClient = new Client(_identifier, _secret, _credentials);
+    return fn(_simpleHttpClient);
+  }
+
+  void close() {
+    _simpleHttpClient.close();
+  }
+
+  /*
+   * Methods and variables not supported by this client.
+   */
+
+  void clearCredentials() {
+    throw new UnsupportedError("clearCredentials");
+  }
+
+  void set authorizedRedirect(String _authorizedRedirect) {
+    throw new UnsupportedError("authorizedRedirect");
+  }
+
+  String get authorizedRedirect => null;
+
+  String get credentialsFilePath => null;
+
+  void set credentialsFilePath(String _credentialsFilePath) {
+    throw new UnsupportedError("credentialsFilePath");
+  }
+
+  Future<Client> _getClient() {
+    throw new UnsupportedError("_getClient");
+  }
+
+  Credentials _loadCredentials() {
+    throw new UnsupportedError("_loadCredentials");
+  }
+  void _saveCredentials(Credentials credentials) {
+    throw new UnsupportedError("_saveCredentials");
+  }
+  Future _authorize() {
+    throw new UnsupportedError("_authorize");
+  }
+
+  List _scopes;
+  Uri _authorizationEndpoint;
+  List<String> _request_visible_actions;
+  PubHttpClient _httpClient;
+}
