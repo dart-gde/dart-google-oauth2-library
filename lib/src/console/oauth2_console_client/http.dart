@@ -46,7 +46,7 @@ class PubHttpClient extends http.BaseClient {
 
     // wraps the send future that is beeing created here for the next part,
     // where we decide if we put it in a timeout or not
-    Function sendFn = (){inner.send(request).then((streamedResponse) {
+    Function sendFn = (){return inner.send(request).then((streamedResponse) {
       _logResponse(streamedResponse);
 
       var status = streamedResponse.statusCode;
@@ -81,7 +81,7 @@ class PubHttpClient extends http.BaseClient {
     
     // TODO(nweiz): Ideally the timeout would extend to reading from the
     // response input stream, but until issue 3657 is fixed that's not feasible.
-    if(this.timeoutInterval > 0)
+    if(this.timeoutInterval != null && this.timeoutInterval > 0)
     {
       return timeout(sendFn(), this.timeoutInterval, 'fetching URL "${request.url}"');
     }
