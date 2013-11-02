@@ -64,7 +64,7 @@ class OAuth2Console {
     Uri authorizationEndpoint: null, Uri tokenEndpoint: null, List scopes: null,
     List<String> request_visible_actions: null,
     this.authorizedRedirect: 'https://github.com/dart-gde/dart-google-oauth2-library',
-    this.credentialsFilePath: 'credentials.json'}) {
+    this.credentialsFilePath: 'credentials.json', int timeoutInterval}) {
 
     if (identifier != null) this._identifier = identifier;
     if (secret != null) this._secret = secret;
@@ -73,7 +73,7 @@ class OAuth2Console {
     if (scopes != null) this._scopes = scopes;
     if (request_visible_actions != null) this._request_visible_actions = request_visible_actions;
 
-    _httpClient = new PubHttpClient();
+    _httpClient = new PubHttpClient(timeoutInterval: timeoutInterval);
     _httpClient.tokenEndpoint = tokenEndpoint;
   }
 

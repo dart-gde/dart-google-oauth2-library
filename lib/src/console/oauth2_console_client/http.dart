@@ -18,7 +18,7 @@ import 'utils.dart';
 // TODO(nweiz): make this configurable
 /// The amount of time in milliseconds to allow HTTP requests before assuming
 /// they've failed.
-final HTTP_TIMEOUT = 30 * 1000;
+const DEFAULT_HTTP_TIMEOUT = 30 * 1000;
 
 /// Headers and field names that should be censored in the log output.
 final _CENSORED_FIELDS = const ['refresh_token', 'authorization'];
@@ -28,8 +28,9 @@ final _CENSORED_FIELDS = const ['refresh_token', 'authorization'];
 class PubHttpClient extends http.BaseClient {
   http.Client inner;
   Uri tokenEndpoint;
+  int timeoutInterval;
 
-  PubHttpClient([http.Client inner])
+  PubHttpClient({http.Client inner, this.timeoutInterval: DEFAULT_HTTP_TIMEOUT})
     : this.inner = inner == null ? new http.Client() : inner;
 
   Future<http.StreamedResponse> send(http.BaseRequest request) {
@@ -43,9 +44,9 @@ class PubHttpClient extends http.BaseClient {
       stackTrace = localStackTrace;
     }
 
-    // TODO(nweiz): Ideally the timeout would extend to reading from the
-    // response input stream, but until issue 3657 is fixed that's not feasible.
-    return timeout(inner.send(request).then((streamedResponse) {
+    // wraps the send future that is beeing created here for the next part,
+    // where we decide if we put it in a timeout or not
+    Function sendFn = (){inner.send(request).then((streamedResponse) {
       _logResponse(streamedResponse);
 
       var status = streamedResponse.statusCode;
@@ -76,7 +77,18 @@ class PubHttpClient extends http.BaseClient {
         }
       }
       throw error;
-    }), HTTP_TIMEOUT, 'fetching URL "${request.url}"');
+    });};
+    
+    // TODO(nweiz): Ideally the timeout would extend to reading from the
+    // response input stream, but until issue 3657 is fixed that's not feasible.
+    if(this.timeoutInterval > 0)
+    {
+      return timeout(sendFn(), this.timeoutInterval, 'fetching URL "${request.url}"');
+    }
+    else
+    {
+      return sendFn();
+    }
   }
 
   /// Logs the fact that [request] was sent, and information about it.
