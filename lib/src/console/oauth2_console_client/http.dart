@@ -15,7 +15,6 @@ import 'io.dart';
 import 'log.dart' as log;
 import 'utils.dart';
 
-// TODO(nweiz): make this configurable
 /// The amount of time in milliseconds to allow HTTP requests before assuming
 /// they've failed.
 const DEFAULT_HTTP_TIMEOUT = 30 * 1000;
