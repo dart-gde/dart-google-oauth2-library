@@ -1,5 +1,5 @@
 name: google_oauth2_client
-version: 0.3.1
+version: 0.3.1-dev
 authors:
 - Gerwin Sturm <scarygami@gmail.com>
 - Adam Singer <financeCoding@gmail.com>
