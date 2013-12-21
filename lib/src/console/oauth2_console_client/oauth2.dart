@@ -3,11 +3,14 @@
 // BSD-style license that can be found in the LICENSE file.
 
 library oauth2;
+import 'dart:core';
 
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:oauth2/oauth2.dart';
 import 'package:path/path.dart' as path;
+import 'package:http/http.dart' as http;
 
 import 'http.dart';
 import 'io.dart';
@@ -304,3 +307,142 @@ class SimpleOAuth2Console implements OAuth2Console {
   List<String> _request_visible_actions;
   PubHttpClient _httpClient;
 }
+
+/**
+ * A compute engine oauth2 console client.
+ */
+class ComputeOAuth2Console implements OAuth2Console {
+  Uri _tokenEndpoint =
+      Uri.parse('http://metadata/computeMetadata/v1beta1/instance/service-accounts/default/token');
+  Uri get tokenEndpoint => _tokenEndpoint;
+
+  Credentials _credentials;
+
+  Credentials get credentials => _credentials;
+
+  void set credentials(value) {
+    _credentials = value;
+  }
+
+  String _identifier = "";
+
+  String _secret = "";
+
+  String _accessToken = "";
+
+  final int authorizationResponseServerPort = null;
+
+  Client _simpleHttpClient;
+
+  final String projectId;
+  ComputeOAuth2Console(this.projectId);
+
+  Future withClient(Future fn(Client client)) {
+    log.fine("withClient(Future ${fn}(Client client))");
+    _simpleHttpClient = new ComputeEngineClient(projectId);
+    return fn(_simpleHttpClient);
+  }
+
+  void close() {
+    _simpleHttpClient.close();
+  }
+
+  /*
+   * Methods and variables not supported by this client.
+   */
+
+  void clearCredentials() {
+    throw new UnsupportedError("clearCredentials");
+  }
+
+  void set authorizedRedirect(String _authorizedRedirect) {
+    throw new UnsupportedError("authorizedRedirect");
+  }
+
+  String get authorizedRedirect => null;
+
+  String get credentialsFilePath => null;
+
+  void set credentialsFilePath(String _credentialsFilePath) {
+    throw new UnsupportedError("credentialsFilePath");
+  }
+
+  Future<Client> _getClient() {
+    throw new UnsupportedError("_getClient");
+  }
+
+  Credentials _loadCredentials() {
+    throw new UnsupportedError("_loadCredentials");
+  }
+  void _saveCredentials(Credentials credentials) {
+    throw new UnsupportedError("_saveCredentials");
+  }
+  Future _authorize() {
+    throw new UnsupportedError("_authorize");
+  }
+
+  List _scopes;
+  Uri _authorizationEndpoint;
+  List<String> _request_visible_actions;
+  PubHttpClient _httpClient;
+}
+
+class ComputeEngineClient extends http.BaseClient implements Client {
+  final String identifier = "";
+  final String secret = "";
+  final String projectId;
+  Credentials get credentials => _credentials;
+  Credentials _credentials;
+  http.Client _httpClient;
+
+  Uri _tokenEndpoint =
+      Uri.parse('http://metadata/computeMetadata/v1beta1/instance/service-accounts/default/token');
+
+  ComputeEngineClient(this.projectId,
+      {http.Client httpClient})
+    : _httpClient = httpClient == null ? new http.Client() : httpClient;
+
+  Future<http.StreamedResponse> send(http.BaseRequest request) {
+    return async.then((_) {
+      // TODO: check if credentials need to be refreshed.
+      return refreshCredentials();
+    }).then((_) {
+      request.headers['Authorization'] = "OAuth ${credentials.accessToken}";
+      request.headers['x-goog-api-version'] = "2";
+      request.headers['x-goog-project-id'] = "${projectId}";
+      return _httpClient.send(request);
+    }).then((response) {
+      return response;
+    });
+  }
+
+  Future<Client> refreshCredentials([List<String> newScopes]) {
+    return async.then((_) {
+      return _httpClient.get(_tokenEndpoint,
+          headers: {'X-Google-Metadata-Request': 'True'});
+    }).then((http.Response response) {
+      if (response.statusCode == 200) {
+        // Successful request
+        var tokenData = JSON.decode(response.body);
+        int expiresIn = tokenData["expires_in"];
+        var expiresTime = new DateTime.now();
+        expiresTime = expiresTime.add(new Duration(seconds: expiresIn));
+        _credentials = new Credentials(tokenData["access_token"], null, null,
+            null, expiresTime);
+        return this;
+      } else {
+        // Unsuccessful request
+        throw new StateError("status code = ${response.statusCode}");
+      }
+    });
+  }
+
+  void close() {
+    if (_httpClient != null) _httpClient.close();
+    _httpClient = null;
+  }
+}
+
+/// Returns a [Future] that asynchronously completes to `null`.
+Future get async => new Future.delayed(const Duration(milliseconds: 0),
+                                       () => null);
