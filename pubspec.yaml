@@ -7,12 +7,12 @@ authors:
 description: Library to use for Google OAuth2 authentication / Client-side flow
 homepage: https://github.com/dart-gde/dart-google-oauth2-library
 environment:
-  sdk: '>=0.8.10+6 <2.0.0'
+  sdk: '>=1.0.0 <2.0.0'
 dependencies:
   crypto: '>=0.9.0 <0.10.0'
   http: '>=0.9.0 <0.10.0'
   oauth2: '>=0.9.0 <0.10.0'
-  path: '>=0.9.0 <0.10.0'
+  path: any
 dev_dependencies:
   browser: '>=0.9.0 <0.10.0'
-  hop: '>=0.27.1'
+  hop: '>=0.28.2+1'
