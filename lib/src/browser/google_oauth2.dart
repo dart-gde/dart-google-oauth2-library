@@ -7,6 +7,7 @@ class GoogleOAuth2 extends OAuth2<Token> {
   final List<String> _request_visible_actions;
   final String _provider;
   final Function _tokenLoaded;
+  String _approval_prompt;
 
   Future<_ProxyChannel> _channel;
 
@@ -22,15 +23,20 @@ class GoogleOAuth2 extends OAuth2<Token> {
   /// and the permissions described by [scopes].
   /// If [tokenLoaded] is provided, it will be called with a [Token] when one
   /// is available. This can be used e.g. to set up a 'logged in' view.
+  /// 
+  /// [approvalPrompt] can be null of 'force' to force user selection or 
+  /// 'auto' (default)
   GoogleOAuth2(
     String this._clientId,
     List<String> this._scopes, { List<String> request_visible_actions: null,
       String provider: "https://accounts.google.com/o/oauth2/",
       tokenLoaded(Token token),
-      bool autoLogin: false }) :
+      bool autoLogin: false,
+      String approvalPrompt: null}) :
         _provider = provider,
         _tokenLoaded = tokenLoaded,
         _request_visible_actions = request_visible_actions,
+        _approval_prompt = approvalPrompt,
         super() {
     _channel = _createFutureChannel();
     // Attempt an immediate login, we may already be authorized.
@@ -78,6 +84,7 @@ class GoogleOAuth2 extends OAuth2<Token> {
       "redirect_uri": "postmessage", // Response will post to the proxy iframe
       "scope": _scopes.join(" "),
       "immediate": immediate,
+      "approval_prompt": _approval_prompt
     };
     if (_request_visible_actions != null && _request_visible_actions.length > 0) {
       queryParams["request_visible_actions"] = _request_visible_actions.join(" ");
@@ -238,4 +245,11 @@ class GoogleOAuth2 extends OAuth2<Token> {
 
     return result;
   }
+  
+  String get approval_prompt => _approval_prompt;
+  
+  set approval_prompt(String approval_prompt) {
+    this._approval_prompt = approval_prompt;
+  }
+  
 }

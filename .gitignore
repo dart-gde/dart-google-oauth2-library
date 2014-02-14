@@ -3,3 +3,7 @@ pubspec.lock
 out
 credentials.json
 packages
+lib/docs
+*.dart.js
+*.dart.js.*
+*.dart.*.js

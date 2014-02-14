@@ -6,6 +6,8 @@ import "package:google_oauth2_client/google_oauth2_browser.dart";
 final ButtonElement loginButton = query("#login");
 final logoutButton = query("#logout");
 final outputDiv = query("#output");
+final DivElement loginWrapper = querySelector("#login_wrapper");
+final SelectElement approvalPromptInput = querySelector("#approval_prompt") as SelectElement;
 
 void main() {
 
@@ -16,6 +18,11 @@ void main() {
 
   loginButton.onClick.listen((e) {
     loginButton.disabled = true;
+    String approvalPrompt = approvalPromptInput.value;
+    if (approvalPrompt.isEmpty) {
+      approvalPrompt = null;
+    }
+    auth.approval_prompt = approvalPrompt;
     auth.login()
       .then(_oauthReady)
       .whenComplete(() {
@@ -25,7 +32,7 @@ void main() {
 
   logoutButton.onClick.listen((e) {
     auth.logout();
-    loginButton.style.display = "inline-block";
+    loginWrapper.style.display = "inline-block";
     logoutButton.style.display = "none";
     outputDiv.innerHtml = "";
   });
@@ -34,7 +41,7 @@ void main() {
 
 Future _oauthReady(Token token) {
 
-  loginButton.style.display = "none";
+  loginWrapper.style.display = "none";
   logoutButton.style.display = "inline-block";
   final url = "https://www.googleapis.com/books/v1/volumes/zyTCAlFPjgYC";
 
