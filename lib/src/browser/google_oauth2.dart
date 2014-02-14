@@ -24,7 +24,7 @@ class GoogleOAuth2 extends OAuth2<Token> {
   /// If [tokenLoaded] is provided, it will be called with a [Token] when one
   /// is available. This can be used e.g. to set up a 'logged in' view.
   /// 
-  /// [approvalPrompt] can be null of 'force' to force user selection or 
+  /// [approval_prompt] can be null of 'force' to force user selection or 
   /// 'auto' (default)
   GoogleOAuth2(
     String this._clientId,
@@ -32,11 +32,11 @@ class GoogleOAuth2 extends OAuth2<Token> {
       String provider: "https://accounts.google.com/o/oauth2/",
       tokenLoaded(Token token),
       bool autoLogin: false,
-      String approvalPrompt: null}) :
+      String approval_prompt: null}) :
         _provider = provider,
         _tokenLoaded = tokenLoaded,
         _request_visible_actions = request_visible_actions,
-        _approval_prompt = approvalPrompt,
+        _approval_prompt = approval_prompt,
         super() {
     _channel = _createFutureChannel();
     // Attempt an immediate login, we may already be authorized.
