@@ -58,13 +58,18 @@ class OAuth2Console {
 
   final String credentialsFilePath;
 
+  /// The port that should be used for the one-shot authorization response
+  /// server
+  final int authorizationResponseServerPort;
+
   PubHttpClient _httpClient;
 
   OAuth2Console({String identifier: null, String secret: null,
     Uri authorizationEndpoint: null, Uri tokenEndpoint: null, List scopes: null,
     List<String> request_visible_actions: null,
     this.authorizedRedirect: 'https://github.com/dart-gde/dart-google-oauth2-library',
-    this.credentialsFilePath: 'credentials.json'}) {
+    this.credentialsFilePath: 'credentials.json',
+    this.authorizationResponseServerPort: 0}) {
 
     if (identifier != null) this._identifier = identifier;
     if (secret != null) this._secret = secret;
@@ -182,7 +187,7 @@ class OAuth2Console {
     // Spin up a one-shot HTTP server to receive the authorization code from the
     // Google OAuth2 server via redirect. This server will close itself as soon as
     // the code is received.
-    return SafeHttpServer.bind('127.0.0.1', 0).then((server) {
+    return SafeHttpServer.bind('127.0.0.1', authorizationResponseServerPort).then((server) {
       var authUrl = grant.getAuthorizationUrl(
           Uri.parse('http://localhost:${server.port}'), scopes: _scopes);
 
