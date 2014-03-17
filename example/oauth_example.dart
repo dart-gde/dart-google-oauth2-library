@@ -1,16 +1,16 @@
 import 'dart:async';
 import "dart:html";
 import "dart:convert";
+
 import "package:google_oauth2_client/google_oauth2_browser.dart";
 
-final ButtonElement loginButton = query("#login");
-final logoutButton = query("#logout");
-final outputDiv = query("#output");
+final ButtonElement loginButton = querySelector("#login");
+final logoutButton = querySelector("#logout");
+final outputDiv = querySelector("#output");
 final DivElement loginWrapper = querySelector("#login_wrapper");
-final SelectElement approvalPromptInput = querySelector("#approval_prompt") as SelectElement;
+final SelectElement approvalPromptInput = querySelector("#approval_prompt");
 
 void main() {
-
   // use your own Client ID from the API Console here
   final auth = new GoogleOAuth2(
       "796343192238.apps.googleusercontent.com",
@@ -40,7 +40,6 @@ void main() {
 
 
 Future _oauthReady(Token token) {
-
   loginWrapper.style.display = "none";
   logoutButton.style.display = "inline-block";
   final url = "https://www.googleapis.com/books/v1/volumes/zyTCAlFPjgYC";
