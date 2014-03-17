@@ -241,11 +241,13 @@ class SimpleOAuth2Console implements OAuth2Console {
     _credentials = value;
   }
 
-  final String _identifier;
+  String _identifier;
 
-  final String _secret;
+  String _secret;
 
-  final String _accessToken;
+  String _accessToken;
+
+  final int authorizationResponseServerPort = null;
 
   Client _simpleHttpClient;
 

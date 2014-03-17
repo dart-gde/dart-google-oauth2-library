@@ -31,7 +31,9 @@ class SafeHttpServer extends StreamView<HttpRequest> implements HttpServer {
       : super(server),
         _inner = server;
 
-  Future close() => _inner.close();
+  InternetAddress get address => _inner.address;
+
+  Future close({bool force: false}) => _inner.close(force: force);
 
   int get port => _inner.port;
 
@@ -87,6 +89,7 @@ class _HttpRequestWrapper extends StreamView<List<int>> implements HttpRequest {
   int get contentLength => _inner.contentLength;
   String get method => _inner.method;
   Uri get uri => _inner.uri;
+  Uri get requestedUri => _inner.requestedUri;
   HttpHeaders get headers => _inner.headers;
   List<Cookie> get cookies => _inner.cookies;
   bool get persistentConnection => _inner.persistentConnection;
@@ -148,7 +151,10 @@ class _HttpResponseWrapper implements HttpResponse {
     _inner.writeAll(objects, separator);
   void writeCharCode(int charCode) => _inner.writeCharCode(charCode);
   void writeln([Object obj = ""]) => _inner.writeln(obj);
-  void addError(error) => _inner.addError(error);
+  void addError(error, [StackTrace stackTrace]) =>
+      _inner.addError(error, stackTrace);
+  Future flush() => _inner.flush();
+
 
   Duration get deadline => _inner.deadline;
   set deadline(Duration value) {
