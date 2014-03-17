@@ -18,7 +18,7 @@ Add this dependency to your pubspec.yaml
 
 ```
   dependencies:
-    google_oauth2_client: '>=0.2.18'
+    google_oauth2_client: '>=0.3.4'
 ```
 
 ### Web applications
@@ -132,7 +132,7 @@ No guarantees about the security or functionality of this libary
 ### Licenses
 
 ```
-Copyright (c) 2013 Gerwin Sturm & Adam Singer
+Copyright (c) 2013-2014 Gerwin Sturm & Adam Singer
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not
 use this file except in compliance with the License. You may obtain a copy of
