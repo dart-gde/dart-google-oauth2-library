@@ -1,5 +1,5 @@
 name: google_oauth2_client
-version: 0.3.5-dev
+version: 0.3.5
 authors:
 - Gerwin Sturm <scarygami@gmail.com>
 - Adam Singer <financeCoding@gmail.com>
@@ -12,7 +12,7 @@ dependencies:
   crypto: '>=0.9.0 <0.10.0'
   http: '>=0.9.0 <0.10.0'
   oauth2: '>=0.9.0 <0.10.0'
-  path: '>=1.0.0 <1.1.0'
+  path: '>=1.0.0 <1.2.0'
 dev_dependencies:
-  browser: '>=0.9.0 <0.10.0'
+  browser: '>=0.9.0 <0.11.0'
   hop: '>=0.28.3'
