@@ -11,6 +11,7 @@ import 'dart:convert';
 import 'package:oauth2/oauth2.dart';
 import 'package:path/path.dart' as path;
 import 'package:http/http.dart' as http;
+import "package:json_web_token/json_web_token.dart";
 
 import 'http.dart';
 import 'io.dart';
@@ -335,11 +336,21 @@ class ComputeOAuth2Console implements OAuth2Console {
   Client _simpleHttpClient;
 
   final String projectId;
-  ComputeOAuth2Console(this.projectId);
+  final String privateKey;
+  final String iss;
+  final String scopes;
+
+  ComputeOAuth2Console(this.projectId, {this.privateKey: null, this.iss: null, this.scopes: null});
 
   Future withClient(Future fn(Client client)) {
     log.fine("withClient(Future ${fn}(Client client))");
-    _simpleHttpClient = new ComputeEngineClient(projectId);
+
+    if (this.privateKey == null && this.iss == null && this.scopes == null) {
+      _simpleHttpClient = new ComputeEngineClient(projectId);
+    } else {
+      _simpleHttpClient = new OtherPlatformClient(projectId, privateKey, iss, scopes);
+    }
+
     return fn(_simpleHttpClient);
   }
 
@@ -387,6 +398,45 @@ class ComputeOAuth2Console implements OAuth2Console {
   PubHttpClient _httpClient;
 }
 
+class OtherPlatformClient extends http.BaseClient implements Client {
+  final String identifier = "";
+  final String secret = "";
+  final String projectId;
+  Credentials get credentials => _credentials;
+  Credentials _credentials;
+  http.Client _httpClient;
+
+  final String privateKey;
+  final String iss;
+  final String scopes;
+
+  OtherPlatformClient(this.projectId, this.privateKey, this.iss, this.scopes,
+      {http.Client httpClient})
+    : _httpClient = httpClient == null ? new http.Client() : httpClient {
+    JWTStore.getCurrent().registerKey(iss, privateKey);
+  }
+
+  Future<http.StreamedResponse> send(http.BaseRequest request) {
+    return async.then((_) {
+      // TODO(adam): should we configure iat isExpired check?
+      return JWTStore.getCurrent().generateJWT(iss, scopes);
+    }).then((JWT jwt) {
+      request.headers['authorization'] = "Bearer ${jwt.accessToken}";
+      return _httpClient.send(request);
+    }).then((response) => response);
+    // TODO(adam): better error handling similar to client.dart
+  }
+
+  Future<Client> refreshCredentials([List<String> newScopes]) {
+    return new Future.value();
+  }
+
+  void close() {
+    if (_httpClient != null) _httpClient.close();
+    _httpClient = null;
+  }
+}
+
 class ComputeEngineClient extends http.BaseClient implements Client {
   final String identifier = "";
   final String secret = "";
@@ -416,6 +466,7 @@ class ComputeEngineClient extends http.BaseClient implements Client {
     });
   }
 
+  // TODO: use a token store instead of fetching each time. Checkout JWTStore.
   Future<Client> refreshCredentials([List<String> newScopes]) {
     return async.then((_) {
       return _httpClient.get(_tokenEndpoint,
