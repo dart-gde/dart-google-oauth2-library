@@ -1,5 +1,9 @@
 # Changelog - Dart Google OAuth2 Library
 
+## 0.3.7 2014-03-28 (SDK 1.3.0-dev.7.2 r34463)
+
+- bump of `json_web_token` version 
+
 ## 0.3.6 2014-03-27 (SDK 1.3.0-dev.7.2 r34463)
 
 - Added JWT support for `ComputeOAuth2Console`, now supporting
