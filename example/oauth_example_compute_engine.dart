@@ -2,7 +2,7 @@ import "dart:async";
 import "package:google_oauth2_client/google_oauth2_console.dart";
 import "package:http/http.dart" as http;
 
-void main(args) {
+void main(List<String> args) {
   print("project = ${args[0]}");
   ComputeOAuth2Console computeEngineClient = new ComputeOAuth2Console(args[0]);
 

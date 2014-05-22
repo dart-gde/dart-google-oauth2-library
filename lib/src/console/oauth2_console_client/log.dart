@@ -6,7 +6,6 @@
 library log;
 
 import 'dart:io';
-import 'dart:async';
 
 import 'utils.dart';
 
