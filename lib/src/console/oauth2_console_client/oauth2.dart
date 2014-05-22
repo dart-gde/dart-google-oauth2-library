@@ -7,6 +7,7 @@ import 'dart:core';
 
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:oauth2/oauth2.dart';
 import 'package:path/path.dart' as path;
@@ -16,7 +17,6 @@ import "package:json_web_token/json_web_token.dart";
 import 'http.dart';
 import 'io.dart';
 import 'log.dart' as log;
-import 'safe_http_server.dart';
 import 'utils.dart';
 
 export 'package:oauth2/oauth2.dart';
@@ -191,7 +191,7 @@ class OAuth2Console {
     // Spin up a one-shot HTTP server to receive the authorization code from the
     // Google OAuth2 server via redirect. This server will close itself as soon as
     // the code is received.
-    return SafeHttpServer.bind('127.0.0.1', authorizationResponseServerPort).then((server) {
+    return HttpServer.bind('127.0.0.1', authorizationResponseServerPort).then((server) {
       var authUrl = grant.getAuthorizationUrl(
           Uri.parse('http://localhost:${server.port}'), scopes: _scopes);
 
