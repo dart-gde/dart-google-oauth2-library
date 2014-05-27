@@ -1,4 +1,6 @@
-# Changelog - Dart Google OAuth2 Library
+## 0.3.8
+
+* Updated many dependencies.
 
 ## 0.3.7 2014-03-28 (SDK 1.3.0-dev.7.2 r34463)
 
