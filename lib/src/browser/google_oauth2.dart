@@ -45,8 +45,7 @@ class GoogleOAuth2 extends OAuth2<Token> {
       login(immediate:true)
         .then((t) => print("Automatic login successful"))
         .catchError((e) => print("$e"));
-    }
-    if (autoLoadStoredToken) {
+    }else if (autoLoadStoredToken) {
       login(immediate:true, onlyLoadToken:true)
         .then((t) => print("Automatic login from stored token successful"))
         .catchError((e) => print("$e"));
