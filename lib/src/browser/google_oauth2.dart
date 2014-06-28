@@ -32,6 +32,7 @@ class GoogleOAuth2 extends OAuth2<Token> {
       String provider: "https://accounts.google.com/o/oauth2/",
       tokenLoaded(Token token),
       bool autoLogin: false,
+      bool autoLoadStoredToken: true,
       String approval_prompt: null}) :
         _provider = provider,
         _tokenLoaded = tokenLoaded,
@@ -43,6 +44,11 @@ class GoogleOAuth2 extends OAuth2<Token> {
     if (autoLogin) {
       login(immediate:true)
         .then((t) => print("Automatic login successful"))
+        .catchError((e) => print("$e"));
+    }
+    if (autoLoadStoredToken) {
+      login(immediate:true, onlyLoadToken:true)
+        .then((t) => print("Automatic login from stored token successful"))
         .catchError((e) => print("$e"));
     }
   }
@@ -104,7 +110,7 @@ class GoogleOAuth2 extends OAuth2<Token> {
   /// If you have no token, a popup prompt will be displayed.
   /// If the user declines, closes the popup, or the service returns a token
   /// that cannot be validated, an exception will be delivered.
-  Future<Token> login({bool immediate: null}) {
+  Future<Token> login({bool immediate: null, bool onlyLoadToken: false}) {
     if (token != null) {
       if (token.expired) {
         if (immediate == null) {
@@ -173,7 +179,7 @@ class GoogleOAuth2 extends OAuth2<Token> {
         stored.validate(_clientId)
           .then((v) => tokenCompleter.complete(stored))
           .catchError((e) => completeByPromptingUser());
-      } else {
+      } else if (!onlyLoadToken){
         completeByPromptingUser();
       }
     }
