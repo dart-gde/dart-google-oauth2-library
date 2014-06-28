@@ -154,23 +154,27 @@ class GoogleOAuth2 extends OAuth2<Token> {
 
       completeByPromptingUser() {
         _tokenCompleter = _wrapValidation(tokenCompleter);
+        if (onlyLoadToken){
+          //Remove current login attempt because prompting user is disabled by onlyLoadToken
+          _tokenCompleter.completeError("Could not load token from Local Storage");
+        } else {
+          // Synchronous if the channel is already open -> avoids popup blocker
 
-        // Synchronous if the channel is already open -> avoids popup blocker
-
-        _channel
-          .then((value) {
-            String uri = _getAuthorizeUri(immediate);
-            if (immediate) {
-              IFrameElement iframe = _iframe(uri);
-              _tokenCompleter.future.whenComplete(() => iframe.remove());
-            } else {
-              WindowBase popup = _popup(uri);
-              new _WindowPoller(_tokenCompleter, popup).poll();
-            }
-          })
-          .catchError((e) {
-            return _tokenCompleter.completeError(e);
-          });
+          _channel
+            .then((value) {
+              String uri = _getAuthorizeUri(immediate);
+              if (immediate) {
+                IFrameElement iframe = _iframe(uri);
+                _tokenCompleter.future.whenComplete(() => iframe.remove());
+              } else {
+                WindowBase popup = _popup(uri);
+                new _WindowPoller(_tokenCompleter, popup).poll();
+              }
+            })
+            .catchError((e) {
+              return _tokenCompleter.completeError(e);
+            });
+        }
       }
 
       final stored = _storedToken;
@@ -178,11 +182,8 @@ class GoogleOAuth2 extends OAuth2<Token> {
         stored.validate(_clientId)
           .then((v) => tokenCompleter.complete(stored))
           .catchError((e) => completeByPromptingUser());
-      } else if (!onlyLoadToken){
-        completeByPromptingUser();
       } else {
-        //Remove current login attempt because prompting user is disabled by onlyLoadToken
-        _tokenFuture = null;
+        completeByPromptingUser();
       }
     }
     return _tokenFuture;
