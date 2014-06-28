@@ -180,6 +180,9 @@ class GoogleOAuth2 extends OAuth2<Token> {
           .catchError((e) => completeByPromptingUser());
       } else if (!onlyLoadToken){
         completeByPromptingUser();
+      } else {
+        //Remove current login attempt because prompting user is disabled by onlyLoadToken
+        _tokenFuture = null;
       }
     }
     return _tokenFuture;
