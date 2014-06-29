@@ -156,7 +156,7 @@ class GoogleOAuth2 extends OAuth2<Token> {
         _tokenCompleter = _wrapValidation(tokenCompleter);
         if (onlyLoadToken){
           //Remove current login attempt because prompting user is disabled by onlyLoadToken
-          _tokenCompleter.completeError("Could not load token from Local Storage");
+          _tokenCompleter.completeError("Google OAuth2 token not saved in Local Storage");
         } else {
           // Synchronous if the channel is already open -> avoids popup blocker
 
