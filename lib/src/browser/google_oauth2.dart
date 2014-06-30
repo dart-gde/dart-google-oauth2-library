@@ -32,6 +32,7 @@ class GoogleOAuth2 extends OAuth2<Token> {
       String provider: "https://accounts.google.com/o/oauth2/",
       tokenLoaded(Token token),
       bool autoLogin: false,
+      bool autoLoadStoredToken: true,
       String approval_prompt: null}) :
         _provider = provider,
         _tokenLoaded = tokenLoaded,
@@ -43,6 +44,10 @@ class GoogleOAuth2 extends OAuth2<Token> {
     if (autoLogin) {
       login(immediate:true)
         .then((t) => print("Automatic login successful"))
+        .catchError((e) => print("$e"));
+    }else if (autoLoadStoredToken) {
+      login(immediate:true, onlyLoadToken:true)
+        .then((t) => print("Automatic login from stored token successful"))
         .catchError((e) => print("$e"));
     }
   }
@@ -104,7 +109,7 @@ class GoogleOAuth2 extends OAuth2<Token> {
   /// If you have no token, a popup prompt will be displayed.
   /// If the user declines, closes the popup, or the service returns a token
   /// that cannot be validated, an exception will be delivered.
-  Future<Token> login({bool immediate: null}) {
+  Future<Token> login({bool immediate: null, bool onlyLoadToken: false}) {
     if (token != null) {
       if (token.expired) {
         if (immediate == null) {
@@ -149,23 +154,27 @@ class GoogleOAuth2 extends OAuth2<Token> {
 
       completeByPromptingUser() {
         _tokenCompleter = _wrapValidation(tokenCompleter);
+        if (onlyLoadToken){
+          //Remove current login attempt because prompting user is disabled by onlyLoadToken
+          _tokenCompleter.completeError("Google OAuth2 token not saved in Local Storage");
+        } else {
+          // Synchronous if the channel is already open -> avoids popup blocker
 
-        // Synchronous if the channel is already open -> avoids popup blocker
-
-        _channel
-          .then((value) {
-            String uri = _getAuthorizeUri(immediate);
-            if (immediate) {
-              IFrameElement iframe = _iframe(uri);
-              _tokenCompleter.future.whenComplete(() => iframe.remove());
-            } else {
-              WindowBase popup = _popup(uri);
-              new _WindowPoller(_tokenCompleter, popup).poll();
-            }
-          })
-          .catchError((e) {
-            return _tokenCompleter.completeError(e);
-          });
+          _channel
+            .then((value) {
+              String uri = _getAuthorizeUri(immediate);
+              if (immediate) {
+                IFrameElement iframe = _iframe(uri);
+                _tokenCompleter.future.whenComplete(() => iframe.remove());
+              } else {
+                WindowBase popup = _popup(uri);
+                new _WindowPoller(_tokenCompleter, popup).poll();
+              }
+            })
+            .catchError((e) {
+              return _tokenCompleter.completeError(e);
+            });
+        }
       }
 
       final stored = _storedToken;
