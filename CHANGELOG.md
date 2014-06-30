@@ -1,3 +1,7 @@
+## 0.3.9 2014-06-29 (SDK 1.5.0-dev.4.23 r37639)
+
+* Auto load stored token
+
 ## 0.3.8
 
 * Updated many dependencies.
