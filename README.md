@@ -10,9 +10,10 @@ Dart library to use for Google OAuth2 authentication / Client-side flow
 ### Usage/Installation
 
 
-Go to [Google APIs Console](https://code.google.com/apis/console/) and create a new Project
-Create a new `Client ID` for web applications in "API Access"
-Set JavaScript origins to your server or for example `http://127.0.0.1:3030/` for local testing in Dartium
+Go to [Google APIs Console](https://code.google.com/apis/console/) and:
+- Create a new Project,
+- Create a new `Client ID` for web applications in "API Access" - You should select the "APIS and AUTH > Credentials" left menu item in the new APIs console and click on the "Create new Client ID" button,
+- Set JavaScript origins to your server or for example `http://127.0.0.1:3030/` for local testing in Dartium 
 
 Add this dependency to your pubspec.yaml
 
