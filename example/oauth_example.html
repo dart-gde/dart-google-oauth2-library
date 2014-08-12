@@ -8,19 +8,31 @@
   <body>
     <h1>OAuth Example</h1>
     
+    <p>After logging in, this app will call Google Books API to get book info</p>
     <div id="login_wrapper">
       <p>approval_prompt
       <select id="approval_prompt">
         <option value="auto">auto</option>
-        <option value="force">force</option>
-        <option value="">(null)</option>
+        <option value="force" selected>force</option>
+      </select>
+      </p>
+      <p>immediate
+      <select id="immediate">
+        <option value="1">true</option>
+        <option value="0" selected>false</option>
+      </select>
+      </p>
+      <p>onlyLoadToken
+      <select id="onlyLoadToken">
+        <option value="1">true</option>
+        <option value="0" selected>false</option>
       </select>
       </p>
       <button id="login">Login</button>
     </div>
     <button id="logout" style="display:none;">Logout</button>
 
-    <div id="output"></div>
+    <div id="output" style="margin:15px 5px 0 5px;"></div>
 
     <script type="application/dart" src="oauth_example.dart"></script>
     <script src="packages/browser/dart.js"></script>
