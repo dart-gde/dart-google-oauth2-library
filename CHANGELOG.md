@@ -1,3 +1,10 @@
+## 0.4.0 2014-08-12 (SDK 1.6.0-dev.8.0 r38967)
+
+- Added completeError() for un-handled exceptions and cases like immediate + force prompt
+- Refactored the code/comments for better readability
+- Clarify the process of creating a Client ID
+- Add instructions for the latest version of the APIs console
+
 ## 0.3.9 2014-06-29 (SDK 1.5.0-dev.4.23 r37639)
 
 * Auto load stored token
