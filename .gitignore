@@ -1,4 +1,5 @@
 packages/
+build/
 pubspec.lock
 out
 credentials.json

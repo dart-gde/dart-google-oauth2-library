@@ -9,6 +9,8 @@ final logoutButton = querySelector("#logout");
 final outputDiv = querySelector("#output");
 final DivElement loginWrapper = querySelector("#login_wrapper");
 final SelectElement approvalPromptInput = querySelector("#approval_prompt");
+final SelectElement immediateInput = querySelector("#immediate");
+final SelectElement onlyLoadTokenInput = querySelector("#onlyLoadToken");
 
 void main() {
   // use your own Client ID from the API Console here
@@ -16,17 +18,26 @@ void main() {
       "796343192238.apps.googleusercontent.com",
       ["https://www.googleapis.com/auth/books"]);
 
+  outputDiv.innerHtml = "";
+  
   loginButton.onClick.listen((e) {
+    outputDiv.innerHtml = "Loading...";
     loginButton.disabled = true;
     String approvalPrompt = approvalPromptInput.value;
     if (approvalPrompt.isEmpty) {
       approvalPrompt = null;
     }
     auth.approval_prompt = approvalPrompt;
-    auth.login()
+    bool isImmediate = (immediateInput.value == "1");
+    bool onlyLoadToken = (onlyLoadTokenInput.value == "1");
+    auth.login(immediate: isImmediate, onlyLoadToken: onlyLoadToken)
       .then(_oauthReady)
       .whenComplete(() {
         loginButton.disabled = false;
+      })
+      .catchError((e) {
+        outputDiv.innerHtml = e.toString();
+        print("$e");
       });
   });
 
@@ -50,7 +61,10 @@ Future _oauthReady(Token token) {
     .then((HttpRequest request) {
       if (request.status == 200) {
         var data = JSON.decode(request.responseText);
-        outputDiv.innerHtml = "Book info:\n${data['volumeInfo']['title']}";
+        outputDiv.innerHtml = """
+        <p>Book title: ${data['volumeInfo']['title']}</p>
+        <p>Description:<br> ${data['volumeInfo']['description']}</p>
+        """;
       } else {
         outputDiv.innerHtml = "Error ${request.status}: ${request.statusText}";
       }

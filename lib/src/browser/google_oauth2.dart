@@ -1,6 +1,7 @@
 part of google_oauth2_browser;
 
-/// An OAuth2 authentication context.
+/// Google OAuth2 authentication context. For more details on how OAuth2 works for client-side, see
+/// [Oauth2 client-side authentication](https://developers.google.com/accounts/docs/OAuth2#clientside)
 class GoogleOAuth2 extends OAuth2<Token> {
   final String _clientId;
   final List<String> _scopes;
@@ -11,76 +12,90 @@ class GoogleOAuth2 extends OAuth2<Token> {
 
   Future<_ProxyChannel> _channel;
 
-  /// Future of the token we're waiting for.
-  Future<Token> _tokenFuture;
   /// Destination for not-yet-validated tokens we're waiting to receive over
   /// the proxy channel.
   Completer<Token> _tokenCompleter;
+
   /// The last fetched token.
   Token __token; // Double-underscore because it has a private setter _token.
 
-  /// Creates an OAuth2 context for the application identified by [clientId]
-  /// and the permissions described by [scopes].
-  /// If [tokenLoaded] is provided, it will be called with a [Token] when one
-  /// is available. This can be used e.g. to set up a 'logged in' view.
-  /// 
-  /// [approval_prompt] can be null of 'force' to force user selection or 
-  /// 'auto' (default)
+  /// Constructor.
+  ///
+  /// @provider the URI to provide Google OAuth2 authentication.
+  /// @param clientId Client id for the Google API app. Eg, for Google Books, use
+  ///        "796343192238.apps.googleusercontent.com",
+  /// @param scopes list of scopes (kinds of information) you are planning to use. For example, to
+  ///        get data related to Google Books and user info, use
+  ///        `["https://www.googleapis.com/auth/books", "https://www.googleapis.com/auth/userinfo.email"]`
+  /// @param tokenLoaded a callback to use when a non-null login token is ready
+  /// @param approval_prompt can be null or 'force' to force user approval or 'auto' (default)
+  /// @param autoLogin if true, try to login with "immediate" param (no popup will be shown)
+  /// @param onlyLoadToken instead of showing user prompt, use stored token (if available)
   GoogleOAuth2(
-    String this._clientId,
-    List<String> this._scopes, { List<String> request_visible_actions: null,
-      String provider: "https://accounts.google.com/o/oauth2/",
-      tokenLoaded(Token token),
-      bool autoLogin: false,
-      bool autoLoadStoredToken: true,
-      String approval_prompt: null}) :
-        _provider = provider,
+      String this._clientId,
+      List<String> this._scopes,
+      { List<String> request_visible_actions: null,
+        String provider: "https://accounts.google.com/o/oauth2/",
+        tokenLoaded(Token token),
+        bool autoLogin: false,
+        bool autoLoadStoredToken: true,
+        String approval_prompt: null})
+      : _provider = provider,
         _tokenLoaded = tokenLoaded,
         _request_visible_actions = request_visible_actions,
         _approval_prompt = approval_prompt,
         super() {
     _channel = _createFutureChannel();
+
     // Attempt an immediate login, we may already be authorized.
     if (autoLogin) {
-      login(immediate:true)
-        .then((t) => print("Automatic login successful"))
-        .catchError((e) => print("$e"));
-    }else if (autoLoadStoredToken) {
-      login(immediate:true, onlyLoadToken:true)
-        .then((t) => print("Automatic login from stored token successful"))
-        .catchError((e) => print("$e"));
+      login(immediate: true, onlyLoadToken: false)
+          .then((t) => print("Automatic login successful"))
+          .catchError((e) => print("Automatic login failed: $e"));
+    } else if (autoLoadStoredToken) {
+      login(immediate: true, onlyLoadToken: true)
+          .then((t) => print("Login with stored token successful"))
+          .catchError((e) => print("Failed to login with existing token: $e"));
     }
   }
 
-  Map<String, String> getAuthHeaders() =>
-      getAuthorizationHeaders(token.type, token.data);
+  Map<String, String> getAuthHeaders() => getAuthorizationHeaders(token.type, token.data);
 
-  /// Set up the proxy iframe in the provider's origin that will receive
+  /// Sets up the proxy iframe in the provider's origin that will receive
   /// postMessages and relay them to us.
+  ///
   /// This completes asynchronously as the proxy iframe is not ready to use
   /// until we've received an 'oauth2relayReady' message from it.
   Future<_ProxyChannel> _createFutureChannel() {
-    final completer = new Completer<_ProxyChannel>();
-    var channel;
+    final channelCompleter = new Completer<_ProxyChannel>();
+    _ProxyChannel channel;
     channel = new _ProxyChannel(_provider, (subject, args) {
       switch (subject) {
+
+        // Channel is ready at this point
         case "oauth2relayReady":
-          completer.complete(channel);
+          channelCompleter.complete(channel);
           break;
         case "oauth2callback":
           try {
             Token token = Token._parse(args[0]);
-            _tokenCompleter.complete(token);
+            if (!_tokenCompleter.isCompleted) {
+              _tokenCompleter.complete(token);
+            }
           } catch (exception) {
-            _tokenCompleter.completeError(exception);
+            if (!_tokenCompleter.isCompleted) {
+              _tokenCompleter.completeError(exception);
+            }
           }
           break;
       }
     });
-    return completer.future;
+    return channelCompleter.future;
   }
 
-  /// Get the URI that prompts the user for pemission (if required).
+  /// Gets the URI that prompts the user for pemission (if required).
+  /// 
+  /// @param immediate if true, generate a URI to prompt user for permission
   String _getAuthorizeUri(bool immediate) {
     Map<String, String> queryParams = {
       "response_type": "token",
@@ -102,91 +117,124 @@ class GoogleOAuth2 extends OAuth2<Token> {
     _token = null;
   }
 
-  /// Attempt to authenticate.
-  /// If you have an existing valid token, it will be immediately returned.
-  /// If you have an expired token, it will be silently renewed (override
-  ///   with immediate:false)
-  /// If you have no token, a popup prompt will be displayed.
-  /// If the user declines, closes the popup, or the service returns a token
-  /// that cannot be validated, an exception will be delivered.
-  Future<Token> login({bool immediate: null, bool onlyLoadToken: false}) {
+  /// Attempts to authenticate.
+  ///
+  /// Scenarios:
+  ///
+  /// * If you have an existing valid token, it will be immediately returned.
+  /// * If you have an expired token, it will be silently renewed (override
+  ///   with immediate:true)
+  /// * If you have no token, a popup prompt will be displayed.
+  /// * If the user declines, closes the popup, or the service returns a token
+  ///   that cannot be validated, an exception will be delivered.
+  ///   
+  /// @param immediate authenticate user with the "immediate" parameter. No popup will be shown.
+  /// @param onlyLoadToken instead of showing user prompt, use stored token (if available)
+  Future<Token> login({bool immediate: false, bool onlyLoadToken: false}) {
+    if ((_approval_prompt == "force") && immediate) {
+      return new Future<Token>.error("Can't force approval prompt with immediate login");
+    }
+    
     if (token != null) {
-      if (token.expired) {
-        if (immediate == null) {
-          immediate = true; // We should be able to simply renew
-        }
-      } else { // We already have a good token
+
+      // Return the good token right away
+      if (!token.expired) {
         return new Future<Token>.value(token);
       }
-    }
-    if (immediate == null) {
-      immediate = false;
+      
+      // Token expired - simply renew it by later making the immedate auth call
+      if (immediate == null) {
+        immediate = true;
+      }
     }
 
     // Login may already be in progress
-    if (_tokenFuture != null) {
+    if (_tokenCompleter != null && !_tokenCompleter.isCompleted) { 
+
       // An in-progress request will satisfy an immediate request
       // (even if it's not immediate).
-      if (!immediate) {
-        Completer result = new Completer<Token>();
-        _tokenFuture
-          .then((value) => result.complete(value))
+      if (immediate) {
+        return _tokenCompleter.future;
+      }
+
+      Completer tokenCompleter = new Completer<Token>();
+      _tokenCompleter.future
+          .then((value) => tokenCompleter.complete(value))
           .catchError((e) {
-            login(immediate:immediate)
-              .then((value) => result.complete(value))
-              .catchError((e) => result.completeError(e));
+
+            // Ongoing login failed - try to login again
+            login(immediate: immediate, onlyLoadToken: onlyLoadToken)
+                .then((value) => tokenCompleter.complete(value))
+                .catchError((e) => tokenCompleter.completeError(e));
           });
-        return result.future;
-      }
-    } else {
-      Completer<Token> tokenCompleter = new Completer();
-      tokenCompleter.future
-        .then((token) {
-          _tokenFuture = null;
-          _token = token;
-        })
-        .catchError((e) {
-          _tokenFuture = null;
-          _token = null;
-        });
-
-      _tokenFuture = tokenCompleter.future;
-
-      completeByPromptingUser() {
-        _tokenCompleter = _wrapValidation(tokenCompleter);
-        if (onlyLoadToken){
-          //Remove current login attempt because prompting user is disabled by onlyLoadToken
-          _tokenCompleter.completeError("Google OAuth2 token not saved in Local Storage");
-        } else {
-          // Synchronous if the channel is already open -> avoids popup blocker
-
-          _channel
-            .then((value) {
-              String uri = _getAuthorizeUri(immediate);
-              if (immediate) {
-                IFrameElement iframe = _iframe(uri);
-                _tokenCompleter.future.whenComplete(() => iframe.remove());
-              } else {
-                WindowBase popup = _popup(uri);
-                new _WindowPoller(_tokenCompleter, popup).poll();
-              }
-            })
-            .catchError((e) {
-              return _tokenCompleter.completeError(e);
-            });
-        }
-      }
-
-      final stored = _storedToken;
-      if ((stored != null) && !stored.expired) {
-        stored.validate(_clientId)
-          .then((v) => tokenCompleter.complete(stored))
-          .catchError((e) => completeByPromptingUser());
-      } else {
-        completeByPromptingUser();
-      }
+      return tokenCompleter.future;
     }
-    return _tokenFuture;
+
+    // If there is valid locally stored token
+    if ((_storedToken != null) && !_storedToken.expired) {
+      Completer storedTokenCompleter = new Completer<Token>();
+      _storedToken.validate(_clientId)
+          .then((bool isValid) {
+            if (isValid) {
+              _token = _storedToken;
+              storedTokenCompleter.complete(_storedToken);
+              return;
+            }
+
+            _token = null;
+
+            // Stored token not valid - try to log in again
+            login(immediate: immediate, onlyLoadToken: onlyLoadToken)
+              .then((token) => storedTokenCompleter.complete(token))
+              .catchError((e) => storedTokenCompleter.completeError(e));
+          })
+          .catchError((e) {
+            _token = null;
+
+            // Don't prompt user, simply complete with an error
+            if (onlyLoadToken) {
+              _tokenCompleter.completeError("Locally saved token is not valid");
+              return;
+            }
+
+            // Try to log in again
+            login(immediate: immediate, onlyLoadToken: onlyLoadToken)
+                .then((token) => storedTokenCompleter.complete(token))
+                .catchError((e) => storedTokenCompleter.completeError(e));
+          });
+      return storedTokenCompleter.future;
+    }
+
+    Completer<Token> tokenCompleter = new Completer();
+    tokenCompleter.future.then((token) {
+      _token = token;
+    }).catchError((e) {
+      _token = null;
+    });
+
+    _tokenCompleter = _wrapValidation(tokenCompleter);
+
+    // Synchronous if the channel is already open -> avoids popup blocker
+    _channel.then((_ProxyChannel value) {
+      String uri = _getAuthorizeUri(immediate);
+
+      // Request for immediate authentication
+      if (immediate) {
+        IFrameElement iframe = _iframe(uri);
+        _tokenCompleter.future
+          .whenComplete(() => iframe.remove())
+          .catchError((e) => print("Failed to login with immediate: $e"));
+        return;
+      }
+
+      // Prompt user with a popup for user authorization
+      WindowBase popup = _popup(uri);
+      new _WindowPoller(_tokenCompleter, popup).poll();
+    }).catchError((e) {
+      _tokenCompleter.completeError(e);
+    });
+
+    return _tokenCompleter.future;
   }
 
   Future ensureAuthenticated() {
@@ -215,12 +263,11 @@ class GoogleOAuth2 extends OAuth2<Token> {
     }
   }
 
-  Token get _storedToken => window.localStorage.containsKey(_storageKey)
-      ? new Token.fromJson(window.localStorage[_storageKey])
-      : null;
+  Token get _storedToken => window.localStorage.containsKey(_storageKey) ? new Token.fromJson(
+      window.localStorage[_storageKey]) : null;
 
   void set _storedToken(Token value) {
-    if(value == null) {
+    if (value == null) {
       window.localStorage.remove(_storageKey);
     } else {
       window.localStorage[_storageKey] = value.toJson();
@@ -238,27 +285,24 @@ class GoogleOAuth2 extends OAuth2<Token> {
   /// that accepts unvalidated tokens.
   Completer<Token> _wrapValidation(Completer<Token> validTokenCompleter) {
     Completer<Token> result = new Completer();
-    result.future
-      .then((value) {
-        value.validate(_clientId)
-          .then((validation) {
-            if (validation) {
-              validTokenCompleter.complete(value);
+    result.future.then((Token token) {
+      token.validate(_clientId)
+          .then((bool isValid) {
+            if (isValid) {
+              validTokenCompleter.complete(token);
             } else {
-              validTokenCompleter.completeError(new Exception("Server returned token is invalid"));
+              validTokenCompleter.completeError("Server returned token is invalid");
             }
           })
           .catchError((e) => validTokenCompleter.completeError(e));
-      })
-      .catchError((e) => validTokenCompleter.completeError(e));
+    }).catchError((e) => validTokenCompleter.completeError(e));
 
     return result;
   }
-  
+ 
   String get approval_prompt => _approval_prompt;
-  
+
   set approval_prompt(String approval_prompt) {
     this._approval_prompt = approval_prompt;
   }
-  
 }
