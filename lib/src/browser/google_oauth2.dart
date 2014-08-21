@@ -8,6 +8,7 @@ class GoogleOAuth2 extends OAuth2<Token> {
   final List<String> _request_visible_actions;
   final String _provider;
   final Function _tokenLoaded;
+  final Function _tokenNotLoaded;
   String _approval_prompt;
 
   Future<_ProxyChannel> _channel;
@@ -37,11 +38,13 @@ class GoogleOAuth2 extends OAuth2<Token> {
       { List<String> request_visible_actions: null,
         String provider: "https://accounts.google.com/o/oauth2/",
         tokenLoaded(Token token),
+        tokenNotLoaded(),
         bool autoLogin: false,
         bool autoLoadStoredToken: true,
         String approval_prompt: null})
       : _provider = provider,
         _tokenLoaded = tokenLoaded,
+        _tokenNotLoaded = tokenLoaded,
         _request_visible_actions = request_visible_actions,
         _approval_prompt = approval_prompt,
         super() {
@@ -245,19 +248,29 @@ class GoogleOAuth2 extends OAuth2<Token> {
   Token get token => __token;
 
   set _token(Token value) {
-    final invokeCallbacks = (__token == null) && (value != null);
+    final invokeTokenLoadedCallback = (__token == null) && (value != null);
+    final invokeTokenNotLoadedCallback = (__token == null) && (value == null);
     try {
       _storedToken = value;
     } catch (e) {
       print("Failed to cache OAuth2 token: $e");
     }
     __token = value;
-    if (invokeCallbacks && (_tokenLoaded != null)) {
+    if (invokeTokenLoadedCallback && (_tokenLoaded != null)) {
       var timer = new Timer(const Duration(milliseconds: 0), () {
         try {
           _tokenLoaded(value);
         } catch (e) {
           print("Failed to invoke tokenLoaded callback: $e");
+        }
+      });
+    }
+    if (invokeTokenNotLoadedCallback && (_tokenLoaded != null)) {
+      var timer = new Timer(const Duration(milliseconds: 0), () {
+        try {
+          _tokenNotLoaded();
+        } catch (e) {
+          print("Failed to invoke tokenNotLoaded callback: $e");
         }
       });
     }
