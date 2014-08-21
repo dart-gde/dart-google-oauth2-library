@@ -44,7 +44,7 @@ class GoogleOAuth2 extends OAuth2<Token> {
         String approval_prompt: null})
       : _provider = provider,
         _tokenLoaded = tokenLoaded,
-        _tokenNotLoaded = tokenLoaded,
+        _tokenNotLoaded = tokenNotLoaded,
         _request_visible_actions = request_visible_actions,
         _approval_prompt = approval_prompt,
         super() {
