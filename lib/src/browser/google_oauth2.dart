@@ -265,7 +265,7 @@ class GoogleOAuth2 extends OAuth2<Token> {
         }
       });
     }
-    if (invokeTokenNotLoadedCallback && (_tokenLoaded != null)) {
+    if (invokeTokenNotLoadedCallback && (_tokenNotLoaded != null)) {
       var timer = new Timer(const Duration(milliseconds: 0), () {
         try {
           _tokenNotLoaded();
