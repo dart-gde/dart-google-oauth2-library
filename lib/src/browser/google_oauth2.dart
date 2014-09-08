@@ -180,7 +180,7 @@ class GoogleOAuth2 extends OAuth2<Token> {
     // If there is valid locally stored token
     if ((_storedToken != null) && !_storedToken.expired) {
       Completer storedTokenCompleter = new Completer<Token>();
-      _storedToken.validate(_clientId, _tokenValidationUri)
+      _storedToken.validate(_clientId, service: _tokenValidationUri)
           .then((bool isValid) {
             if (isValid) {
               _token = _storedToken;
@@ -303,7 +303,7 @@ class GoogleOAuth2 extends OAuth2<Token> {
   Completer<Token> _wrapValidation(Completer<Token> validTokenCompleter) {
     Completer<Token> result = new Completer();
     result.future.then((Token token) {
-      token.validate(_clientId, _tokenValidationUri)
+      token.validate(_clientId, service: _tokenValidationUri)
           .then((bool isValid) {
             if (isValid) {
               validTokenCompleter.complete(token);
