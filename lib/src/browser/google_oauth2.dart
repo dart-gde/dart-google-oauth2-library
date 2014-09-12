@@ -7,6 +7,7 @@ class GoogleOAuth2 extends OAuth2<Token> {
   final List<String> _scopes;
   final List<String> _request_visible_actions;
   final String _provider;
+  final String _tokenValidationUri;
   final Function _tokenLoaded;
   final Function _tokenNotLoaded;
   String _approval_prompt;
@@ -22,7 +23,8 @@ class GoogleOAuth2 extends OAuth2<Token> {
 
   /// Constructor.
   ///
-  /// @provider the URI to provide Google OAuth2 authentication.
+  /// @param provider the URI to provide Google OAuth2 authentication.
+  /// @param tokenValidationUri the URI to validate OAuth2 tokens against.
   /// @param clientId Client id for the Google API app. Eg, for Google Books, use
   ///        "796343192238.apps.googleusercontent.com",
   /// @param scopes list of scopes (kinds of information) you are planning to use. For example, to
@@ -37,12 +39,14 @@ class GoogleOAuth2 extends OAuth2<Token> {
       List<String> this._scopes,
       { List<String> request_visible_actions: null,
         String provider: "https://accounts.google.com/o/oauth2/",
+        String tokenValidationUri: "https://www.googleapis.com/oauth2/v1/tokeninfo",
         tokenLoaded(Token token),
         tokenNotLoaded(),
         bool autoLogin: false,
         bool autoLoadStoredToken: true,
         String approval_prompt: null})
       : _provider = provider,
+        _tokenValidationUri = tokenValidationUri,
         _tokenLoaded = tokenLoaded,
         _tokenNotLoaded = tokenNotLoaded,
         _request_visible_actions = request_visible_actions,
@@ -176,7 +180,7 @@ class GoogleOAuth2 extends OAuth2<Token> {
     // If there is valid locally stored token
     if ((_storedToken != null) && !_storedToken.expired) {
       Completer storedTokenCompleter = new Completer<Token>();
-      _storedToken.validate(_clientId)
+      _storedToken.validate(_clientId, service: _tokenValidationUri)
           .then((bool isValid) {
             if (isValid) {
               _token = _storedToken;
@@ -299,7 +303,7 @@ class GoogleOAuth2 extends OAuth2<Token> {
   Completer<Token> _wrapValidation(Completer<Token> validTokenCompleter) {
     Completer<Token> result = new Completer();
     result.future.then((Token token) {
-      token.validate(_clientId)
+      token.validate(_clientId, service: _tokenValidationUri)
           .then((bool isValid) {
             if (isValid) {
               validTokenCompleter.complete(token);
