@@ -34,13 +34,13 @@ Initialize the library with your parameters
 
 ```
 final auth = new GoogleOAuth2(
-  "YOUR CLIENT ID HERE",
-  ["scope1", "scope2", ...],
-  tokenLoaded:oauthReady,
-  autoLogin: <true/false>);
+    "YOUR CLIENT ID HERE",
+    ["scope1", "scope2", ...],
+    tokenLoaded: oauthReady,
+    autoLogin: <true/false>);
 ```
 
-The `oauthReady` function will be called once your app has a valid OAuth token to call the APIs.
+The `oauthReady` function (a function you must define) will be called once your app has a valid OAuth token to call the APIs.
 If you set `autoLogin` to `true` and the user has authorized the app in the past, this will happen automatically.
 Otherwise, you need to call `auth.login()` to trigger a confirmation dialog.
 

@@ -2,7 +2,7 @@ part of google_oauth2_browser;
 
 /**
  *  A simple OAuth2 authentication context which can use if you already have a [token]
- *  via another mechanism, like f.e. the Chrome Extension Identity API
+ *  via another mechanism, for example the Chrome Extension Identity API.
  */
 class SimpleOAuth2 extends OAuth2<String> {
   final String token;

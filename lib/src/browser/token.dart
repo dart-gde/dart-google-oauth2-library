@@ -33,7 +33,9 @@ class Token {
   String toString() => "[Token type=$type, data=$data, expired=$expired, "
       "expiry=$expiry, email=$email, userId=$userId]";
 
-  /// Query whether this token is still valid.
+  /**
+   * Queries whether this token is still valid.
+   */
   Future<bool> validate(String clientId,
       {String service: "https://www.googleapis.com/oauth2/v1/tokeninfo"}) {
     String url = UrlPattern.generatePattern(service, {}, {"access_token": data});

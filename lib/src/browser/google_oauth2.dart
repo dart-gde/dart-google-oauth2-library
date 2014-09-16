@@ -21,19 +21,24 @@ class GoogleOAuth2 extends OAuth2<Token> {
   /// The last fetched token.
   Token __token; // Double-underscore because it has a private setter _token.
 
-  /// Constructor.
-  ///
-  /// @param provider the URI to provide Google OAuth2 authentication.
-  /// @param tokenValidationUri the URI to validate OAuth2 tokens against.
-  /// @param clientId Client id for the Google API app. Eg, for Google Books, use
-  ///        "796343192238.apps.googleusercontent.com",
-  /// @param scopes list of scopes (kinds of information) you are planning to use. For example, to
-  ///        get data related to Google Books and user info, use
-  ///        `["https://www.googleapis.com/auth/books", "https://www.googleapis.com/auth/userinfo.email"]`
-  /// @param tokenLoaded a callback to use when a non-null login token is ready
-  /// @param approval_prompt can be null or 'force' to force user approval or 'auto' (default)
-  /// @param autoLogin if true, try to login with "immediate" param (no popup will be shown)
-  /// @param onlyLoadToken instead of showing user prompt, use stored token (if available)
+  /**
+   * Constructor.
+   *
+   * The following parameters are accepted:
+   *
+   * * [provider] the URI to provide Google OAuth2 authentication.
+   * * [tokenValidationUri] the URI to validate OAuth2 tokens against.
+   * * [clientId] Client id for the Google API app. For example, for Google
+   *   Books, use "796343192238.apps.googleusercontent.com".
+   * * [scopes] list of scopes (kinds of information) you are planning to use.
+   *   For example, to get data related to Google Books and user info, use
+   *   `["https://www.googleapis.com/auth/books", "https://www.googleapis.com/auth/userinfo.email"]`
+   * * [tokenLoaded] a callback to use when a non-null login token is ready.
+   *   The callback should accept one [Token] parameter.
+   * * [approval_prompt] can be null or 'force' to force user approval or 'auto' (default)
+   * * [autoLogin] if true, try to login with "immediate" param (no popup will be shown)
+   * * [onlyLoadToken] instead of showing user prompt, use stored token (if available)
+   */
   GoogleOAuth2(
       String this._clientId,
       List<String> this._scopes,
@@ -124,19 +129,22 @@ class GoogleOAuth2 extends OAuth2<Token> {
     _token = null;
   }
 
-  /// Attempts to authenticate.
-  ///
-  /// Scenarios:
-  ///
-  /// * If you have an existing valid token, it will be immediately returned.
-  /// * If you have an expired token, it will be silently renewed (override
-  ///   with immediate:true)
-  /// * If you have no token, a popup prompt will be displayed.
-  /// * If the user declines, closes the popup, or the service returns a token
-  ///   that cannot be validated, an exception will be delivered.
-  ///   
-  /// @param immediate authenticate user with the "immediate" parameter. No popup will be shown.
-  /// @param onlyLoadToken instead of showing user prompt, use stored token (if available)
+  /**
+   * Attempts to authenticate.
+   *
+   * Scenarios:
+   *
+   * * If you have an existing valid token, it will be immediately returned.
+   * * If you have an expired token, it will be silently renewed (override with
+   *   `immediate: true`)
+   * * If you have no token, a popup prompt will be displayed.
+   * * If the user declines, closes the popup, or the service returns a token
+   *   that cannot be validated, an exception will be delivered.
+   *
+   * If [immediate] is true, authenticates user with the "immediate" parameter.
+   * No popup will be shown. If [onlyLoadToken] is true, then use stored token
+   * (if available) instead of showing user prompt.
+   */
   Future<Token> login({bool immediate: false, bool onlyLoadToken: false}) {
     if ((_approval_prompt == "force") && immediate) {
       return new Future<Token>.error("Can't force approval prompt with immediate login");
