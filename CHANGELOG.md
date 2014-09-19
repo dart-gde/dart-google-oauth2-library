@@ -1,3 +1,7 @@
+## 0.4.1
+
+- Added optional `tokenValidationUri` to `GoogleOAuth2` constructor.
+
 ## 0.4.0 2014-08-12 (SDK 1.6.0-dev.8.0 r38967)
 
 - Added completeError() for un-handled exceptions and cases like immediate + force prompt
@@ -15,7 +19,7 @@
 
 ## 0.3.7 2014-03-28 (SDK 1.3.0-dev.7.2 r34463)
 
-- bump of `json_web_token` version 
+- bump of `json_web_token` version
 
 ## 0.3.6 2014-03-27 (SDK 1.3.0-dev.7.2 r34463)
 
