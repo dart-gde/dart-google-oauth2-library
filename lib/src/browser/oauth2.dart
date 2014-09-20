@@ -8,7 +8,8 @@ abstract class OAuth2<T> {
   OAuth2();
 
   /**
-   * Take a [request] and return the request with the authorization headers set correctly
+   * Takes a [request] and returns the request with the authorization headers
+   * set correctly.
    */
   Future<HttpRequest> authenticate(HttpRequest request) {
     return ensureAuthenticated()

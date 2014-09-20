@@ -8,8 +8,8 @@ class UrlPattern {
   final List<_UrlPatternToken> _tokens;
 
   /**
-   * Creates a UrlPattern from the specification [:pattern:].
-   * See http://tools.ietf.org/html/draft-gregorio-uritemplate-07
+   * Creates a UrlPattern from the specification [pattern].
+   * See <http://tools.ietf.org/html/draft-gregorio-uritemplate-07>.
    * We only implement a very simple subset for now.
    */
   UrlPattern(String pattern) : _tokens = [] {
@@ -36,7 +36,7 @@ class UrlPattern {
     }
   }
 
-  /** Generate a URL with the specified list of URL and query parameters. */
+  /** Generates a URL with the specified list of URL and query parameters. */
   String generate(Map<String, Object> urlParams, Map<String, Object> queryParams) {
     final buffer = new StringBuffer();
     _tokens.forEach((token) => buffer.write(token(urlParams)));
