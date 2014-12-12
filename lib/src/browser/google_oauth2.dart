@@ -8,6 +8,7 @@ class GoogleOAuth2 extends OAuth2<Token> {
   final List<String> _request_visible_actions;
   final String _provider;
   final String _tokenValidationUri;
+  final String _hostedDomain;
   final Function _tokenLoaded;
   final Function _tokenNotLoaded;
   String _approval_prompt;
@@ -28,6 +29,8 @@ class GoogleOAuth2 extends OAuth2<Token> {
    *
    * * [provider] the URI to provide Google OAuth2 authentication.
    * * [tokenValidationUri] the URI to validate OAuth2 tokens against.
+   * * [hostedDomain] restricts login to a Google Apps domain, see
+   *   https://developers.google.com/accounts/docs/OpenIDConnect#hd-param
    * * [clientId] Client id for the Google API app. For example, for Google
    *   Books, use "796343192238.apps.googleusercontent.com".
    * * [scopes] list of scopes (kinds of information) you are planning to use.
@@ -45,6 +48,7 @@ class GoogleOAuth2 extends OAuth2<Token> {
       { List<String> request_visible_actions: null,
         String provider: "https://accounts.google.com/o/oauth2/",
         String tokenValidationUri: "https://www.googleapis.com/oauth2/v1/tokeninfo",
+        String hostedDomain: "",
         tokenLoaded(Token token),
         tokenNotLoaded(),
         bool autoLogin: false,
@@ -52,6 +56,7 @@ class GoogleOAuth2 extends OAuth2<Token> {
         String approval_prompt: null})
       : _provider = provider,
         _tokenValidationUri = tokenValidationUri,
+        _hostedDomain = hostedDomain,
         _tokenLoaded = tokenLoaded,
         _tokenNotLoaded = tokenNotLoaded,
         _request_visible_actions = request_visible_actions,
@@ -116,7 +121,8 @@ class GoogleOAuth2 extends OAuth2<Token> {
       "redirect_uri": "postmessage", // Response will post to the proxy iframe
       "scope": _scopes.join(" "),
       "immediate": immediate,
-      "approval_prompt": _approval_prompt
+      "approval_prompt": _approval_prompt,
+      "hd": _hostedDomain
     };
     if (_request_visible_actions != null && _request_visible_actions.length > 0) {
       queryParams["request_visible_actions"] = _request_visible_actions.join(" ");
