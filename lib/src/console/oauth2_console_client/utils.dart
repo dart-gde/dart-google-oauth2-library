@@ -34,7 +34,7 @@ class FutureGroup<T> {
   final List<Future<T>> futures = <Future<T>>[];
   bool completed = false;
 
-  final List<T> _values = <T>[];
+  final List<T> _values = [];
 
   /// Wait for [task] to complete.
   Future<T> add(Future<T> task) {
@@ -58,7 +58,7 @@ class FutureGroup<T> {
 
       completed = true;
       _completer.completeError(e);
-    }));
+    }) as Future<T>);
 
     return task;
   }
@@ -239,7 +239,7 @@ Stream<String> streamToLines(Stream<String> stream) {
       handleDone: (sink) {
         if (!buffer.isEmpty) sink.add(buffer.toString());
         sink.close();
-      }));
+      })) as Stream<String>;
 }
 
 /// Like [Iterable.where], but allows [test] to return [Future]s and uses the
@@ -279,7 +279,7 @@ Uri addQueryParameters(Uri url, Map<String, String> parameters) {
 /// Convert a URL query string (or `application/x-www-form-urlencoded` body)
 /// into a [Map] from parameter names to values.
 Map<String, String> queryToMap(String queryList) {
-  var map = {};
+  var map = <String, String>{};
   for (var pair in queryList.split("&")) {
     var split = split1(pair, "=");
     if (split.isEmpty) continue;

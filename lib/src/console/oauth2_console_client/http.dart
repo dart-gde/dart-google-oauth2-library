@@ -76,7 +76,7 @@ class PubHttpClient extends http.BaseClient {
         }
       }
       throw error;
-    }), HTTP_TIMEOUT, 'fetching URL "${request.url}"');
+    }), HTTP_TIMEOUT, 'fetching URL "${request.url}"') as Future<http.StreamedResponse>;
   }
 
   /// Logs the fact that [request] was sent, and information about it.

@@ -115,7 +115,7 @@ class GoogleOAuth2 extends OAuth2<Token> {
       "origin": window.location.origin,
       "redirect_uri": "postmessage", // Response will post to the proxy iframe
       "scope": _scopes.join(" "),
-      "immediate": immediate,
+      "immediate": immediate.toString(),
       "approval_prompt": _approval_prompt
     };
     if (_request_visible_actions != null && _request_visible_actions.length > 0) {
@@ -172,7 +172,7 @@ class GoogleOAuth2 extends OAuth2<Token> {
         return _tokenCompleter.future;
       }
 
-      Completer tokenCompleter = new Completer<Token>();
+      var tokenCompleter = new Completer<Token>();
       _tokenCompleter.future
           .then((value) => tokenCompleter.complete(value))
           .catchError((e) {
@@ -187,7 +187,7 @@ class GoogleOAuth2 extends OAuth2<Token> {
 
     // If there is valid locally stored token
     if ((_storedToken != null) && !_storedToken.expired) {
-      Completer storedTokenCompleter = new Completer<Token>();
+      var storedTokenCompleter = new Completer<Token>();
       _storedToken.validate(_clientId, service: _tokenValidationUri)
           .then((bool isValid) {
             if (isValid) {

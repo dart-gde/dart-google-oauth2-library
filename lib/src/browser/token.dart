@@ -107,7 +107,7 @@ class Token {
   /// Extracts &-separated tokens from the path, query, and fragment of [uri].
   static List<String> _tokenizeRelativeUrl(String uri) {
     final u = Uri.parse(uri);
-    final result = [];
+    final result = <String>[];
     [u.path, u.query, u.fragment].forEach((x) {
       if (x != null) result.addAll(_tokenize(x));
     });
