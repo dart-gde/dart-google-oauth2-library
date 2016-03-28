@@ -48,7 +48,7 @@ class _ProxyChannel {
     if (subject.endsWith(':$_nonce')) {
       subject = subject.substring(0, subject.length - _nonce.length - 1);
     }
-    _callback(subject, data['a']);
+    _callback(subject, data['a'] as List<String>);
   }
 
   /// Computes the javascript origin of an absolute URI.
