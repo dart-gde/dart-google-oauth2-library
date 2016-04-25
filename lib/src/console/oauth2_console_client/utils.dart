@@ -239,7 +239,7 @@ Stream<String> streamToLines(Stream<String> stream) {
       handleDone: (sink) {
         if (!buffer.isEmpty) sink.add(buffer.toString());
         sink.close();
-      })) as Stream<String>;
+      }));
 }
 
 /// Like [Iterable.where], but allows [test] to return [Future]s and uses the
