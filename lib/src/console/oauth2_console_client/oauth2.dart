@@ -49,7 +49,7 @@ class OAuth2Console {
 
   /// The OAuth2 scopes that the pub client needs. Currently the client only needs
   /// the user's email so that the server can verify their identity.
-  List _scopes = ['https://www.googleapis.com/auth/userinfo.email'];
+  List<String> _scopes = ['https://www.googleapis.com/auth/userinfo.email'];
   List<String> _request_visible_actions;
 
   /// An in-memory cache of the user's OAuth2 credentials. This should always be
@@ -69,7 +69,7 @@ class OAuth2Console {
   PubHttpClient _httpClient;
 
   OAuth2Console({String identifier: null, String secret: null,
-    Uri authorizationEndpoint: null, Uri tokenEndpoint: null, List scopes: null,
+    Uri authorizationEndpoint: null, Uri tokenEndpoint: null, List<String> scopes: null,
     List<String> request_visible_actions: null,
     this.authorizedRedirect: 'https://github.com/dart-gde/dart-google-oauth2-library',
     this.credentialsFilePath: 'credentials.json',
@@ -303,7 +303,7 @@ class SimpleOAuth2Console implements OAuth2Console {
     throw new UnsupportedError("_authorize");
   }
 
-  List _scopes;
+  List<String> _scopes;
   Uri _authorizationEndpoint;
   List<String> _request_visible_actions;
   PubHttpClient _httpClient;
@@ -392,7 +392,7 @@ class ComputeOAuth2Console implements OAuth2Console {
     throw new UnsupportedError("_authorize");
   }
 
-  List _scopes;
+  List<String> _scopes;
   Uri _authorizationEndpoint;
   List<String> _request_visible_actions;
   PubHttpClient _httpClient;
