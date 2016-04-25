@@ -1,3 +1,7 @@
+## 0.4.2
+
+ - Strong mode compliant
+
 ## 0.4.1
 
 - Added optional `tokenValidationUri` to `GoogleOAuth2` constructor.
