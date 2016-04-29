@@ -58,6 +58,8 @@ class FutureGroup<T> {
 
       completed = true;
       _completer.completeError(e);
+      // TODO(kevmoo) revisit 'as Future<>' casts after latest SDK changes to
+      // dart:async have landed.
     }) as Future<T>);
 
     return task;
