@@ -314,7 +314,7 @@ class SimpleOAuth2Console implements OAuth2Console {
  */
 class ComputeOAuth2Console implements OAuth2Console {
   Uri _tokenEndpoint =
-      Uri.parse('http://metadata/computeMetadata/v1beta1/instance/service-accounts/default/token');
+      Uri.parse('http://metadata/computeMetadata/v1/instance/service-accounts/default/token');
   Uri get tokenEndpoint => _tokenEndpoint;
 
   Credentials _credentials;
@@ -446,7 +446,7 @@ class ComputeEngineClient extends http.BaseClient implements Client {
   http.Client _httpClient;
 
   Uri _tokenEndpoint =
-      Uri.parse('http://metadata/computeMetadata/v1beta1/instance/service-accounts/default/token');
+      Uri.parse('http://metadata/computeMetadata/v1/instance/service-accounts/default/token');
 
   ComputeEngineClient(this.projectId,
       {http.Client httpClient})
@@ -470,7 +470,7 @@ class ComputeEngineClient extends http.BaseClient implements Client {
   Future<Client> refreshCredentials([List<String> newScopes]) {
     return async.then((_) {
       return _httpClient.get(_tokenEndpoint,
-          headers: {'X-Google-Metadata-Request': 'True'});
+          headers: {'Metadata-Flavor': 'Google'});
     }).then((http.Response response) {
       if (response.statusCode == 200) {
         // Successful request
